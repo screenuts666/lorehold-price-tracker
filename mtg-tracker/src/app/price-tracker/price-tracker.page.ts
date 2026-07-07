@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Serve per [(ngModel)]
 import { HttpClient } from '@angular/common/http';
 import { addIcons } from 'ionicons';
-import { refresh, trash, image, openOutline, appsOutline, listOutline, analyticsOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline } from 'ionicons/icons';
+import { refresh, trash, image, openOutline, appsOutline, listOutline, analyticsOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline, archiveOutline, cardOutline } from 'ionicons/icons';
 import { Chart } from 'chart.js/auto';
 import {
   IonHeader,
@@ -73,7 +73,8 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
   constructor(private http: HttpClient) {
     addIcons({ 
       refresh, trash, image, openOutline, appsOutline, listOutline,
-      analyticsOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline 
+      analyticsOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline,
+      archiveOutline, cardOutline
     });
   }
 
@@ -238,61 +239,127 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     });
   }
 
+  rilevaTipoMtg(nome: string): { nomeTipo: string; standard: number; ottimo: number; caro: number } {
+    const n = (nome || '').toLowerCase();
+    
+    // Escludiamo Secret Lair dalle regole standard perché hanno prezzi non standardizzati
+    if (n.includes('secret lair')) {
+      return { nomeTipo: 'Secret Lair', standard: 0, ottimo: 0, caro: 999999 };
+    }
+    
+    if (n.includes('collector') && (n.includes('box') || n.includes('display'))) {
+      return { nomeTipo: 'Collector Box', standard: 220, ottimo: 190, caro: 250 };
+    }
+    if (n.includes('play booster box') || n.includes('draft booster box') || n.includes('set booster box') || n.includes('booster box') || n.includes('display') || n.includes('booster display')) {
+      return { nomeTipo: 'Booster Box', standard: 120, ottimo: 105, caro: 135 };
+    }
+    if (n.includes('prerelease') || n.includes('pre-release')) {
+      return { nomeTipo: 'Prerelease Pack', standard: 35, ottimo: 28, caro: 42 };
+    }
+    if (n.includes('bundle') || n.includes('fat pack') || n.includes('gift edition')) {
+      return { nomeTipo: 'Bundle', standard: 42, ottimo: 35, caro: 50 };
+    }
+    if (n.includes('commander') && n.includes('deck')) {
+      return { nomeTipo: 'Commander Deck', standard: 45, ottimo: 38, caro: 55 };
+    }
+    if (n.includes('collector booster') || n.includes('booster pack') || n.includes('pack')) {
+      return { nomeTipo: 'Single Pack', standard: 5, ottimo: 4, caro: 6.5 };
+    }
+    
+    return { nomeTipo: 'Generico', standard: 0, ottimo: 0, caro: 999999 };
+  }
+
   ottieniSuggerimento(item: any): { stato: string; colore: string; spiegazione: string; icona: string } {
-    if (!item.storico || item.storico.length < 2) {
+    const tipo = this.rilevaTipoMtg(item.nome);
+    const prezzi = item.storico ? item.storico.map((p: any) => p.prezzo) : [];
+    const prezzoAttuale = item.prezzoAttuale || (prezzi.length > 0 ? prezzi[prezzi.length - 1] : null);
+
+    if (!prezzoAttuale) {
       return { 
         stato: 'ANALISI', 
         colore: '#64748b', 
-        spiegazione: 'Rilevamento in corso. Servono almeno 2 punti prezzo per analizzare il trend.',
+        spiegazione: 'Rilevamento in corso. Nessun prezzo attuale disponibile.',
         icona: 'analytics-outline'
       };
     }
 
-    const prezzi = item.storico.map((p: any) => p.prezzo);
-    const prezzoAttuale = item.prezzoAttuale || prezzi[prezzi.length - 1];
-    const min = Math.min(...prezzi);
-    const max = Math.max(...prezzi);
-    const media = prezzi.reduce((a: number, b: number) => a + b, 0) / prezzi.length;
-    
-    // 1. Vicino al minimo storico (entro il 2%)
+    const min = prezzi.length > 0 ? Math.min(...prezzi) : prezzoAttuale;
+    const max = prezzi.length > 0 ? Math.max(...prezzi) : prezzoAttuale;
+    const media = prezzi.length > 0 ? prezzi.reduce((a: number, b: number) => a + b, 0) / prezzi.length : prezzoAttuale;
+
+    // --- ALGORITMO BASATO SUL TIPO DI PRODOTTO MTG ---
+    if (tipo.standard > 0) {
+      // Caso 1: Prezzo eccezionale rispetto al mercato MTG standard
+      if (prezzoAttuale <= tipo.ottimo) {
+        const risparmioMercato = (((tipo.standard - prezzoAttuale) / tipo.standard) * 100).toFixed(0);
+        return {
+          stato: '🔥 PREZZO SHOCK',
+          colore: '#10b981', // Verde smeraldo neon
+          spiegazione: `Prezzo eccezionale per un ${tipo.nomeTipo}! Risparmi il ${risparmioMercato}% rispetto al prezzo medio di mercato (€${tipo.standard}).`,
+          icona: 'trending-down-outline'
+        };
+      }
+      // Caso 2: Prezzo caro rispetto al mercato MTG standard
+      if (prezzoAttuale >= tipo.caro) {
+        const rincaroMercato = (((prezzoAttuale - tipo.standard) / tipo.standard) * 100).toFixed(0);
+        return {
+          stato: '🔴 EVITA',
+          colore: '#ef4444', // Rosso neon
+          spiegazione: `Prezzo fuori mercato per un ${tipo.nomeTipo}! Costa il ${rincaroMercato}% in più del prezzo standard di lancio (€${tipo.standard}).`,
+          icona: 'alert-circle-outline'
+        };
+      }
+    }
+
+    // --- ALGORITMO BASATO SULLO STORICO DEI PREZZI ---
+    if (prezzi.length < 2) {
+      return { 
+        stato: 'IN CODA', 
+        colore: '#3b82f6', // Blu
+        spiegazione: `Prodotto ${tipo.nomeTipo !== 'Generico' ? tipo.nomeTipo : 'monitorato'}. In attesa di accumulare storico dei prezzi.`,
+        icona: 'analytics-outline'
+      };
+    }
+
+    // Minimo storico (entro il 2%)
     if (prezzoAttuale <= min * 1.02) {
       const risparmio = max > prezzoAttuale ? (((max - prezzoAttuale) / max) * 100).toFixed(0) : '0';
       return {
         stato: 'COMPRA ORA',
         colore: '#10b981', // Verde smeraldo neon
-        spiegazione: `Minimo storico! Risparmi il ${risparmio}% rispetto al picco massimo (€${max.toFixed(2)}).`,
+        spiegazione: `Minimo storico locale! Risparmi il ${risparmio}% rispetto al picco massimo (€${max.toFixed(2)}).`,
         icona: 'trending-down-outline'
       };
     }
     
-    // 2. Sotto la media
+    // Sotto la media
     if (prezzoAttuale < media) {
       const scontoMedia = (((media - prezzoAttuale) / media) * 100).toFixed(0);
       return {
         stato: 'BUON PREZZO',
         colore: '#34d399', // Verde chiaro
-        spiegazione: `Prezzo inferiore del ${scontoMedia}% rispetto alla media storica (€${media.toFixed(2)}).`,
+        spiegazione: `Prezzo inferiore del ${scontoMedia}% rispetto alla media dello storico (€${media.toFixed(2)}).`,
         icona: 'checkmark-circle-outline'
       };
     }
     
-    // 3. Vicino al massimo storico (entro il 5%)
+    // Picco massimo
     if (prezzoAttuale >= max * 0.95) {
       const rincaro = min > 0 ? (((prezzoAttuale - min) / min) * 100).toFixed(0) : '0';
       return {
         stato: 'EVITA',
         colore: '#ef4444', // Rosso neon
-        spiegazione: `Vicino al massimo storico! È aumentato del ${rincaro}% rispetto al minimo registrato (€${min.toFixed(2)}).`,
+        spiegazione: `Vicino al picco massimo registrato! È aumentato del ${rincaro}% rispetto al minimo (€${min.toFixed(2)}).`,
         icona: 'alert-circle-outline'
       };
     }
     
-    // 4. Sopra la media ma non al picco (Attendi calo)
+    // Sopra la media ma non massimo
     const eccessoMedia = (((prezzoAttuale - media) / media) * 100).toFixed(0);
     return {
       stato: 'ATTENDI',
-      colore: '#f59e0b', // Arancione / Giallo
-      spiegazione: `Prezzo superiore del ${eccessoMedia}% rispetto alla media (€${media.toFixed(2)}). Attendi un ribasso.`,
+      colore: '#f59e0b', // Arancione
+      spiegazione: `Prezzo superiore del ${eccessoMedia}% rispetto alla media dello storico (€${media.toFixed(2)}).`,
       icona: 'time-outline'
     };
   }
@@ -342,6 +409,14 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
       default:
         return lista.reverse();
     }
+  }
+
+  get prodottiSigillati(): any[] {
+    return this.prodottiOrdinati.filter(p => this.rilevaTipoMtg(p.nome).nomeTipo !== 'Generico');
+  }
+
+  get carteSingole(): any[] {
+    return this.prodottiOrdinati.filter(p => this.rilevaTipoMtg(p.nome).nomeTipo === 'Generico');
   }
 
   onVistaChange() {

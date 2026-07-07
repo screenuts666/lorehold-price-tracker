@@ -164,8 +164,17 @@
 }
 
 .glass-card:hover .product-large-img-container {
-  transform: scale(1.06) rotate(1deg);
+  transform: scale(1.06) rotate(-1deg);
   box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+}
+
+.product-single-card {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.glass-card:hover .product-single-card {
+  transform: scale(1.08) rotate(1deg);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.45);
 }
 
 
