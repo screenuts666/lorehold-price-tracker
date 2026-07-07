@@ -316,6 +316,7 @@ export class PriceTrackerPage implements OnInit {
             }
             if (res.immagine) updatedProduct.immagine = res.immagine;
             if (res.nome) updatedProduct.nome = res.nome;
+            if (res.releaseDate && !updatedProduct.releaseDate) updatedProduct.releaseDate = res.releaseDate;
             if (res.espansione) updatedProduct.expansion = res.espansione;
             if (res.stock !== undefined) updatedProduct.stock = res.stock;
             if (res.sellerCountry !== undefined) updatedProduct.sellerCountry = res.sellerCountry;

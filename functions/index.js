@@ -10,7 +10,9 @@ admin.initializeApp();
 const db = getFirestore("default");
 
 // Configurazione cache espansioni globale per ottimizzare le chiamate
-let expansionsCache = null;
+const MAX_RETRIES = 3;
+let expansionsCache = null; // Caching for CardTrader expansions
+let scryfallSetsCache = null; // Caching for Scryfall sets
 
 // --- EXPRESS APP PER API ---
 const app = express();
@@ -144,6 +146,7 @@ app.get("/prezzo/:id", async (req, res) => {
     let nomeBlueprint = null;
     let immagineUrl = null;
     let expansionName = null;
+    let releaseDate = null;
 
     if (blueprintResponse && blueprintResponse.ok) {
       try {
@@ -167,6 +170,32 @@ app.get("/prezzo/:id", async (req, res) => {
             if (matchedExp) {
               expansionName = matchedExp.name;
             }
+          }
+        }
+        
+        // Fetch release date from Scryfall
+        if (expansionName) {
+          try {
+            if (!scryfallSetsCache) {
+              const scryRes = await fetch("https://api.scryfall.com/sets", { headers: { 'User-Agent': 'LoreholdPriceTracker/1.0' } });
+              if (scryRes.ok) {
+                const scryData = await scryRes.json();
+                scryfallSetsCache = scryData.data;
+              }
+            }
+            if (scryfallSetsCache) {
+              // Try exact match first
+              let matchedSet = scryfallSetsCache.find(s => s.name.toLowerCase() === expansionName.toLowerCase());
+              // Try fuzzy match
+              if (!matchedSet) {
+                matchedSet = scryfallSetsCache.find(s => s.name.toLowerCase().includes(expansionName.toLowerCase()) || expansionName.toLowerCase().includes(s.name.toLowerCase()));
+              }
+              if (matchedSet && matchedSet.released_at) {
+                releaseDate = matchedSet.released_at;
+              }
+            }
+          } catch (e) {
+            console.error("Errore fetch Scryfall sets:", e.message);
           }
         }
       } catch (e) {
@@ -254,6 +283,7 @@ app.get("/prezzo/:id", async (req, res) => {
         immagine: immagineUrl,
         nome: nomeBlueprint,
         espansione: expansionName,
+        releaseDate: releaseDate,
         stock: totalStock,
         sellerCountry: sellerCountry,
         sellerType: sellerType,
