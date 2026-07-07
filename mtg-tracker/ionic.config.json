@@ -1,0 +1,7 @@
+{
+  "name": "mtg-tracker",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
