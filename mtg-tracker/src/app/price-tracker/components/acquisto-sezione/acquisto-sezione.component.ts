@@ -5,6 +5,7 @@ import { addIcons } from 'ionicons';
 import { trash, image, openOutline, cartOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline } from 'ionicons/icons';
 import { Chart } from 'chart.js/auto';
 import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard } from '@ionic/angular/standalone';
+import { MarketAnalyzerService, ProductType, Product } from '../../services/market-analyzer.service';
 
 @Component({
   selector: 'app-acquisto-sezione',
@@ -33,7 +34,7 @@ export class AcquistoSezioneComponent implements AfterViewInit, OnChanges, OnDes
   urlAcquisto: string = '';
   private chartInstances: { [key: string]: Chart } = {};
 
-  constructor() {
+  constructor(private marketAnalyzer: MarketAnalyzerService) {
     addIcons({ 
       trash, image, openOutline, cartOutline, trendingDownOutline, 
       checkmarkCircleOutline, alertCircleOutline, timeOutline 
@@ -91,8 +92,86 @@ export class AcquistoSezioneComponent implements AfterViewInit, OnChanges, OnDes
     return { nomeTipo: 'Generico', standard: 0, ottimo: 0, caro: 999999 };
   }
 
+  private parseDate(dateStr: string): Date {
+    if (!dateStr) return new Date();
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+      return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
+    }
+    return new Date(dateStr);
+  }
+
+  mappaTipoMtgAlProductType(nome: string): ProductType | null {
+    const n = (nome || '').toLowerCase();
+    if (n.includes('play booster box') || n.includes('play box') || n.includes('collector booster box') || n.includes('collector box')) {
+      return ProductType.PLAY_BOOSTER;
+    }
+    if (n.includes('fat pack') || n.includes('bundle') || n.includes('gift edition') || n.includes('commander')) {
+      return ProductType.BUNDLE;
+    }
+    if (n.includes('prerelease pack') || n.includes('prerelease')) {
+      return ProductType.PRERELEASE;
+    }
+    if (n.includes('secret lair')) {
+      return ProductType.SECRET_LAIR;
+    }
+    if (n.includes('draft night')) {
+      return ProductType.DRAFT_NIGHT;
+    }
+    return null;
+  }
+
   // --- ALGORITMO DI ACQUISTO (BUY) ---
   ottieniSuggerimento(item: any): { stato: string; colore: string; spiegazione: string; icona: string } {
+    const pType = this.mappaTipoMtgAlProductType(item.nome);
+    
+    if (pType !== null) {
+      const tipo = this.rilevaTipoMtg(item.nome);
+      const launchPrice = tipo.standard > 0 ? tipo.standard : (item.storico && item.storico.length > 0 ? item.storico[0].prezzo : 100);
+      
+      const parsedLaunchDate = this.parseDate(item.dataInserimento);
+      const historicalPrices = (item.storico || []).map((h: any) => ({
+        date: this.parseDate(h.data),
+        price: h.prezzo
+      }));
+
+      const product: Product = {
+        currentPrice: item.prezzoAttuale || (historicalPrices.length > 0 ? historicalPrices[historicalPrices.length - 1].price : 0),
+        launchDate: parsedLaunchDate,
+        historicalPrices: historicalPrices,
+        baseLaunchPrice: launchPrice,
+        productType: pType
+      };
+
+      const analysis = this.marketAnalyzer.analyzeMarket(product);
+
+      let colore = '#64748b';
+      let icona = 'analytics-outline';
+      let statoTesto = 'ATTENDI';
+
+      if (analysis.stato === 'BUY') {
+        colore = '#10b981';
+        icona = 'trending-down-outline';
+        statoTesto = 'COMPRA ORA';
+      } else if (analysis.stato === 'AVOID') {
+        colore = '#ef4444';
+        icona = 'alert-circle-outline';
+        statoTesto = 'EVITA';
+      } else {
+        colore = '#f59e0b';
+        icona = 'time-outline';
+        statoTesto = 'ATTENDI';
+      }
+
+      return {
+        stato: statoTesto,
+        colore: colore,
+        spiegazione: analysis.messaggio,
+        icona: icona
+      };
+    }
+
+    // --- FALLBACK GENERALE PER PRODOTTI NON STANDARD / CARTE SINGOLE INSERITE IN ACQUISTO ---
     const tipo = this.rilevaTipoMtg(item.nome);
     const prezzi = item.storico ? item.storico.map((p: any) => p.prezzo) : [];
     const prezzoAttuale = item.prezzoAttuale || (prezzi.length > 0 ? prezzi[prezzi.length - 1] : null);
@@ -110,76 +189,49 @@ export class AcquistoSezioneComponent implements AfterViewInit, OnChanges, OnDes
     const max = prezzi.length > 0 ? Math.max(...prezzi) : prezzoAttuale;
     const media = prezzi.length > 0 ? prezzi.reduce((a: number, b: number) => a + b, 0) / prezzi.length : prezzoAttuale;
 
-    // --- CONFRONTO CON IL MERCATO STANDARD MTG ---
-    if (tipo.standard > 0) {
-      if (prezzoAttuale <= tipo.ottimo) {
-        const risparmioMercato = (((tipo.standard - prezzoAttuale) / tipo.standard) * 100).toFixed(0);
-        return {
-          stato: '🔥 COMPRA ORA',
-          colore: '#10b981', // Verde smeraldo neon
-          spiegazione: `Prezzo eccezionale per un ${tipo.nomeTipo}! Risparmi il ${risparmioMercato}% rispetto al prezzo standard (€${tipo.standard}).`,
-          icona: 'trending-down-outline'
-        };
-      }
-      if (prezzoAttuale >= tipo.caro) {
-        const rincaroMercato = (((prezzoAttuale - tipo.standard) / tipo.standard) * 100).toFixed(0);
-        return {
-          stato: '🔴 EVITA',
-          colore: '#ef4444', // Rosso neon
-          spiegazione: `Prezzo fuori mercato per un ${tipo.nomeTipo}! Costa il ${rincaroMercato}% in più del prezzo standard di lancio (€${tipo.standard}).`,
-          icona: 'alert-circle-outline'
-        };
-      }
-    }
-
-    // --- CONFRONTO CON LO STORICO PERSONALE ---
     if (prezzi.length < 2) {
       return { 
         stato: 'IN CODA', 
-        colore: '#3b82f6', // Blu
+        colore: '#3b82f6',
         spiegazione: `Prodotto ${tipo.nomeTipo !== 'Generico' ? tipo.nomeTipo : 'monitorato'}. In attesa di storico.`,
         icona: 'analytics-outline'
       };
     }
 
-    // Se siamo vicino al minimo storico (entro il 2%) -> COMPRA ORA
     if (prezzoAttuale <= min * 1.02) {
       const risparmio = max > prezzoAttuale ? (((max - prezzoAttuale) / max) * 100).toFixed(0) : '0';
       return {
         stato: 'COMPRA ORA',
-        colore: '#10b981', // Verde smeraldo neon
+        colore: '#10b981',
         spiegazione: `Minimo storico locale! Risparmi il ${risparmio}% rispetto al picco massimo (€${max.toFixed(2)}).`,
         icona: 'trending-down-outline'
       };
     }
     
-    // Se siamo sotto la media -> BUON PREZZO (Acquisto conveniente)
     if (prezzoAttuale < media) {
       const scontoMedia = (((media - prezzoAttuale) / media) * 100).toFixed(0);
       return {
         stato: 'BUON PREZZO',
-        colore: '#34d399', // Verde chiaro
+        colore: '#34d399',
         spiegazione: `Prezzo inferiore del ${scontoMedia}% rispetto alla media dello storico (€${media.toFixed(2)}).`,
         icona: 'checkmark-circle-outline'
       };
     }
     
-    // Se siamo vicino al massimo storico (entro il 5%) -> EVITA
     if (prezzoAttuale >= max * 0.95) {
       const rincaro = min > 0 ? (((prezzoAttuale - min) / min) * 100).toFixed(0) : '0';
       return {
         stato: 'EVITA',
-        colore: '#ef4444', // Rosso neon
+        colore: '#ef4444',
         spiegazione: `Picco massimo registrato! È aumentato del ${rincaro}% rispetto al minimo (€${min.toFixed(2)}). Evita l'acquisto.`,
         icona: 'alert-circle-outline'
       };
     }
     
-    // Se siamo sopra la media -> ATTENDI
     const eccessoMedia = (((prezzoAttuale - media) / media) * 100).toFixed(0);
     return {
       stato: 'ATTENDI',
-      colore: '#f59e0b', // Arancione
+      colore: '#f59e0b',
       spiegazione: `Prezzo superiore del ${eccessoMedia}% rispetto alla media dello storico (€${media.toFixed(2)}). Attendi un ribasso.`,
       icona: 'time-outline'
     };
