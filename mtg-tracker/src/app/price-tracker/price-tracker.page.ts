@@ -20,6 +20,8 @@ import { BuyingSectionComponent } from './components/buying-section/buying-secti
 import { SellingSectionComponent } from './components/selling-section/selling-section.component';
 import { SearchSectionComponent } from './components/search-section/search-section.component';
 import { FilterModalComponent } from './components/filter-modal/filter-modal.component';
+import { Firestore, collection, collectionData, doc, setDoc, deleteDoc } from '@angular/fire/firestore';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-price-tracker',
@@ -52,6 +54,7 @@ export class PriceTrackerPage implements OnInit {
   viewMode: 'grid' | 'table' = 'grid';
   sortMode: string = 'recent';
   gridColumns: number = 4;
+  firstLoadDone: boolean = false;
 
   // Filter editing modal state
   showFilterModal: boolean = false;
@@ -64,7 +67,7 @@ export class PriceTrackerPage implements OnInit {
   selectedExpansionFilter: string = 'all';
   selectedTypeFilter: string = 'all';
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private firestore: Firestore) {
     addIcons({ 
       refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline,
       searchOutline, closeOutline, settingsOutline, optionsOutline, funnelOutline, sparklesOutline 
@@ -80,7 +83,6 @@ export class PriceTrackerPage implements OnInit {
     
     const savedOrdinamento = localStorage.getItem('mtg_tracker_ordinamento');
     if (savedOrdinamento) {
-      // Map Italian sort keys to English
       if (savedOrdinamento === 'recente') this.sortMode = 'recent';
       else if (savedOrdinamento === 'prezzo-crescente') this.sortMode = 'price-ascending';
       else if (savedOrdinamento === 'prezzo-decrescente') this.sortMode = 'price-descending';
@@ -101,55 +103,19 @@ export class PriceTrackerPage implements OnInit {
       this.gridColumns = parseInt(savedCols, 10) || 4;
     }
 
-    // Load and migrate products cache
-    const cache = localStorage.getItem('mtg_tracker_data');
-    if (cache) {
-      this.products = JSON.parse(cache);
-      
-      let migrated = false;
-      this.products.forEach(p => {
-        // Migrate Italian intents to English
-        if (p.intento) {
-          if (p.intento === 'compra') {
-            p.intento = 'buy';
-            migrated = true;
-          } else if (p.intento === 'vendi') {
-            p.intento = 'sell';
-            migrated = true;
-          }
-        } else {
-          p.intento = this.detectMtgType(p.nome).nameType === 'Generico' ? 'sell' : 'buy';
-          migrated = true;
-        }
-      });
-
-      this.deduplicatePriceHistory();
-      if (migrated) this.saveCache();
-      this.updateAllPrices(false);
-    } else {
-      this.http.get('http://localhost:3000/api/backup').subscribe({
-        next: (backup: any) => {
-          if (Array.isArray(backup) && backup.length > 0) {
-            this.products = backup;
-            this.products.forEach(p => {
-              if (p.intento) {
-                if (p.intento === 'compra') p.intento = 'buy';
-                if (p.intento === 'vendi') p.intento = 'sell';
-              } else {
-                p.intento = this.detectMtgType(p.nome).nameType === 'Generico' ? 'sell' : 'buy';
-              }
-            });
-            this.deduplicatePriceHistory();
-            this.saveCache();
-            console.log('Restored products data successfully from file backup.');
-          }
-          this.updateAllPrices(false);
-        },
-        error: () => {
+    // Subscribe to products from Firestore in real-time
+    const productsCollection = collection(this.firestore, 'products');
+    collectionData(productsCollection).subscribe({
+      next: (data: any[]) => {
+        this.products = data || [];
+        this.deduplicatePriceHistory();
+        if (!this.firstLoadDone) {
+          this.firstLoadDone = true;
           this.updateAllPrices(false);
         }
-      });
-    }
+      },
+      error: (err) => console.error('Error fetching Firestore products:', err)
+    });
   }
 
   detectMtgType(name: string): { nameType: string } {
@@ -222,30 +188,32 @@ export class PriceTrackerPage implements OnInit {
       };
 
       if (!this.products.find(p => p.id === newProduct.id)) {
-        this.products.push(newProduct);
-        this.saveCache();
-        
-        // Go to target section tab
-        this.activeSection = event.intent === 'buy' ? 'buying' : 'selling';
-        this.onSezioneChange();
-        
-        this.updateAllPrices(true);
+        const docRef = doc(this.firestore, 'products', newProduct.id);
+        setDoc(docRef, newProduct).then(() => {
+          // Go to target section tab
+          this.activeSection = event.intent === 'buy' ? 'buying' : 'selling';
+          this.onSezioneChange();
+          this.updateSingleProductPrice(newProduct, true);
+        }).catch(err => console.error('Error adding product:', err));
       } else {
         alert('Product already tracked!');
       }
     } else {
       // Update existing product
-      this.selectedProduct.foil = event.foil;
-      this.selectedProduct.lingua = event.lang;
-      this.selectedProduct.condizione = event.cond;
-      this.selectedProduct.intento = event.intent;
+      const updatedProduct = {
+        ...this.selectedProduct,
+        foil: event.foil,
+        lingua: event.lang,
+        condizione: event.cond,
+        intento: event.intent,
+        prezzoAttuale: null,
+        storico: []
+      };
       
-      // Clear historical values and current price so they recalculate with new parameters
-      this.selectedProduct.prezzoAttuale = null;
-      this.selectedProduct.storico = [];
-      
-      this.saveCache();
-      this.updateAllPrices(true);
+      const docRef = doc(this.firestore, 'products', updatedProduct.id);
+      setDoc(docRef, updatedProduct).then(() => {
+        this.updateSingleProductPrice(updatedProduct, true);
+      }).catch(err => console.error('Error updating product:', err));
     }
 
     this.showFilterModal = false;
@@ -271,7 +239,7 @@ export class PriceTrackerPage implements OnInit {
       const name = match[2].replace(/-/g, ' ').toUpperCase();
 
       if (!this.products.find((p) => p.id === id)) {
-        this.products.push({
+        const newProduct = {
           id: id,
           nome: name,
           prezzoAttuale: null,
@@ -283,10 +251,12 @@ export class PriceTrackerPage implements OnInit {
           lingua: null,
           condizione: null,
           releaseDate: releaseDate
-        });
+        };
 
-        this.saveCache();
-        this.updateAllPrices(true);
+        const docRef = doc(this.firestore, 'products', id);
+        setDoc(docRef, newProduct).then(() => {
+          this.updateSingleProductPrice(newProduct, true);
+        }).catch(err => console.error('Error manual adding:', err));
       } else {
         alert('Product already tracked!');
       }
@@ -295,104 +265,86 @@ export class PriceTrackerPage implements OnInit {
     }
   }
 
+  updateSingleProductPrice(product: any, force: boolean = false): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const COOLDOWN_MS = 12 * 60 * 60 * 1000;
+      const now = Date.now();
+
+      if (!force && product.prezzoAttuale && product.storico && product.storico.length > 0) {
+        const lastPoint = product.storico[product.storico.length - 1];
+        const lastTimestamp = lastPoint.timestamp || new Date(lastPoint.data).getTime();
+        if ((now - lastTimestamp) <= COOLDOWN_MS) {
+          resolve();
+          return;
+        }
+      }
+
+      const params: string[] = [];
+      if (product.foil === true) params.push('foil=true');
+      if (product.foil === false) params.push('foil=false');
+      if (product.lingua) params.push(`lang=${product.lingua}`);
+      if (product.condizione) params.push(`cond=${encodeURIComponent(product.condizione)}`);
+      const queryStr = params.length > 0 ? '?' + params.join('&') : '';
+
+      this.http
+        .get(`${environment.apiBaseUrl}/prezzo/${product.id}${queryStr}`)
+        .subscribe({
+          next: (res: any) => {
+            const updatedProduct = { ...product };
+            if (res.prezzo) {
+              updatedProduct.prezzoAttuale = res.prezzo;
+              if (!updatedProduct.storico) {
+                updatedProduct.storico = [];
+              }
+              const todayDate = new Date().toLocaleDateString();
+              const existingPoint = updatedProduct.storico.find((s: any) => s.data === todayDate);
+              if (existingPoint) {
+                existingPoint.prezzo = res.prezzo;
+                existingPoint.timestamp = now;
+                if (res.pricesByLanguage) {
+                  existingPoint.pricesByLanguage = res.pricesByLanguage;
+                }
+              } else {
+                updatedProduct.storico.push({
+                  data: todayDate,
+                  timestamp: now,
+                  prezzo: res.prezzo,
+                  pricesByLanguage: res.pricesByLanguage || null
+                });
+              }
+            }
+            if (res.immagine) updatedProduct.immagine = res.immagine;
+            if (res.nome) updatedProduct.nome = res.nome;
+            if (res.espansione) updatedProduct.expansion = res.espansione;
+            if (res.stock !== undefined) updatedProduct.stock = res.stock;
+            if (res.sellerCountry !== undefined) updatedProduct.sellerCountry = res.sellerCountry;
+            if (res.sellerType !== undefined) updatedProduct.sellerType = res.sellerType;
+            if (res.avgTop5 !== undefined) updatedProduct.avgTop5 = res.avgTop5;
+            if (res.pricesByLanguage !== undefined) updatedProduct.pricesByLanguage = res.pricesByLanguage;
+
+            const docRef = doc(this.firestore, 'products', product.id);
+            setDoc(docRef, updatedProduct)
+              .then(() => resolve())
+              .catch(err => {
+                console.error('Error updating price in Firestore:', err);
+                resolve();
+              });
+          },
+          error: () => resolve(),
+        });
+    });
+  }
+
   updateAllPrices(force: boolean = false) {
     if (this.products.length === 0) {
       this.loading = false;
       return;
     }
 
-    const COOLDOWN_MS = 12 * 60 * 60 * 1000;
-    const now = Date.now();
-
-    const productsToUpdate = force
-      ? this.products
-      : this.products.filter(product => {
-          if (!product.prezzoAttuale || !product.storico || product.storico.length === 0) {
-            return true;
-          }
-          const lastPoint = product.storico[product.storico.length - 1];
-          const lastTimestamp = lastPoint.timestamp || new Date(lastPoint.data).getTime();
-          return (now - lastTimestamp) > COOLDOWN_MS;
-        });
-
-    if (productsToUpdate.length === 0) {
-      console.log('Prices are updated (12h cooldown active).');
-      this.loading = false;
-      this.products = [...this.products];
-      return;
-    }
-
     this.loading = true;
-
-    const updates = productsToUpdate.map((product) => {
-      return new Promise<void>((resolve) => {
-        const params: string[] = [];
-        if (product.foil === true) params.push('foil=true');
-        if (product.foil === false) params.push('foil=false');
-        if (product.lingua) params.push(`lang=${product.lingua}`);
-        if (product.condizione) params.push(`cond=${encodeURIComponent(product.condizione)}`);
-        const queryStr = params.length > 0 ? '?' + params.join('&') : '';
-
-        this.http
-          .get(`http://localhost:3000/api/prezzo/${product.id}${queryStr}`)
-          .subscribe({
-            next: (res: any) => {
-              if (res.prezzo) {
-                product.prezzoAttuale = res.prezzo;
-                if (!product.storico) {
-                  product.storico = [];
-                }
-                const todayDate = new Date().toLocaleDateString();
-                const existingPoint = product.storico.find((s: any) => s.data === todayDate);
-                if (existingPoint) {
-                  existingPoint.prezzo = res.prezzo;
-                  existingPoint.timestamp = now;
-                  if (res.pricesByLanguage) {
-                    existingPoint.pricesByLanguage = res.pricesByLanguage;
-                  }
-                } else {
-                  product.storico.push({
-                    data: todayDate,
-                    timestamp: now,
-                    prezzo: res.prezzo,
-                    pricesByLanguage: res.pricesByLanguage || null
-                  });
-                }
-              }
-              if (res.immagine) {
-                product.immagine = res.immagine;
-              }
-              if (res.nome) {
-                product.nome = res.nome;
-              }
-              if (res.espansione) {
-                product.expansion = res.espansione;
-              }
-              if (res.stock !== undefined) {
-                product.stock = res.stock;
-              }
-              if (res.sellerCountry !== undefined) {
-                product.sellerCountry = res.sellerCountry;
-              }
-              if (res.sellerType !== undefined) {
-                product.sellerType = res.sellerType;
-              }
-              if (res.avgTop5 !== undefined) {
-                product.avgTop5 = res.avgTop5;
-              }
-              if (res.pricesByLanguage !== undefined) {
-                product.pricesByLanguage = res.pricesByLanguage;
-              }
-              resolve();
-            },
-            error: () => resolve(),
-          });
-      });
-    });
+    const updates = this.products.map((product) => this.updateSingleProductPrice(product, force));
 
     Promise.all(updates).then(() => {
-      this.products = [...this.products];
-      this.saveCache();
       this.loading = false;
     });
   }
@@ -401,8 +353,8 @@ export class PriceTrackerPage implements OnInit {
     const product = this.products.find((p) => p.id === id);
     const productName = product ? product.nome : 'this product';
     if (confirm(`Are you sure you want to stop tracking "${productName}"?`)) {
-      this.products = this.products.filter((p) => p.id !== id);
-      this.saveCache();
+      const docRef = doc(this.firestore, 'products', id);
+      deleteDoc(docRef).catch(err => console.error('Error deleting product:', err));
     }
   }
 
@@ -441,13 +393,6 @@ export class PriceTrackerPage implements OnInit {
     }
   }
 
-  saveCache() {
-    localStorage.setItem('mtg_tracker_data', JSON.stringify(this.products));
-    this.http.post('http://localhost:3000/api/backup', this.products).subscribe({
-      next: () => console.log('Saved data backup on server file system.'),
-      error: (err) => console.error('Error saving data backup:', err)
-    });
-  }
 
   calculateValueVariation(item: any): number {
     if (!item.storico || item.storico.length < 2) return 0;
@@ -457,42 +402,96 @@ export class PriceTrackerPage implements OnInit {
     return ((currentPrice - initialPrice) / initialPrice) * 100;
   }
 
+  // --- MEMOIZATION CACHE PER PRESTAZIONI ED EVITARE LAG DI RE-RENDER ---
+  private lastProductsSortedSource: any[] = [];
+  private lastSortModeSorted: string = '';
+  private cachedProductsSorted: any[] = [];
+
   get productsSorted(): any[] {
+    if (
+      this.products === this.lastProductsSortedSource &&
+      this.sortMode === this.lastSortModeSorted
+    ) {
+      return this.cachedProductsSorted;
+    }
+
+    this.lastProductsSortedSource = this.products;
+    this.lastSortModeSorted = this.sortMode;
+
     const list = [...this.products];
+    let result = [];
     switch (this.sortMode) {
       case 'name':
-        return list.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+        result = list.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
+        break;
       case 'release-date':
-        return list.sort((a, b) => {
+        result = list.sort((a, b) => {
           const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : Infinity;
           const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : Infinity;
           return dateA - dateB;
         });
+        break;
       case 'price-ascending':
-        return list.sort((a, b) => (a.prezzoAttuale || 0) - (b.prezzoAttuale || 0));
+        result = list.sort((a, b) => (a.prezzoAttuale || 0) - (b.prezzoAttuale || 0));
+        break;
       case 'price-descending':
-        return list.sort((a, b) => (b.prezzoAttuale || 0) - (a.prezzoAttuale || 0));
+        result = list.sort((a, b) => (b.prezzoAttuale || 0) - (a.prezzoAttuale || 0));
+        break;
       case 'variation-best':
-        return list.sort((a, b) => this.calculateValueVariation(b) - this.calculateValueVariation(a));
+        result = list.sort((a, b) => this.calculateValueVariation(b) - this.calculateValueVariation(a));
+        break;
       case 'variation-worst':
-        return list.sort((a, b) => this.calculateValueVariation(a) - this.calculateValueVariation(b));
+        result = list.sort((a, b) => this.calculateValueVariation(a) - this.calculateValueVariation(b));
+        break;
       case 'recent':
       default:
-        return list.reverse();
+        result = list.reverse();
+        break;
     }
+    this.cachedProductsSorted = result;
+    return result;
   }
 
+  private lastProductsExpSource: any[] = [];
+  private lastActiveSectionExp: string = '';
+  private cachedUniqueExpansions: string[] = [];
+
   get uniqueExpansions(): string[] {
+    if (
+      this.products === this.lastProductsExpSource &&
+      this.activeSection === this.lastActiveSectionExp
+    ) {
+      return this.cachedUniqueExpansions;
+    }
+
+    this.lastProductsExpSource = this.products;
+    this.lastActiveSectionExp = this.activeSection;
+
     const sets = new Set<string>();
     const intentFilter = this.activeSection === 'buying' ? 'buy' : this.activeSection === 'selling' ? 'sell' : null;
     this.products.forEach(p => {
       if (intentFilter && p.intento !== intentFilter) return;
       if (p.expansion) sets.add(p.expansion);
     });
-    return Array.from(sets).sort();
+    this.cachedUniqueExpansions = Array.from(sets).sort();
+    return this.cachedUniqueExpansions;
   }
 
+  private lastProductsTypeSource: any[] = [];
+  private lastActiveSectionType: string = '';
+  private cachedUniqueTypes: string[] = [];
+
   get uniqueTypes(): string[] {
+    if (
+      this.products === this.lastProductsTypeSource &&
+      this.activeSection === this.lastActiveSectionType
+    ) {
+      return this.cachedUniqueTypes;
+    }
+
+    this.lastProductsTypeSource = this.products;
+    this.lastActiveSectionType = this.activeSection;
+
     const types = new Set<string>();
     const intentFilter = this.activeSection === 'buying' ? 'buy' : this.activeSection === 'selling' ? 'sell' : null;
     this.products.forEach(p => {
@@ -500,10 +499,31 @@ export class PriceTrackerPage implements OnInit {
       const typeInfo = this.detectMtgType(p.nome);
       types.add(typeInfo.nameType);
     });
-    return Array.from(types).sort();
+    this.cachedUniqueTypes = Array.from(types).sort();
+    return this.cachedUniqueTypes;
   }
 
+  private lastProductsBuyingSource: any[] = [];
+  private lastSortModeBuying: string = '';
+  private lastExpansionFilterBuying: string = '';
+  private lastTypeFilterBuying: string = '';
+  private cachedProductsBuying: any[] = [];
+
   get productsBuying(): any[] {
+    if (
+      this.products === this.lastProductsBuyingSource &&
+      this.sortMode === this.lastSortModeBuying &&
+      this.selectedExpansionFilter === this.lastExpansionFilterBuying &&
+      this.selectedTypeFilter === this.lastTypeFilterBuying
+    ) {
+      return this.cachedProductsBuying;
+    }
+
+    this.lastProductsBuyingSource = this.products;
+    this.lastSortModeBuying = this.sortMode;
+    this.lastExpansionFilterBuying = this.selectedExpansionFilter;
+    this.lastTypeFilterBuying = this.selectedTypeFilter;
+
     let list = this.productsSorted.filter(p => p.intento === 'buy');
     if (this.selectedExpansionFilter !== 'all') {
       list = list.filter(p => p.expansion === this.selectedExpansionFilter);
@@ -511,10 +531,31 @@ export class PriceTrackerPage implements OnInit {
     if (this.selectedTypeFilter !== 'all') {
       list = list.filter(p => this.detectMtgType(p.nome).nameType === this.selectedTypeFilter);
     }
+    this.cachedProductsBuying = list;
     return list;
   }
 
+  private lastProductsSellingSource: any[] = [];
+  private lastSortModeSelling: string = '';
+  private lastExpansionFilterSelling: string = '';
+  private lastTypeFilterSelling: string = '';
+  private cachedProductsSelling: any[] = [];
+
   get productsSelling(): any[] {
+    if (
+      this.products === this.lastProductsSellingSource &&
+      this.sortMode === this.lastSortModeSelling &&
+      this.selectedExpansionFilter === this.lastExpansionFilterSelling &&
+      this.selectedTypeFilter === this.lastTypeFilterSelling
+    ) {
+      return this.cachedProductsSelling;
+    }
+
+    this.lastProductsSellingSource = this.products;
+    this.lastSortModeSelling = this.sortMode;
+    this.lastExpansionFilterSelling = this.selectedExpansionFilter;
+    this.lastTypeFilterSelling = this.selectedTypeFilter;
+
     let list = this.productsSorted.filter(p => p.intento === 'sell');
     if (this.selectedExpansionFilter !== 'all') {
       list = list.filter(p => p.expansion === this.selectedExpansionFilter);
@@ -522,7 +563,13 @@ export class PriceTrackerPage implements OnInit {
     if (this.selectedTypeFilter !== 'all') {
       list = list.filter(p => this.detectMtgType(p.nome).nameType === this.selectedTypeFilter);
     }
+    this.cachedProductsSelling = list;
     return list;
+  }
+
+  saveProduct(product: any) {
+    const docRef = doc(this.firestore, 'products', product.id);
+    setDoc(docRef, product).catch(err => console.error('Error saving product to Firestore:', err));
   }
 
   onVistaChange() {

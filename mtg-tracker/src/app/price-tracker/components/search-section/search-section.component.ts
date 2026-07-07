@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { IonIcon, IonButton, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { searchOutline, sparklesOutline, image } from 'ionicons/icons';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-search-section',
@@ -33,7 +34,7 @@ export class SearchSectionComponent {
   search() {
     if (!this.searchQuery.trim()) return;
     this.searching = true;
-    this.http.get<any>(`http://localhost:3000/api/search-card?q=${encodeURIComponent(this.searchQuery)}`).subscribe({
+    this.http.get<any>(`${environment.apiBaseUrl}/search-card?q=${encodeURIComponent(this.searchQuery)}`).subscribe({
       next: (res) => {
         this.searchResults = res.cards || [];
         this.searching = false;
@@ -48,7 +49,7 @@ export class SearchSectionComponent {
 
   selectPrint(card: any) {
     this.searching = true;
-    this.http.get<any>(`http://localhost:3000/api/map-cardtrader?name=${encodeURIComponent(card.name)}&set_code=${encodeURIComponent(card.set_code)}`).subscribe({
+    this.http.get<any>(`${environment.apiBaseUrl}/map-cardtrader?name=${encodeURIComponent(card.name)}&set_code=${encodeURIComponent(card.set_code)}`).subscribe({
       next: (res) => {
         this.searching = false;
         
@@ -69,3 +70,4 @@ export class SearchSectionComponent {
     });
   }
 }
+

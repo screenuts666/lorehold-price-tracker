@@ -1,16 +1,12 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
-
 export const environment = {
-  production: false
+  production: false,
+  apiBaseUrl: 'http://127.0.0.1:5001/lorehold-price-tracker/us-central1/api',
+  firebaseConfig: {
+    apiKey: "AIzaSyCDTGB0c3xCcz1pc2kabmQmqeqQQlYjydU",
+    authDomain: "lorehold-price-tracker.firebaseapp.com",
+    projectId: "lorehold-price-tracker",
+    storageBucket: "lorehold-price-tracker.firebasestorage.app",
+    messagingSenderId: "336370048324",
+    appId: "1:336370048324:web:a897dfc1f6efadcd884b11"
+  }
 };
-
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.
