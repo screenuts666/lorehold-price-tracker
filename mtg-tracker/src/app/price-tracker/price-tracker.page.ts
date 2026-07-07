@@ -347,11 +347,15 @@ export class PriceTrackerPage implements OnInit {
                 if (existingPoint) {
                   existingPoint.prezzo = res.prezzo;
                   existingPoint.timestamp = now;
+                  if (res.pricesByLanguage) {
+                    existingPoint.pricesByLanguage = res.pricesByLanguage;
+                  }
                 } else {
                   product.storico.push({
                     data: todayDate,
                     timestamp: now,
                     prezzo: res.prezzo,
+                    pricesByLanguage: res.pricesByLanguage || null
                   });
                 }
               }
@@ -375,6 +379,9 @@ export class PriceTrackerPage implements OnInit {
               }
               if (res.avgTop5 !== undefined) {
                 product.avgTop5 = res.avgTop5;
+              }
+              if (res.pricesByLanguage !== undefined) {
+                product.pricesByLanguage = res.pricesByLanguage;
               }
               resolve();
             },

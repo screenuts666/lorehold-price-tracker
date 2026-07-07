@@ -205,6 +205,19 @@ app.get("/api/prezzo/:id", async (req, res) => {
         (item) => item && (item.price || item.price_cents),
       );
 
+      // Compute lowest price for each language
+      const pricesByLanguage = {};
+      offerteValide.forEach(offer => {
+        if (offer.properties_hash && offer.properties_hash.mtg_language) {
+          const lang = offer.properties_hash.mtg_language.toLowerCase();
+          const cents = offer.price ? offer.price.cents : offer.price_cents;
+          const price = cents / 100;
+          if (!pricesByLanguage[lang] || price < pricesByLanguage[lang]) {
+            pricesByLanguage[lang] = Number(price.toFixed(2));
+          }
+        }
+      });
+
       let offerteFiltrate = offerteValide;
       
       // Filtra per foil/non-foil
@@ -274,7 +287,8 @@ app.get("/api/prezzo/:id", async (req, res) => {
       stock: totalStock,
       sellerCountry: sellerCountry,
       sellerType: sellerType,
-      avgTop5: avgTop5
+      avgTop5: avgTop5,
+      pricesByLanguage: pricesByLanguage
     });
   } catch (error) {
     console.error(`Errore di rete su ID ${idProdotto}:`, error);

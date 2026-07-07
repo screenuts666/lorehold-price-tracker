@@ -274,25 +274,69 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
         gradient.addColorStop(1, 'rgba(139, 92, 246, 0.00)');
       }
 
+      const datasets: any[] = [{
+        label: 'Selected Price',
+        data: data,
+        borderColor: '#a78bfa',
+        borderWidth: 2.5,
+        pointRadius: data.length === 1 ? 3 : 0,
+        pointHoverRadius: 5,
+        fill: true,
+        backgroundColor: gradient || 'rgba(139, 92, 246, 0.1)',
+        tension: 0.3
+      }];
+
+      // English history comparisons
+      const enData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.en : null);
+      if (enData.some((v: any) => v !== null && v !== undefined)) {
+        datasets.push({
+          label: 'EN Price',
+          data: enData,
+          borderColor: '#60a5fa',
+          borderWidth: 1.5,
+          borderDash: [3, 3],
+          pointRadius: 0,
+          fill: false,
+          tension: 0.3
+        });
+      }
+
+      // Italian history comparisons
+      const itData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.it : null);
+      if (itData.some((v: any) => v !== null && v !== undefined)) {
+        datasets.push({
+          label: 'IT Price',
+          data: itData,
+          borderColor: '#f59e0b',
+          borderWidth: 1.5,
+          borderDash: [3, 3],
+          pointRadius: 0,
+          fill: false,
+          tension: 0.3
+        });
+      }
+
       this.chartInstances[item.id] = new Chart(canvas, {
         type: 'line',
         data: {
           labels: labels,
-          datasets: [{
-            data: data,
-            borderColor: '#a78bfa',
-            borderWidth: 2,
-            pointRadius: data.length === 1 ? 3 : 0,
-            pointHoverRadius: 4,
-            fill: true,
-            backgroundColor: gradient || 'rgba(139, 92, 246, 0.1)',
-            tension: 0.3
-          }]
+          datasets: datasets
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: false } },
+          plugins: { 
+            legend: { 
+              display: datasets.length > 1,
+              position: 'top',
+              labels: {
+                color: '#94a3b8',
+                boxWidth: 8,
+                padding: 6,
+                font: { size: 9, weight: 'bold' }
+              }
+            } 
+          },
           scales: {
             x: { display: false },
             y: {
