@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { trash, image, openOutline, cartOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline } from 'ionicons/icons';
 import { Chart } from 'chart.js/auto';
-import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardContent } from '@ionic/angular/standalone';
+import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-acquisto-sezione',
@@ -18,10 +18,7 @@ import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard, IonCard
     IonGrid,
     IonRow,
     IonCol,
-    IonCard,
-    IonCardHeader,
-    IonCardTitle,
-    IonCardContent
+    IonCard
   ],
   templateUrl: './acquisto-sezione.component.html',
   styleUrls: []
