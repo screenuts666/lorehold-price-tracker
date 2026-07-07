@@ -51,6 +51,7 @@ export class PriceTrackerPage implements OnInit {
   caricamento: boolean = false;
   vista: 'grid' | 'table' = 'grid';
   ordinamento: string = 'recente';
+  colonneGrid: number = 4;
 
   constructor(private http: HttpClient) {
     addIcons({ refresh, appsOutline, listOutline, cartOutline, cashOutline });
@@ -68,6 +69,10 @@ export class PriceTrackerPage implements OnInit {
     const savedSezione = localStorage.getItem('mtg_tracker_sezione');
     if (savedSezione === 'acquisto' || savedSezione === 'vendita') {
       this.sezioneAttiva = savedSezione;
+    }
+    const savedCols = localStorage.getItem('mtg_tracker_colonne');
+    if (savedCols) {
+      this.colonneGrid = parseInt(savedCols, 10) || 4;
     }
 
     const cache = localStorage.getItem('mtg_tracker_data');
@@ -286,5 +291,10 @@ export class PriceTrackerPage implements OnInit {
 
   onSezioneChange() {
     localStorage.setItem('mtg_tracker_sezione', this.sezioneAttiva);
+  }
+
+  onColonneGridChange() {
+    localStorage.setItem('mtg_tracker_colonne', this.colonneGrid.toString());
+    this.prodotti = [...this.prodotti]; // Aggiorna referenza per innescare OnChanges nei figli
   }
 }

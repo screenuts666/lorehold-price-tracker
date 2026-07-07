@@ -26,6 +26,7 @@ import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard } from '
 export class VenditaSezioneComponent implements AfterViewInit, OnChanges, OnDestroy {
   @Input() prodotti: any[] = [];
   @Input() vista: 'grid' | 'table' = 'grid';
+  @Input() colonneGrid: number = 4;
   @Output() onAdd = new EventEmitter<string>();
   @Output() onRemove = new EventEmitter<string>();
 
@@ -44,7 +45,7 @@ export class VenditaSezioneComponent implements AfterViewInit, OnChanges, OnDest
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['prodotti'] || changes['vista']) {
+    if (changes['prodotti'] || changes['vista'] || changes['colonneGrid']) {
       setTimeout(() => this.renderizzaGrafici(), 150);
     }
   }
