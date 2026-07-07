@@ -38,11 +38,11 @@
   <div *ngIf="prodotti.length > 0 && !caricamento" style="display: flex; justify-content: space-between; align-items: center; margin: 16px 12px; gap: 16px; flex-wrap: wrap;">
     <div style="display: flex; gap: 12px; align-items: center;">
       <!-- TOGGLE VISTA -->
-      <ion-segment [(ngModel)]="vista" (ionChange)="onVistaChange()" style="width: auto; max-width: 100px; background: rgba(30, 41, 59, 0.3); border-radius: 10px; height: 38px;">
-        <ion-segment-button value="grid" style="--indicator-color: #8b5cf6;">
+      <ion-segment [(ngModel)]="vista" (ionChange)="onVistaChange()" style="width: 90px; background: rgba(30, 41, 59, 0.3); border-radius: 10px; height: 38px;">
+        <ion-segment-button value="grid" layout="icon-only" style="--indicator-color: #8b5cf6; min-width: 45px; --min-width: 0; height: 38px;">
           <ion-icon name="apps-outline" style="font-size: 16px;"></ion-icon>
         </ion-segment-button>
-        <ion-segment-button value="table" style="--indicator-color: #8b5cf6;">
+        <ion-segment-button value="table" layout="icon-only" style="--indicator-color: #8b5cf6; min-width: 45px; --min-width: 0; height: 38px;">
           <ion-icon name="list-outline" style="font-size: 16px;"></ion-icon>
         </ion-segment-button>
       </ion-segment>
@@ -52,12 +52,12 @@
         *ngIf="vista === 'grid'" 
         [(ngModel)]="colonneGrid" 
         (ionChange)="onColonneGridChange()" 
-        style="width: auto; max-width: 100px; background: rgba(30, 41, 59, 0.3); border-radius: 10px; height: 38px;"
+        style="width: 90px; background: rgba(30, 41, 59, 0.3); border-radius: 10px; height: 38px;"
       >
-        <ion-segment-button [value]="3" style="--indicator-color: #8b5cf6;" title="Visualizzazione a 3 colonne">
+        <ion-segment-button [value]="3" layout="icon-only" style="--indicator-color: #8b5cf6; min-width: 45px; --min-width: 0; height: 38px;" title="Visualizzazione a 3 colonne">
           <ion-icon name="grid-outline" style="font-size: 16px;"></ion-icon>
         </ion-segment-button>
-        <ion-segment-button [value]="4" style="--indicator-color: #8b5cf6;" title="Visualizzazione a 4 colonne">
+        <ion-segment-button [value]="4" layout="icon-only" style="--indicator-color: #8b5cf6; min-width: 45px; --min-width: 0; height: 38px;" title="Visualizzazione a 4 colonne">
           <ion-icon name="apps-outline" style="font-size: 16px;"></ion-icon>
         </ion-segment-button>
       </ion-segment>
