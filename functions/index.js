@@ -270,7 +270,12 @@ app.get("/prezzo/:id", async (req, res) => {
 });
 
 // Esporta l'app Express come Cloud Function
-exports.api = onRequest({ cors: true }, app);
+exports.api = onRequest({ 
+  cors: true, 
+  memory: "256MiB", 
+  timeoutSeconds: 60,
+  minInstances: 0 
+}, app);
 
 // --- SCHEDULER PER AGGIORNAMENTO AUTOMATICO OGNI ORA (PER TEST) ---
 exports.updatePricesScheduler = onSchedule({
