@@ -1,0 +1,88 @@
+<div *ngIf="isOpen" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); z-index: 10001; display: flex; align-items: center; justify-content: center; padding: 16px;">
+  <div class="glass-card" style="width: 100%; max-width: 420px; border-radius: 16px; background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; overflow: hidden; padding: 20px;">
+    <!-- TITLE -->
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <ion-icon name="options-outline" style="color: #f472b6; font-size: 20px;"></ion-icon>
+        <h2 style="margin: 0; font-size: 1.1rem; font-weight: 700; color: #f8fafc;">
+          {{ product?.isNew ? 'Add Product' : 'Edit Filters' }}
+        </h2>
+      </div>
+      <ion-button fill="clear" color="medium" (click)="close()" style="margin: 0; --padding-start: 4px; --padding-end: 4px; height: 32px; width: 32px;">
+        <ion-icon slot="icon-only" name="close-outline" style="font-size: 20px;"></ion-icon>
+      </ion-button>
+    </div>
+
+    <!-- CARD PREVIEW -->
+    <div style="display: flex; gap: 14px; background: rgba(15,23,42,0.25); border: 1px solid rgba(255,255,255,0.05); padding: 12px; border-radius: 10px; margin-bottom: 20px; align-items: center;">
+      <img *ngIf="product?.image" [src]="product.image" style="width: 50px; height: 70px; object-fit: contain; border-radius: 4px;" />
+      <div style="flex-grow: 1; min-width: 0;">
+        <h3 style="margin: 0 0 4px 0; font-size: 0.95rem; font-weight: 700; color: #f8fafc; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          {{ product?.name }}
+        </h3>
+        <span style="font-size: 0.72rem; color: #64748b; font-weight: 600;">CardTrader ID: {{ product?.id }}</span>
+      </div>
+    </div>
+
+    <!-- FORM FIELDS -->
+    <div style="display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px;">
+      <!-- INTENT (IF NEW) -->
+      <div *ngIf="product?.isNew" style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Section / Intent</span>
+        <ion-segment [(ngModel)]="intentFilter" style="background: rgba(15, 23, 42, 0.4); border-radius: 8px;">
+          <ion-segment-button value="buy" style="--indicator-color: #a78bfa;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #f8fafc; padding: 4px 0;">BUYING</span>
+          </ion-segment-button>
+          <ion-segment-button value="sell" style="--indicator-color: #f472b6;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #f8fafc; padding: 4px 0;">SELLING</span>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      <!-- FOIL -->
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Finiture Type</span>
+        <ion-segment [(ngModel)]="foilFilter" style="background: rgba(15, 23, 42, 0.4); border-radius: 8px;">
+          <ion-segment-button value="any" style="--indicator-color: #3b82f6;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #f8fafc; padding: 4px 0;">ANY</span>
+          </ion-segment-button>
+          <ion-segment-button value="normal" style="--indicator-color: #3b82f6;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #f8fafc; padding: 4px 0;">NORMAL</span>
+          </ion-segment-button>
+          <ion-segment-button value="foil" style="--indicator-color: #3b82f6;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #f8fafc; padding: 4px 0;">FOIL</span>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+
+      <!-- LANGUAGE -->
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Card Language</span>
+        <ion-select interface="popover" [(ngModel)]="langFilter" style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #f8fafc; font-size: 0.85rem; font-weight: 700; --padding-start: 12px; --padding-end: 12px; height: 38px;">
+          <ion-select-option value="any">Any Language</ion-select-option>
+          <ion-select-option value="it">Italian (IT)</ion-select-option>
+          <ion-select-option value="en">English (EN)</ion-select-option>
+        </ion-select>
+      </div>
+
+      <!-- CONDITION -->
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Minimum Condition</span>
+        <ion-select interface="popover" [(ngModel)]="condFilter" style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; color: #f8fafc; font-size: 0.85rem; font-weight: 700; --padding-start: 12px; --padding-end: 12px; height: 38px;">
+          <ion-select-option value="any">Any Condition (NM / SP / PL...)</ion-select-option>
+          <ion-select-option value="Near Mint">Near Mint (NM) or better</ion-select-option>
+        </ion-select>
+      </div>
+    </div>
+
+    <!-- FOOTER BUTTONS -->
+    <div style="display: flex; gap: 12px; justify-content: flex-end;">
+      <ion-button fill="clear" color="medium" (click)="close()" style="margin: 0; font-weight: 600;">
+        Cancel
+      </ion-button>
+      <ion-button (click)="save()" color="success" class="neon-btn" style="margin: 0; font-weight: 700;">
+        {{ product?.isNew ? 'Add to list' : 'Save Filters' }}
+      </ion-button>
+    </div>
+  </div>
+</div>

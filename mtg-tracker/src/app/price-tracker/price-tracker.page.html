@@ -1,107 +1,217 @@
-<ion-header [translucent]="true">
-  <ion-toolbar class="glass-item">
-    <ion-title>
-      <div style="display: flex; align-items: center; gap: 10px;">
-        <img src="assets/icon/favicon.png" style="height: 24px; width: 24px; border-radius: 6px; box-shadow: 0 0 8px rgba(139, 92, 246, 0.4);" />
-        <span class="gradient-title">Lorehold Price Tracker</span>
+<ion-header [translucent]="false" style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4); z-index: 1000;">
+  <ion-toolbar style="--background: #090d16; border-bottom: 1px solid rgba(255, 255, 255, 0.06); --padding-top: 8px; --padding-bottom: 8px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 16px; padding: 4px 16px; flex-wrap: wrap;">
+      <!-- Title & Brand -->
+      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+        <img src="assets/icon/favicon.png" style="height: 28px; width: 28px; border-radius: 6px; box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);" />
+        <span class="gradient-title" style="font-size: 1.25rem; font-weight: 800;">Lorehold Price Tracker</span>
       </div>
-    </ion-title>
-    <ion-buttons slot="end">
-      <ion-button (click)="aggiornaTuttiIPrezzi(true)" color="primary" class="neon-btn">
-        <ion-icon slot="icon-only" name="refresh"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-  <ion-toolbar class="glass-item" style="--padding-top: 4px; --padding-bottom: 4px;">
-    <ion-segment [(ngModel)]="sezioneAttiva" (ionChange)="onSezioneChange()" style="background: rgba(30, 41, 59, 0.35); border-radius: 10px; margin: 0 auto; max-width: 500px;">
-      <ion-segment-button value="acquisto" style="--indicator-color: #a78bfa;">
-        <span style="font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; color: #f8fafc; padding: 6px 0;">
-          <ion-icon name="cart-outline" style="font-size: 16px;"></ion-icon>
-          ACQUISTI ({{ prodottiAcquisto.length }})
-        </span>
-      </ion-segment-button>
-      <ion-segment-button value="vendita" style="--indicator-color: #f472b6;">
-        <span style="font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; color: #f8fafc; padding: 6px 0;">
-          <ion-icon name="cash-outline" style="font-size: 16px;"></ion-icon>
-          VENDITE ({{ prodottiVendita.length }})
-        </span>
-      </ion-segment-button>
-    </ion-segment>
+
+      <!-- Inline Segment Pills -->
+      <div style="flex-grow: 1; display: flex; justify-content: center; min-width: 280px; max-width: 480px;">
+        <div style="display: flex; width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 3px;">
+          <!-- BUYING BUTTON -->
+          <button 
+            (click)="activeSection = 'buying'; onSezioneChange();" 
+            [style.background]="activeSection === 'buying' ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.2))' : 'transparent'"
+            [style.border-color]="activeSection === 'buying' ? 'rgba(139, 92, 246, 0.3)' : 'transparent'"
+            [style.box-shadow]="activeSection === 'buying' ? 'inset 0 1px 1px rgba(255, 255, 255, 0.1)' : 'none'"
+            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; border-radius: 16px; border: 1px solid transparent; color: #cbd5e1; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); outline: none;"
+          >
+            <ion-icon name="cart-outline" [style.color]="activeSection === 'buying' ? '#a78bfa' : '#64748b'"></ion-icon>
+            <span [style.color]="activeSection === 'buying' ? '#f8fafc' : '#94a3b8'">BUYING</span>
+          </button>
+          
+          <!-- SELLING BUTTON -->
+          <button 
+            (click)="activeSection = 'selling'; onSezioneChange();" 
+            [style.background]="activeSection === 'selling' ? 'linear-gradient(135deg, rgba(244, 114, 182, 0.2), rgba(236, 72, 153, 0.2))' : 'transparent'"
+            [style.border-color]="activeSection === 'selling' ? 'rgba(244, 114, 182, 0.3)' : 'transparent'"
+            [style.box-shadow]="activeSection === 'selling' ? 'inset 0 1px 1px rgba(255, 255, 255, 0.1)' : 'none'"
+            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; border-radius: 16px; border: 1px solid transparent; color: #cbd5e1; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); outline: none;"
+          >
+            <ion-icon name="cash-outline" [style.color]="activeSection === 'selling' ? '#f472b6' : '#64748b'"></ion-icon>
+            <span [style.color]="activeSection === 'selling' ? '#f8fafc' : '#94a3b8'">SELLING</span>
+          </button>
+          
+          <!-- SEARCH BUTTON -->
+          <button 
+            (click)="activeSection = 'search'; onSezioneChange();" 
+            [style.background]="activeSection === 'search' ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))' : 'transparent'"
+            [style.border-color]="activeSection === 'search' ? 'rgba(59, 130, 246, 0.3)' : 'transparent'"
+            [style.box-shadow]="activeSection === 'search' ? 'inset 0 1px 1px rgba(255, 255, 255, 0.1)' : 'none'"
+            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 16px; border: 1px solid transparent; color: #cbd5e1; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); outline: none;"
+          >
+            <ion-icon name="search-outline" [style.color]="activeSection === 'search' ? '#60a5fa' : '#64748b'"></ion-icon>
+            <div style="display: flex; align-items: center; gap: 4px;">
+              <span [style.color]="activeSection === 'search' ? '#f8fafc' : '#94a3b8'">SEARCH</span>
+              <span style="font-size: 0.55rem; font-weight: 800; background: rgba(59, 130, 246, 0.25); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.4); padding: 1px 4px; border-radius: 3px; line-height: 1; letter-spacing: 0.3px;">BETA</span>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; gap: 8px; align-items: center; flex-shrink: 0;">
+        <ion-button (click)="updateAllPrices(true)" color="primary" class="neon-btn" style="margin: 0; --padding-start: 12px; --padding-end: 12px; height: 36px; font-size: 0.8rem;">
+          <ion-icon slot="icon-only" name="refresh"></ion-icon>
+        </ion-button>
+      </div>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <!-- LOADER -->
-  <div *ngIf="caricamento" class="ion-text-center ion-padding" style="margin: 20px 0;">
+<ion-content [fullscreen]="true" style="--background: #0f172a;">
+  <!-- LOADING SPINNER -->
+  <div *ngIf="loading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px;">
     <ion-spinner name="crescent" color="primary"></ion-spinner>
-    <p style="color: #94a3b8; font-weight: 500; margin-top: 10px;">Sincronizzazione prezzi in corso...</p>
+    <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 10px; font-weight: 600;">Updating market prices...</p>
   </div>
 
-  <!-- BARRA CONTROLLI (VISTA & ORDINAMENTO) -->
-  <div *ngIf="prodotti.length > 0 && !caricamento" style="display: flex; justify-content: space-between; align-items: center; margin: 16px 12px; gap: 16px; flex-wrap: wrap;">
-    <div style="display: flex; gap: 12px; align-items: center;">
-      <!-- TOGGLE VISTA -->
-      <ion-segment [(ngModel)]="vista" (ionChange)="onVistaChange()" style="width: 90px; background: rgba(30, 41, 59, 0.3); border-radius: 10px; height: 38px;">
-        <ion-segment-button value="grid" layout="icon-only" style="--indicator-color: #8b5cf6; min-width: 45px; --min-width: 0; height: 38px;">
-          <ion-icon name="apps-outline" style="font-size: 16px;"></ion-icon>
+  <!-- CONTROL TOOLBAR (ONLY SHOWN FOR BUYING & SELLING SECTIONS) -->
+  <div *ngIf="!loading && activeSection !== 'search' && products.length > 0" class="control-row" style="margin: 12px; padding: 8px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);">
+    <!-- VIEW TOGGLE (GRID / TABLE) -->
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <!-- iOS Segment View Toggle -->
+      <ion-segment 
+        mode="ios" 
+        [(ngModel)]="viewMode" 
+        (ionChange)="onVistaChange()" 
+        style="background: rgba(15, 23, 42, 0.55); border-radius: 8px; width: 92px; height: 34px; --background: rgba(15, 23, 42, 0.55);"
+      >
+        <ion-segment-button value="grid" style="--color: #cbd5e1; --color-checked: #ffffff; --background-checked: #6366f1; height: 30px; min-width: 44px; margin: 0; padding: 0;">
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
+            <ion-icon name="apps-outline" style="font-size: 15px; margin: 0;"></ion-icon>
+          </div>
         </ion-segment-button>
-        <ion-segment-button value="table" layout="icon-only" style="--indicator-color: #8b5cf6; min-width: 45px; --min-width: 0; height: 38px;">
-          <ion-icon name="list-outline" style="font-size: 16px;"></ion-icon>
+        <ion-segment-button value="table" style="--color: #cbd5e1; --color-checked: #ffffff; --background-checked: #6366f1; height: 30px; min-width: 44px; margin: 0; padding: 0;">
+          <div style="display: flex; align-items: center; justify-content: center; height: 100%; width: 100%;">
+            <ion-icon name="list-outline" style="font-size: 15px; margin: 0;"></ion-icon>
+          </div>
         </ion-segment-button>
       </ion-segment>
 
-      <!-- TOGGLE COLONNE GRID (SOLO SE IN GRIGLIA) -->
-      <ion-segment 
-        *ngIf="vista === 'grid'" 
-        [(ngModel)]="colonneGrid" 
-        (ionChange)="onColonneGridChange()" 
-        style="width: 90px; background: rgba(30, 41, 59, 0.3); border-radius: 10px; height: 38px;"
-      >
-        <ion-segment-button [value]="3" layout="icon-only" style="--indicator-color: #8b5cf6; min-width: 45px; --min-width: 0; height: 38px;" title="Visualizzazione a 3 colonne">
-          <ion-icon name="grid-outline" style="font-size: 16px;"></ion-icon>
-        </ion-segment-button>
-        <ion-segment-button [value]="4" layout="icon-only" style="--indicator-color: #8b5cf6; min-width: 45px; --min-width: 0; height: 38px;" title="Visualizzazione a 4 colonne">
-          <ion-icon name="apps-outline" style="font-size: 16px;"></ion-icon>
-        </ion-segment-button>
-      </ion-segment>
+      <!-- COLUMN COUNT SELECTOR (GRID ONLY) -->
+      <div *ngIf="viewMode === 'grid'" style="display: flex; background: rgba(15, 23, 42, 0.55); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 2px; height: 34px; align-items: center; margin-left: 4px;">
+        <button 
+          (click)="gridColumns = 3; onColonneGridChange();" 
+          [style.background]="gridColumns === 3 ? '#6366f1' : 'transparent'"
+          [style.box-shadow]="gridColumns === 3 ? '0 2px 8px rgba(99, 102, 241, 0.4)' : 'none'"
+          [style.color]="gridColumns === 3 ? '#ffffff' : '#cbd5e1'"
+          style="width: 36px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: none; cursor: pointer; transition: all 0.25s ease; outline: none; padding: 0;"
+          title="3 Columns"
+        >
+          <div style="display: flex; gap: 2px; align-items: center; justify-content: center; height: 100%;">
+            <div style="width: 3.5px; height: 10px; border-radius: 1px; background: currentColor;"></div>
+            <div style="width: 3.5px; height: 10px; border-radius: 1px; background: currentColor;"></div>
+            <div style="width: 3.5px; height: 10px; border-radius: 1px; background: currentColor;"></div>
+          </div>
+        </button>
+        <button 
+          (click)="gridColumns = 4; onColonneGridChange();" 
+          [style.background]="gridColumns === 4 ? '#6366f1' : 'transparent'"
+          [style.box-shadow]="gridColumns === 4 ? '0 2px 8px rgba(99, 102, 241, 0.4)' : 'none'"
+          [style.color]="gridColumns === 4 ? '#ffffff' : '#cbd5e1'"
+          style="width: 36px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: none; cursor: pointer; transition: all 0.25s ease; outline: none; padding: 0;"
+          title="4 Columns"
+        >
+          <div style="display: flex; gap: 2px; align-items: center; justify-content: center; height: 100%;">
+            <div style="width: 3.5px; height: 10px; border-radius: 1px; background: currentColor;"></div>
+            <div style="width: 3.5px; height: 10px; border-radius: 1px; background: currentColor;"></div>
+            <div style="width: 3.5px; height: 10px; border-radius: 1px; background: currentColor;"></div>
+            <div style="width: 3.5px; height: 10px; border-radius: 1px; background: currentColor;"></div>
+          </div>
+        </button>
+      </div>
     </div>
 
-    <!-- ORDINAMENTO -->
-    <div style="display: flex; align-items: center; gap: 8px; background: rgba(30, 41, 59, 0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 0 12px; height: 38px;">
-      <span style="font-size: 0.75rem; color: #94a3b8; font-weight: 600;">Ordina per:</span>
+    <!-- SET & TYPE FILTERS -->
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <!-- SET FILTER -->
+      <div style="display: flex; align-items: center; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0 10px; height: 34px;">
+        <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-right: 6px; letter-spacing: 0.3px;">Set:</span>
+        <ion-select 
+          mode="ios"
+          [(ngModel)]="selectedExpansionFilter"
+          style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1; height: 28px; --padding-start: 4px; --padding-end: 4px; max-width: 130px;"
+        >
+          <ion-select-option value="all">All Sets</ion-select-option>
+          <ion-select-option *ngFor="let set of uniqueExpansions" [value]="set">{{ set }}</ion-select-option>
+        </ion-select>
+      </div>
+
+      <!-- TYPE FILTER -->
+      <div style="display: flex; align-items: center; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0 10px; height: 34px;">
+        <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-right: 6px; letter-spacing: 0.3px;">Type:</span>
+        <ion-select 
+          mode="ios"
+          [(ngModel)]="selectedTypeFilter"
+          style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1; height: 28px; --padding-start: 4px; --padding-end: 4px; max-width: 120px;"
+        >
+          <ion-select-option value="all">All Types</ion-select-option>
+          <ion-select-option *ngFor="let type of uniqueTypes" [value]="type">{{ type }}</ion-select-option>
+        </ion-select>
+      </div>
+    </div>
+
+    <!-- SORT OPTIONS SELECTOR -->
+    <div style="display: flex; align-items: center; background: rgba(15, 23, 42, 0.5); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 0 12px; height: 34px;">
+      <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-right: 6px; letter-spacing: 0.3px;">Sort by:</span>
       <ion-select 
-        interface="popover" 
-        [(ngModel)]="ordinamento" 
+        mode="ios"
+        [(ngModel)]="sortMode" 
         (ionChange)="onOrdinamentoChange()"
-        style="--placeholder-color: #f8fafc; font-size: 0.85rem; font-weight: 700; color: #f8fafc; --padding-start: 4px; --padding-end: 4px;"
+        style="font-size: 0.8rem; font-weight: 700; color: #cbd5e1; height: 28px; --padding-start: 4px; --padding-end: 4px;"
       >
-        <ion-select-option value="recente">Più recente</ion-select-option>
-        <ion-select-option value="nome">Nome (A-Z)</ion-select-option>
-        <ion-select-option value="prezzo-crescente">Valore: Crescente</ion-select-option>
-        <ion-select-option value="prezzo-decrescente">Valore: Decrescente</ion-select-option>
-        <ion-select-option value="variazione-peggiore">Miglior incremento (Guadagno)</ion-select-option>
-        <ion-select-option value="variazione-migliore">Maggior calo (Perdita)</ion-select-option>
+        <ion-select-option value="recent">Most Recent</ion-select-option>
+        <ion-select-option value="name">Name (A-Z)</ion-select-option>
+        <ion-select-option value="release-date">Release Date</ion-select-option>
+        <ion-select-option value="price-ascending">Price: Low to High</ion-select-option>
+        <ion-select-option value="price-descending">Price: High to Low</ion-select-option>
+        <ion-select-option value="variation-best">Gain: High to Low</ion-select-option>
+        <ion-select-option value="variation-worst">Loss: High to Low</ion-select-option>
       </ion-select>
     </div>
   </div>
 
-  <!-- AREA ACQUISTI (COMPRA) -->
-  <app-acquisto-sezione 
-    *ngIf="sezioneAttiva === 'acquisto' && !caricamento" 
-    [prodotti]="prodottiAcquisto" 
-    [vista]="vista"
-    [colonneGrid]="colonneGrid"
-    (onAdd)="aggiungiProdotto('compra', $event)"
-    (onRemove)="rimuoviProdotto($event)"
-  ></app-acquisto-sezione>
+  <!-- BUYING SECTION -->
+  <app-buying-section 
+    *ngIf="activeSection === 'buying' && !loading" 
+    [products]="productsBuying" 
+    [viewMode]="viewMode"
+    [gridColumns]="gridColumns"
+    (onAdd)="addManualProduct('buy', $event)"
+    (onRemove)="removeProduct($event)"
+    (onUpdate)="saveCache()"
+    (onEditFilters)="openEditFilters($event)"
+  ></app-buying-section>
 
-  <!-- AREA VENDITE (VENDI) -->
-  <app-vendita-sezione 
-    *ngIf="sezioneAttiva === 'vendita' && !caricamento" 
-    [prodotti]="prodottiVendita" 
-    [vista]="vista"
-    [colonneGrid]="colonneGrid"
-    (onAdd)="aggiungiProdotto('vendi', $event)"
-    (onRemove)="rimuoviProdotto($event)"
-  ></app-vendita-sezione>
+  <!-- SELLING SECTION -->
+  <app-selling-section 
+    *ngIf="activeSection === 'selling' && !loading" 
+    [products]="productsSelling" 
+    [viewMode]="viewMode"
+    [gridColumns]="gridColumns"
+    (onAdd)="addManualProduct('sell', $event)"
+    (onRemove)="removeProduct($event)"
+    (onEditFilters)="openEditFilters($event)"
+  ></app-selling-section>
+
+  <!-- SEARCH SECTION (NEW DEDICATED TAB VIEW) -->
+  <app-search-section 
+    *ngIf="activeSection === 'search' && !loading"
+    (onSelect)="handleCardSelected($event)"
+  ></app-search-section>
+
+  <!-- REUSABLE CONFIGURATION FILTERS MODAL -->
+  <app-filter-modal
+    [isOpen]="showFilterModal"
+    [product]="selectedProduct"
+    [foilFilter]="foilFilter"
+    [langFilter]="langFilter"
+    [condFilter]="condFilter"
+    [intentFilter]="intentFilter"
+    (onClose)="handleCloseFilters()"
+    (onSave)="handleSaveFilters($event)"
+  ></app-filter-modal>
 </ion-content>

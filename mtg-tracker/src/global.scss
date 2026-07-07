@@ -177,4 +177,92 @@
   box-shadow: 0 8px 24px rgba(139, 92, 246, 0.45);
 }
 
+/* iOS Premium Experience Styles */
+
+/* 1. Global macOS/iOS Thin Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border-radius: 10px !important;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Scrollbar inside Ionic's IonContent shadow DOM */
+ion-content::part(scroll) {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+ion-content::part(scroll)::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+ion-content::part(scroll)::-webkit-scrollbar-track {
+  background: transparent;
+}
+ion-content::part(scroll)::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+ion-content::part(scroll)::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* 2. iOS-like Elastic Transition for Buttons & Inputs */
+ion-button, input, ion-input, ion-select, ion-segment, .glass-card {
+  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 3. iOS Spring Animation for hover states */
+.glass-card {
+  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* 4. Table Row Smooth Hover */
+.table-row-hover {
+  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.table-row-hover:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* 5. Fade & Slide-in Animation for Cards/Lists */
+@keyframes iosSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+ion-grid ion-col, .glass-card, .table-row-hover {
+  animation: iosSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Stagger animation delays for a fluid feel */
+ion-grid ion-col:nth-child(1) { animation-delay: 0.05s; }
+ion-grid ion-col:nth-child(2) { animation-delay: 0.1s; }
+ion-grid ion-col:nth-child(3) { animation-delay: 0.15s; }
+ion-grid ion-col:nth-child(4) { animation-delay: 0.2s; }
+ion-grid ion-col:nth-child(5) { animation-delay: 0.25s; }
+ion-grid ion-col:nth-child(6) { animation-delay: 0.3s; }
+ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
+
+
 
