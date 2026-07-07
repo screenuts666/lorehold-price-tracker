@@ -262,6 +262,9 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     if (n.includes('commander') && n.includes('deck')) {
       return { nomeTipo: 'Commander Deck', standard: 45, ottimo: 38, caro: 55 };
     }
+    if (n.includes('draft night')) {
+      return { nomeTipo: 'Draft Night Kit', standard: 90, ottimo: 80, caro: 110 };
+    }
     if (n.includes('collector booster') || n.includes('booster pack') || n.includes('pack')) {
       return { nomeTipo: 'Single Pack', standard: 5, ottimo: 4, caro: 6.5 };
     }
