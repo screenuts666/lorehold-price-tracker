@@ -61,6 +61,7 @@ import {
 export class PriceTrackerPage implements OnInit, OnDestroy {
   urlAcquisto: string = '';
   urlVendita: string = '';
+  sezioneAttiva: 'acquisto' | 'vendita' = 'acquisto';
   prodotti: any[] = [];
   caricamento: boolean = false;
   vista: 'grid' | 'table' = 'grid';
@@ -86,6 +87,10 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     const savedOrdinamento = localStorage.getItem('mtg_tracker_ordinamento');
     if (savedOrdinamento) {
       this.ordinamento = savedOrdinamento;
+    }
+    const savedSezione = localStorage.getItem('mtg_tracker_sezione');
+    if (savedSezione === 'acquisto' || savedSezione === 'vendita') {
+      this.sezioneAttiva = savedSezione;
     }
 
     // All'avvio, recupera i dati cached dal localStorage
@@ -464,6 +469,13 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
   onOrdinamentoChange() {
     localStorage.setItem('mtg_tracker_ordinamento', this.ordinamento);
     setTimeout(() => this.renderizzaGrafici(), 150);
+  }
+
+  onSezioneChange() {
+    localStorage.setItem('mtg_tracker_sezione', this.sezioneAttiva);
+    if (this.vista === 'grid') {
+      setTimeout(() => this.renderizzaGrafici(), 150);
+    }
   }
 
   renderizzaGrafici() {
