@@ -38,7 +38,7 @@
   <div *ngIf="prodotti.length > 0 && !caricamento" style="display: flex; justify-content: space-between; align-items: center; margin: 16px 12px; gap: 16px; flex-wrap: wrap;">
     <div style="display: flex; gap: 12px; align-items: center;">
       <!-- TOGGLE VISTA -->
-      <ion-segment [(ngModel)]="vista" (ionChange)="onVistaChange()" style="width: auto; max-width: 150px; background: rgba(30, 41, 59, 0.3); border-radius: 10px;">
+      <ion-segment [(ngModel)]="vista" (ionChange)="onVistaChange()" style="width: auto; max-width: 100px; background: rgba(30, 41, 59, 0.3); border-radius: 10px; height: 38px;">
         <ion-segment-button value="grid" style="--indicator-color: #8b5cf6;">
           <ion-icon name="apps-outline" style="font-size: 16px;"></ion-icon>
         </ion-segment-button>
@@ -52,13 +52,13 @@
         *ngIf="vista === 'grid'" 
         [(ngModel)]="colonneGrid" 
         (ionChange)="onColonneGridChange()" 
-        style="width: auto; background: rgba(30, 41, 59, 0.3); border-radius: 10px;"
+        style="width: auto; max-width: 100px; background: rgba(30, 41, 59, 0.3); border-radius: 10px; height: 38px;"
       >
-        <ion-segment-button [value]="3" style="--indicator-color: #8b5cf6;">
-          <span style="font-weight: 700; font-size: 0.8rem; color: #f8fafc; padding: 4px 8px; display: block;">3 Col</span>
+        <ion-segment-button [value]="3" style="--indicator-color: #8b5cf6;" title="Visualizzazione a 3 colonne">
+          <ion-icon name="grid-outline" style="font-size: 16px;"></ion-icon>
         </ion-segment-button>
-        <ion-segment-button [value]="4" style="--indicator-color: #8b5cf6;">
-          <span style="font-weight: 700; font-size: 0.8rem; color: #f8fafc; padding: 4px 8px; display: block;">4 Col</span>
+        <ion-segment-button [value]="4" style="--indicator-color: #8b5cf6;" title="Visualizzazione a 4 colonne">
+          <ion-icon name="apps-outline" style="font-size: 16px;"></ion-icon>
         </ion-segment-button>
       </ion-segment>
     </div>

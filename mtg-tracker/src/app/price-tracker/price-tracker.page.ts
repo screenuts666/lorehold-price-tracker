@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { addIcons } from 'ionicons';
-import { refresh, appsOutline, listOutline, cartOutline, cashOutline } from 'ionicons/icons';
+import { refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline } from 'ionicons/icons';
 import {
   IonHeader,
   IonToolbar,
@@ -54,7 +54,7 @@ export class PriceTrackerPage implements OnInit {
   colonneGrid: number = 4;
 
   constructor(private http: HttpClient) {
-    addIcons({ refresh, appsOutline, listOutline, cartOutline, cashOutline });
+    addIcons({ refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline });
   }
 
   ngOnInit() {
@@ -208,8 +208,12 @@ export class PriceTrackerPage implements OnInit {
   }
 
   rimuoviProdotto(id: string) {
-    this.prodotti = this.prodotti.filter((p) => p.id !== id);
-    this.salvaCache();
+    const prodotto = this.prodotti.find((p) => p.id === id);
+    const nomeProdotto = prodotto ? prodotto.nome : 'questo prodotto';
+    if (confirm(`Sei sicuro di voler eliminare "${nomeProdotto}" dalla lista?`)) {
+      this.prodotti = this.prodotti.filter((p) => p.id !== id);
+      this.salvaCache();
+    }
   }
 
   salvaCache() {
