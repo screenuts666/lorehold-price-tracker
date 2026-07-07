@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Serve per [(ngModel)]
 import { HttpClient } from '@angular/common/http';
 import { addIcons } from 'ionicons';
-import { refresh, trash, image, openOutline, appsOutline, listOutline, analyticsOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline, archiveOutline, cardOutline } from 'ionicons/icons';
+import { refresh, trash, image, openOutline, appsOutline, listOutline, analyticsOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline, archiveOutline, cardOutline, cartOutline, cashOutline } from 'ionicons/icons';
 import { Chart } from 'chart.js/auto';
 import {
   IonHeader,
@@ -15,7 +15,6 @@ import {
   IonContent,
   IonCard,
   IonCardContent,
-  IonItem,
   IonInput,
   IonSpinner,
   IonGrid,
@@ -46,7 +45,6 @@ import {
     IonContent,
     IonCard,
     IonCardContent,
-    IonItem,
     IonInput,
     IonSpinner,
     IonGrid,
@@ -61,7 +59,8 @@ import {
   ],
 })
 export class PriceTrackerPage implements OnInit, OnDestroy {
-  nuovoUrl: string = '';
+  urlAcquisto: string = '';
+  urlVendita: string = '';
   prodotti: any[] = [];
   caricamento: boolean = false;
   vista: 'grid' | 'table' = 'grid';
@@ -74,7 +73,7 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     addIcons({ 
       refresh, trash, image, openOutline, appsOutline, listOutline,
       analyticsOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline,
-      archiveOutline, cardOutline
+      archiveOutline, cardOutline, cartOutline, cashOutline
     });
   }
 
@@ -93,6 +92,18 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     const cache = localStorage.getItem('mtg_tracker_data');
     if (cache) {
       this.prodotti = JSON.parse(cache);
+      
+      // Esegui la migrazione per i prodotti inseriti in precedenza
+      let migrato = false;
+      this.prodotti.forEach(p => {
+        if (!p.intento) {
+          // I sigillati (non Generici) vanno in acquisto, i singoli (Generici) in vendita
+          p.intento = this.rilevaTipoMtg(p.nome).nomeTipo === 'Generico' ? 'vendi' : 'compra';
+          migrato = true;
+        }
+      });
+      if (migrato) this.salvaCache();
+
       // Avvia l'aggiornamento automatico (cooldown attivo)
       this.aggiornaTuttiIPrezzi(false);
     } else {
@@ -101,7 +112,14 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
         next: (backup: any) => {
           if (Array.isArray(backup) && backup.length > 0) {
             this.prodotti = backup;
-            localStorage.setItem('mtg_tracker_data', JSON.stringify(this.prodotti));
+            
+            // Esegui la migrazione per i prodotti inseriti in precedenza
+            this.prodotti.forEach(p => {
+              if (!p.intento) {
+                p.intento = this.rilevaTipoMtg(p.nome).nomeTipo === 'Generico' ? 'vendi' : 'compra';
+              }
+            });
+            this.salvaCache();
             console.log('Dati ripristinati con successo dal backup su file!');
           }
           // Avvia l'aggiornamento automatico (cooldown attivo)
@@ -120,17 +138,16 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     this.chartInstances = {};
   }
 
-  aggiungiDaUrl() {
-    if (!this.nuovoUrl) return;
+  aggiungiProdotto(intento: 'compra' | 'vendi') {
+    const url = intento === 'compra' ? this.urlAcquisto : this.urlVendita;
+    if (!url) return;
 
     // Estrapola l'ID e il nome dall'URL usando una Regex
-    // Esempio URL: .../cards/123456-reality-fracture-play-booster-box
     const regex = /cards\/(\d+)-(.+)/;
-    const match = this.nuovoUrl.match(regex);
+    const match = url.match(regex);
 
     if (match) {
       const idEstratto = match[1];
-      // Pulisce il nome rimuovendo i trattini
       const nomeEstratto = match[2].replace(/-/g, ' ').toUpperCase();
 
       // Evita duplicati
@@ -140,12 +157,17 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
           nome: nomeEstratto,
           prezzoAttuale: null,
           storico: [], // Prepariamo l'array per lo storico futuro!
-          url: this.nuovoUrl, // Salva il link intero (nascosto)
-          dataInserimento: new Date().toLocaleDateString() // Data di inserimento
+          url: url, // Salva il link intero (nascosto)
+          dataInserimento: new Date().toLocaleDateString(), // Data di inserimento
+          intento: intento // Associa l'intento di acquisto o vendita
         });
 
         this.salvaCache();
-        this.nuovoUrl = ''; // Svuota la barra
+        if (intento === 'compra') {
+          this.urlAcquisto = '';
+        } else {
+          this.urlVendita = '';
+        }
         this.aggiornaTuttiIPrezzi(true); // Aggiorna subito il nuovo prodotto forzando la chiamata
       } else {
         alert('Prodotto già in lista!');
@@ -424,12 +446,12 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     }
   }
 
-  get prodottiSigillati(): any[] {
-    return this.prodottiOrdinati.filter(p => this.rilevaTipoMtg(p.nome).nomeTipo !== 'Generico');
+  get prodottiAcquisto(): any[] {
+    return this.prodottiOrdinati.filter(p => p.intento === 'compra');
   }
 
-  get carteSingole(): any[] {
-    return this.prodottiOrdinati.filter(p => this.rilevaTipoMtg(p.nome).nomeTipo === 'Generico');
+  get prodottiVendita(): any[] {
+    return this.prodottiOrdinati.filter(p => p.intento === 'vendi');
   }
 
   onVistaChange() {
