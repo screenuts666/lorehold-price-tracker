@@ -144,12 +144,13 @@ export class MarketAnalyzerService {
       : currentPrice;
 
     // ═══════════════════════════════════════════════════════════
-    // PRIORITÀ 1 — AVOID: tetti massimi assoluti per tipo
-    // Valutati PRIMA di qualsiasi analisi di trend o minimo storico
+    // HARD CAP — AVOID: soglie massime assolute per tipo prodotto
+    // Si attivano IMMEDIATAMENTE in base al solo prezzo, PRIMA
+    // di qualsiasi check su storico, trend o giorni dal lancio.
     // ═══════════════════════════════════════════════════════════
 
-    // Prerelease Pack > €30 dopo l'evento (>7 giorni)
-    if (productState.productType === ProductType.PRERELEASE && currentPrice > 30 && daysSinceLaunch > 7) {
+    // Prerelease Pack > €32 → fuori mercato, a prescindere da tutto
+    if (productState.productType === ProductType.PRERELEASE && currentPrice > 32) {
       return {
         severity: InsightSeverity.AVOID,
         badgeText: 'SOVRAPPREZZO EVENTO',
@@ -157,8 +158,8 @@ export class MarketAnalyzerService {
       };
     }
 
-    // Bundle/Fat Pack > €50 a distanza di mesi (>90 giorni)
-    if (productState.productType === ProductType.BUNDLE && currentPrice > 50 && daysSinceLaunch > 90) {
+    // Bundle/Fat Pack > €50 → fuori mercato, a prescindere da tutto
+    if (productState.productType === ProductType.BUNDLE && currentPrice > 50) {
       return {
         severity: InsightSeverity.AVOID,
         badgeText: 'SCORTE ESAURITE',
