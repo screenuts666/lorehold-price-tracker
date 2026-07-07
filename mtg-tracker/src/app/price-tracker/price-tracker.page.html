@@ -70,8 +70,8 @@
 
   <!-- CONTROL TOOLBAR (ONLY SHOWN FOR BUYING & SELLING SECTIONS) -->
   <div *ngIf="!loading && activeSection !== 'search' && products.length > 0" class="control-row" style="margin: 12px; padding: 8px 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; background: rgba(30, 41, 59, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);">
-    <!-- VIEW TOGGLE (GRID / TABLE) -->
-    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+    <!-- VIEW TOGGLE (GRID / TABLE) - HIDDEN ON MOBILE -->
+    <div class="hide-on-mobile" style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
       <!-- iOS Segment View Toggle -->
       <ion-segment 
         mode="ios" 
@@ -182,7 +182,7 @@
     [gridColumns]="gridColumns"
     (onAdd)="addManualProduct('buy', $event)"
     (onRemove)="removeProduct($event)"
-    (onUpdate)="saveCache()"
+    (onUpdate)="saveProduct($event)"
     (onEditFilters)="openEditFilters($event)"
   ></app-buying-section>
 
