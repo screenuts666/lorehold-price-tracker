@@ -101,21 +101,28 @@
           </div>
 
           <!-- ROW 4: CONSIGLIO ALGORITMO -->
+          <ng-container *ngIf="getSuggerimento(item) as sg">
           <div style="margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 10px; width: 100%;">
             <!-- BADGE PILL -->
             <div 
-              [style.border-color]="ottieniSuggerimento(item).colore"
-              [style.color]="ottieniSuggerimento(item).colore"
-              style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; border: 1px solid; background: rgba(15, 23, 42, 0.25); font-size: 0.7rem; font-weight: 800; text-transform: uppercase;"
+              [style.border-color]="sg.colore"
+              [style.color]="sg.colore"
+              [style.box-shadow]="severityToGlow(sg.severity)"
+              style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 6px; border: 1px solid; background: rgba(15, 23, 42, 0.35); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.4px;"
             >
-              <ion-icon [name]="ottieniSuggerimento(item).icona" style="font-size: 12px;"></ion-icon>
-              <span>{{ ottieniSuggerimento(item).stato }}</span>
+              <!-- STRONG_BUY: stella, altrimenti icona standard -->
+              <ion-icon 
+                [name]="sg.severity === InsightSeverity.STRONG_BUY ? 'star' : sg.icona" 
+                style="font-size: 13px;"
+              ></ion-icon>
+              <span>{{ sg.stato }}</span>
             </div>
             <!-- SPIEGAZIONE DEL CONSIGLIO (SOTTO IL BADGE, IN PARAGRAFO CHE WRAPPA) -->
             <p style="margin: 6px 0 0 0; font-size: 0.7rem; color: #94a3b8; line-height: 1.35; font-weight: 500;">
-              {{ ottieniSuggerimento(item).spiegazione }}
+              {{ sg.spiegazione }}
             </p>
           </div>
+          </ng-container>
         </ion-card>
       </ion-col>
     </ion-row>
@@ -181,15 +188,21 @@
             <ng-template #noTableVar><span style="color: #64748b; font-size: 0.85rem;">0.0%</span></ng-template>
           </td>
           <td style="padding: 12px 16px; text-align: center;">
+            <ng-container *ngIf="getSuggerimento(item) as sg">
             <div 
-              [style.border-color]="ottieniSuggerimento(item).colore"
-              [style.color]="ottieniSuggerimento(item).colore"
-              [title]="ottieniSuggerimento(item).spiegazione"
-              style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 6px; border: 1px solid; background: rgba(15, 23, 42, 0.25); font-size: 0.7rem; font-weight: 700; cursor: help;"
+              [style.border-color]="sg.colore"
+              [style.color]="sg.colore"
+              [style.box-shadow]="severityToGlow(sg.severity)"
+              [title]="sg.spiegazione"
+              style="display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 6px; border: 1px solid; background: rgba(15, 23, 42, 0.35); font-size: 0.7rem; font-weight: 700; cursor: help; letter-spacing: 0.3px;"
             >
-              <ion-icon [name]="ottieniSuggerimento(item).icona" style="font-size: 12px;"></ion-icon>
-              <span>{{ ottieniSuggerimento(item).stato }}</span>
+              <ion-icon 
+                [name]="sg.severity === InsightSeverity.STRONG_BUY ? 'star' : sg.icona" 
+                style="font-size: 12px;"
+              ></ion-icon>
+              <span>{{ sg.stato }}</span>
             </div>
+            </ng-container>
           </td>
           <td style="padding: 12px 16px; text-align: right;">
             <div style="display: flex; gap: 8px; justify-content: flex-end;">

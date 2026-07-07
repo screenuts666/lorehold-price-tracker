@@ -2,10 +2,10 @@ import { Component, Input, Output, EventEmitter, AfterViewInit, OnChanges, Simpl
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { trash, image, openOutline, cartOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline } from 'ionicons/icons';
+import { trash, image, openOutline, cartOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline, star } from 'ionicons/icons';
 import { Chart } from 'chart.js/auto';
 import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard } from '@ionic/angular/standalone';
-import { MarketAnalyzerService, ProductType, Product } from '../../services/market-analyzer.service';
+import { MarketAnalyzerService, ProductType, Product, InsightSeverity } from '../../services/market-analyzer.service';
 
 @Component({
   selector: 'app-acquisto-sezione',
@@ -33,11 +33,15 @@ export class AcquistoSezioneComponent implements AfterViewInit, OnChanges, OnDes
 
   urlAcquisto: string = '';
   private chartInstances: { [key: string]: Chart } = {};
+  // Espone l'enum al template Angular
+  readonly InsightSeverity = InsightSeverity;
+  // Cache per evitare di ricalcolare il suggerimento ad ogni change detection
+  private suggerimentoCache: Map<string, { stato: string; colore: string; spiegazione: string; icona: string; severity?: InsightSeverity }> = new Map();
 
   constructor(private marketAnalyzer: MarketAnalyzerService) {
     addIcons({ 
       trash, image, openOutline, cartOutline, trendingDownOutline, 
-      checkmarkCircleOutline, alertCircleOutline, timeOutline 
+      checkmarkCircleOutline, alertCircleOutline, timeOutline, star
     });
   }
 
@@ -47,6 +51,8 @@ export class AcquistoSezioneComponent implements AfterViewInit, OnChanges, OnDes
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['prodotti'] || changes['vista'] || changes['colonneGrid']) {
+      // Invalida la cache ogni volta che i prodotti cambiano
+      this.suggerimentoCache.clear();
       setTimeout(() => this.renderizzaGrafici(), 150);
     }
   }
@@ -121,8 +127,55 @@ export class AcquistoSezioneComponent implements AfterViewInit, OnChanges, OnDes
     return null;
   }
 
+  /** Wrapper memoizzato — usare SEMPRE questo nel template invece di ottieniSuggerimento */
+  getSuggerimento(item: any): { stato: string; colore: string; spiegazione: string; icona: string; severity?: InsightSeverity } {
+    const cacheKey = `${item.id}-${item.prezzoAttuale}`;
+    if (this.suggerimentoCache.has(cacheKey)) {
+      return this.suggerimentoCache.get(cacheKey)!;
+    }
+    const result = this.ottieniSuggerimento(item);
+    this.suggerimentoCache.set(cacheKey, result);
+    return result;
+  }
+
+  /** Restituisce il colore Ionic semantico (es. 'success') dalla severity */
+  severityToIonicColor(severity: InsightSeverity | undefined): string {
+    switch (severity) {
+      case InsightSeverity.STRONG_BUY: return 'success';
+      case InsightSeverity.BUY:        return 'primary';
+      case InsightSeverity.WAIT:       return 'warning';
+      case InsightSeverity.WARNING:    return 'danger';
+      case InsightSeverity.AVOID:      return 'danger';
+      default:                         return 'medium';
+    }
+  }
+
+  /** Restituisce il colore esadecimale corretto, distinguendo STRONG_BUY da BUY */
+  severityToHex(severity: InsightSeverity | undefined): string {
+    switch (severity) {
+      case InsightSeverity.STRONG_BUY: return '#059669'; // verde smeraldo scuro
+      case InsightSeverity.BUY:        return '#10b981'; // verde neon
+      case InsightSeverity.WAIT:       return '#f59e0b'; // giallo ambra
+      case InsightSeverity.WARNING:    return '#f97316'; // arancio
+      case InsightSeverity.AVOID:      return '#ef4444'; // rosso neon
+      default:                         return '#64748b'; // grigio slate
+    }
+  }
+
+  /** Restituisce il glow CSS box-shadow del badge */
+  severityToGlow(severity: InsightSeverity | undefined): string {
+    switch (severity) {
+      case InsightSeverity.STRONG_BUY: return '0 0 8px rgba(5, 150, 105, 0.5)';
+      case InsightSeverity.BUY:        return '0 0 6px rgba(16, 185, 129, 0.35)';
+      case InsightSeverity.WAIT:       return '0 0 6px rgba(245, 158, 11, 0.3)';
+      case InsightSeverity.WARNING:    return '0 0 6px rgba(249, 115, 22, 0.35)';
+      case InsightSeverity.AVOID:      return '0 0 8px rgba(239, 68, 68, 0.4)';
+      default:                         return 'none';
+    }
+  }
+
   // --- ALGORITMO DI ACQUISTO (BUY) ---
-  ottieniSuggerimento(item: any): { stato: string; colore: string; spiegazione: string; icona: string } {
+  ottieniSuggerimento(item: any): { stato: string; colore: string; spiegazione: string; icona: string; severity?: InsightSeverity } {
     const pType = this.mappaTipoMtgAlProductType(item.nome);
     
     if (pType !== null) {
@@ -145,29 +198,26 @@ export class AcquistoSezioneComponent implements AfterViewInit, OnChanges, OnDes
 
       const analysis = this.marketAnalyzer.analyzeMarket(product);
 
-      let colore = '#64748b';
-      let icona = 'analytics-outline';
-      let statoTesto = 'ATTENDI';
+      // Ottieni il dettaglio di severity dalla chiamata al servizio
+      const insight = this.marketAnalyzer.getInsightForProduct({
+        currentPrice: product.currentPrice,
+        baseLaunchPrice: product.baseLaunchPrice,
+        daysSinceLaunch: Math.ceil(Math.abs(new Date().getTime() - new Date(product.launchDate).getTime()) / (1000 * 60 * 60 * 24)),
+        historicalPrices: product.historicalPrices,
+        productType: product.productType
+      });
 
-      if (analysis.stato === 'BUY') {
-        colore = '#10b981';
-        icona = 'trending-down-outline';
-        statoTesto = 'COMPRA ORA';
-      } else if (analysis.stato === 'AVOID') {
-        colore = '#ef4444';
-        icona = 'alert-circle-outline';
-        statoTesto = 'EVITA';
-      } else {
-        colore = '#f59e0b';
-        icona = 'time-outline';
-        statoTesto = 'ATTENDI';
-      }
+      const colore = this.severityToHex(insight.severity);
+      const icona = (analysis.stato === 'BUY')
+        ? 'trending-down-outline'
+        : (analysis.stato === 'AVOID' ? 'alert-circle-outline' : 'time-outline');
 
       return {
-        stato: statoTesto,
+        stato: insight.badgeText || analysis.badgeText || 'ATTENDI',
         colore: colore,
-        spiegazione: analysis.messaggio,
-        icona: icona
+        spiegazione: insight.message || analysis.messaggio,
+        icona: icona,
+        severity: insight.severity
       };
     }
 
