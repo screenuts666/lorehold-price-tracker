@@ -79,6 +79,16 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    // Recupera le preferenze salvate dell'utente
+    const savedVista = localStorage.getItem('mtg_tracker_vista');
+    if (savedVista === 'grid' || savedVista === 'table') {
+      this.vista = savedVista;
+    }
+    const savedOrdinamento = localStorage.getItem('mtg_tracker_ordinamento');
+    if (savedOrdinamento) {
+      this.ordinamento = savedOrdinamento;
+    }
+
     // All'avvio, recupera i dati cached dal localStorage
     const cache = localStorage.getItem('mtg_tracker_data');
     if (cache) {
@@ -423,12 +433,14 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
   }
 
   onVistaChange() {
+    localStorage.setItem('mtg_tracker_vista', this.vista);
     if (this.vista === 'grid') {
       setTimeout(() => this.renderizzaGrafici(), 150);
     }
   }
 
   onOrdinamentoChange() {
+    localStorage.setItem('mtg_tracker_ordinamento', this.ordinamento);
     setTimeout(() => this.renderizzaGrafici(), 150);
   }
 
