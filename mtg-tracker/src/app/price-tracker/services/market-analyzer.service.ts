@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 export enum ProductType {
   PLAY_BOOSTER = 'PLAY_BOOSTER',
   BUNDLE = 'BUNDLE',
+  FAT_PACK = 'FAT_PACK',
   PRERELEASE = 'PRERELEASE',
   SECRET_LAIR = 'SECRET_LAIR',
   DRAFT_NIGHT = 'DRAFT_NIGHT'
@@ -25,6 +26,7 @@ export interface HistoricalPrice {
 export interface Product {
   currentPrice: number;
   launchDate: Date | string;
+  releaseDate?: Date | string;
   historicalPrices: HistoricalPrice[];
   baseLaunchPrice: number;
   productType: ProductType;
@@ -65,6 +67,16 @@ export const INSIGHT_MESSAGES = {
   DEFAULT_WAIT: "Prezzo stabile. Si raccomanda di attendere ulteriori oscillazioni di mercato.",
   DEFAULT_BUY: "Prezzo competitivo rispetto al lancio. Si consiglia l'acquisto.",
   DEFAULT_AVOID: "Prezzo elevato rispetto al lancio iniziale. Si consiglia di evitarne l'acquisto al momento."
+};
+
+// Costanti per l'analisi delle fasi di preordine (facilmente localizzabili)
+export const PREORDER_MESSAGES = {
+  PRODOTTO_RILASCIATO: "Il periodo di preordine è terminato. Applica le normali logiche di mercato post-lancio.",
+  TROPPO_PRESTO: "Preordini appena aperti. I prezzi sono gonfiati dall'hype iniziale e dalle allocazioni incerte. Attendi la guerra dei prezzi tra negozianti.",
+  PREORDINA_ORA: "Finestra d'oro pre-lancio! I negozianti stanno abbassando i prezzi per pagare i distributori. Compra ora prima che scatti la FOMO della release week.",
+  PREORDINA_ORA_TREND: "Finestra d'oro pre-lancio con prezzo in discesa confermata! I negozianti stanno tagliando i prezzi. Acquista adesso, il trend è a tuo favore.",
+  IN_OSSERVAZIONE: "Siamo nella finestra di svalutazione pre-lancio, ma il prezzo non ha ancora toccato il target ideale. Controlla quotidianamente.",
+  PICCO_PRE_LANCIO: "Le scorte economiche del preordine sono finite. Il prezzo si sta alzando per la FOMO dell'ultimo minuto. Se non hai preordinato, attendi ormai l'assestamento post-lancio."
 };
 
 @Injectable({
@@ -290,7 +302,142 @@ export class MarketAnalyzerService {
     if (!historicalPrices || historicalPrices.length < 2) return true;
     const sorted = [...historicalPrices].map(p => p.price);
     const len = sorted.length;
-    // Se l'ultimo prezzo rilevato è inferiore all'iniziale, confermiamo il calo post-lancio
     return sorted[len - 1] <= sorted[0];
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // ANALISI FASI PREORDINE (Pre-release market cycle)
+  // ═══════════════════════════════════════════════════════════════
+
+  /** Soglie di prezzo target per la Fase B (Sweet Spot) del preordine */
+  private readonly PREORDER_TARGETS: Record<string, number> = {
+    [ProductType.PLAY_BOOSTER]: 118,
+    [ProductType.FAT_PACK]:     42,
+    [ProductType.BUNDLE]:       42,
+    [ProductType.DRAFT_NIGHT]:  95,
+    [ProductType.PRERELEASE]:   26,
+    [ProductType.SECRET_LAIR]:  9999 // Secret Lair non ha preordine standard
+  };
+
+  /**
+   * Analizza la fase di preordine di un prodotto sigillato.
+   * Identifica il "Preorder Sweet Spot" (Fase B: 15-40gg prima della release)
+   * e restituisce un MarketInsight con badge e messaggio appropriati.
+   *
+   * @param product Il prodotto con releaseDate valorizzata.
+   * @returns MarketInsight con severity, badge e messaggio.
+   */
+  analyzePreorderPhase(product: Product): MarketInsight {
+    const now = new Date();
+    const releaseDate = new Date(product.releaseDate || product.launchDate);
+    const diffMs = releaseDate.getTime() - now.getTime();
+    const daysToRelease = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    // ───────────────────────────────────────────────────────────
+    // STEP 1: Prodotto già uscito (daysToRelease <= 0)
+    // ───────────────────────────────────────────────────────────
+    if (daysToRelease <= 0) {
+      return {
+        severity: InsightSeverity.NEUTRAL,
+        badgeText: 'PRODOTTO RILASCIATO',
+        message: PREORDER_MESSAGES.PRODOTTO_RILASCIATO
+      };
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // STEP 2: Fase A — Hype iniziale (daysToRelease > 40)
+    // ───────────────────────────────────────────────────────────
+    if (daysToRelease > 40) {
+      return {
+        severity: InsightSeverity.WARNING,
+        badgeText: 'TROPPO PRESTO',
+        message: PREORDER_MESSAGES.TROPPO_PRESTO
+      };
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // STEP 3: Fase B — Sweet Spot (15 <= daysToRelease <= 40)
+    // ───────────────────────────────────────────────────────────
+    if (daysToRelease >= 15 && daysToRelease <= 40) {
+      const targetPrice = this.PREORDER_TARGETS[product.productType] ?? 9999;
+
+      if (product.currentPrice <= targetPrice) {
+        // Prezzo sotto il target → verifica se il trend è discendente
+        const trendDown = this.checkRecentTrendDown(product.historicalPrices, 3);
+
+        return {
+          severity: InsightSeverity.STRONG_BUY,
+          badgeText: 'PREORDINA ORA',
+          message: trendDown
+            ? PREORDER_MESSAGES.PREORDINA_ORA_TREND
+            : PREORDER_MESSAGES.PREORDINA_ORA
+        };
+      }
+
+      // Prezzo non ancora al target
+      return {
+        severity: InsightSeverity.WAIT,
+        badgeText: 'IN OSSERVAZIONE',
+        message: PREORDER_MESSAGES.IN_OSSERVAZIONE
+      };
+    }
+
+    // ───────────────────────────────────────────────────────────
+    // STEP 4: Fase C — FOMO Spike (1 <= daysToRelease <= 14)
+    // ───────────────────────────────────────────────────────────
+    return {
+      severity: InsightSeverity.AVOID,
+      badgeText: 'PICCO PRE-LANCIO',
+      message: PREORDER_MESSAGES.PICCO_PRE_LANCIO
+    };
+  }
+
+  /**
+   * Verifica se il prezzo è in trend discendente rispetto a N giorni fa.
+   * Confronta la media degli ultimi `lookbackDays` punti storici con il prezzo
+   * più recente per determinare se la derivata è negativa.
+   *
+   * @param historicalPrices Lo storico prezzi.
+   * @param lookbackDays Numero di giorni indietro da confrontare (default: 3).
+   * @returns true se il prezzo recente è inferiore alla media del periodo precedente.
+   */
+  private checkRecentTrendDown(historicalPrices: HistoricalPrice[], lookbackDays: number = 3): boolean {
+    if (!historicalPrices || historicalPrices.length < 2) return false;
+
+    const now = new Date();
+    const cutoffMs = lookbackDays * 24 * 60 * 60 * 1000;
+
+    // Separa i prezzi in "recenti" (ultimi lookbackDays) e "precedenti"
+    const sorted = [...historicalPrices].map(p => ({
+      price: p.price,
+      time: new Date(p.date).getTime()
+    })).sort((a, b) => a.time - b.time); // ordine cronologico
+
+    const nowMs = now.getTime();
+    const recentPrices: number[] = [];
+    const olderPrices: number[] = [];
+
+    for (const point of sorted) {
+      if (nowMs - point.time <= cutoffMs) {
+        recentPrices.push(point.price);
+      } else {
+        olderPrices.push(point.price);
+      }
+    }
+
+    // Serve almeno un punto in ciascun gruppo
+    if (recentPrices.length === 0 || olderPrices.length === 0) {
+      // Fallback: confronta primo e ultimo punto se abbiamo ≥2 dati
+      if (sorted.length >= 2) {
+        return sorted[sorted.length - 1].price < sorted[sorted.length - 2].price;
+      }
+      return false;
+    }
+
+    const avgRecent = recentPrices.reduce((s, p) => s + p, 0) / recentPrices.length;
+    const avgOlder = olderPrices.reduce((s, p) => s + p, 0) / olderPrices.length;
+
+    // Derivata negativa: media recente < media precedente
+    return avgRecent < avgOlder;
   }
 }
