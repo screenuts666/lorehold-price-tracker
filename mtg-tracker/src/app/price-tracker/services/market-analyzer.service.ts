@@ -120,7 +120,13 @@ export class MarketAnalyzerService {
 
   /**
    * Genera un oggetto MarketInsight basato sullo stato del prodotto.
-   * @param productState Lo stato attuale del prodotto analizzato.
+   * Gerarchia di priorità:
+   *   1. AVOID (tetti massimi assoluti per tipo prodotto) — bloccano tutto il resto
+   *   2. FLASH CRASH (calo >15% in <48h)
+   *   3. MINIMO STORICO (guard: ≥3 punti, ≥3 giorni, prezzo realmente sceso)
+   *   4. Regole BUY per tipo prodotto + finestra temporale
+   *   5. BUON AFFARE generico dopo 90 giorni
+   *   6. Fallback → PREZZO STANDARD
    */
   getInsightForProduct(productState: ProductState): MarketInsight {
     const currentPrice = productState.currentPrice;
@@ -128,43 +134,21 @@ export class MarketAnalyzerService {
     const daysSinceLaunch = productState.daysSinceLaunch;
     const historicalPrices = productState.historicalPrices || [];
 
-    const scostamentoPercentuale = baseLaunchPrice > 0 
-      ? ((currentPrice - baseLaunchPrice) / baseLaunchPrice) * 100 
+    const scostamentoPercentuale = baseLaunchPrice > 0
+      ? ((currentPrice - baseLaunchPrice) / baseLaunchPrice) * 100
       : 0;
 
+    const prezzoIniziale = historicalPrices.length > 0 ? historicalPrices[0].price : currentPrice;
     const minHistoricalPrice = historicalPrices.length > 0
       ? Math.min(...historicalPrices.map(p => p.price))
       : currentPrice;
 
-    // --- REGOLA 1: STRONG BUY (FLASH CRASH) ---
-    if (this.checkFlashCrash(historicalPrices, currentPrice)) {
-      return {
-        severity: InsightSeverity.STRONG_BUY,
-        badgeText: 'FLASH CRASH',
-        message: INSIGHT_MESSAGES.FLASH_CRASH
-      };
-    }
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITÀ 1 — AVOID: tetti massimi assoluti per tipo
+    // Valutati PRIMA di qualsiasi analisi di trend o minimo storico
+    // ═══════════════════════════════════════════════════════════
 
-    // --- REGOLA 2: STRONG BUY (MINIMO STORICO) ---
-    // Consideriamo minimo storico se è effettivamente inferiore o uguale al minimo dello storico precedente
-    if (historicalPrices.length >= 2 && currentPrice <= minHistoricalPrice * 1.005) {
-      return {
-        severity: InsightSeverity.STRONG_BUY,
-        badgeText: 'MINIMO STORICO',
-        message: INSIGHT_MESSAGES.MINIMO_STORICO
-      };
-    }
-
-    // --- REGOLA 3: AVOID / WARNING (PICCO FOMO) ---
-    if (productState.productType === ProductType.SECRET_LAIR && daysSinceLaunch <= 7 && currentPrice > baseLaunchPrice * 1.15) {
-      return {
-        severity: InsightSeverity.AVOID,
-        badgeText: 'PICCO FOMO',
-        message: INSIGHT_MESSAGES.PICCO_FOMO
-      };
-    }
-
-    // --- REGOLA 4: AVOID / WARNING (SOVRAPPREZZO EVENTO) ---
+    // Prerelease Pack > €30 dopo l'evento (>7 giorni)
     if (productState.productType === ProductType.PRERELEASE && currentPrice > 30 && daysSinceLaunch > 7) {
       return {
         severity: InsightSeverity.AVOID,
@@ -173,7 +157,7 @@ export class MarketAnalyzerService {
       };
     }
 
-    // --- REGOLA 5: AVOID / WARNING (SCORTE ESAURITE) ---
+    // Bundle/Fat Pack > €50 a distanza di mesi (>90 giorni)
     if (productState.productType === ProductType.BUNDLE && currentPrice > 50 && daysSinceLaunch > 90) {
       return {
         severity: InsightSeverity.AVOID,
@@ -182,7 +166,52 @@ export class MarketAnalyzerService {
       };
     }
 
-    // --- REGOLA 6: BUY (FINESTRA IDEALE) ---
+    // Secret Lair: picco FOMO >15% nella prima settimana
+    if (productState.productType === ProductType.SECRET_LAIR
+        && daysSinceLaunch <= 7
+        && baseLaunchPrice > 0
+        && currentPrice > baseLaunchPrice * 1.15) {
+      return {
+        severity: InsightSeverity.AVOID,
+        badgeText: 'PICCO FOMO',
+        message: INSIGHT_MESSAGES.PICCO_FOMO
+      };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITÀ 2 — FLASH CRASH: calo >15% in <48h (richiede storico)
+    // ═══════════════════════════════════════════════════════════
+    if (historicalPrices.length >= 2 && this.checkFlashCrash(historicalPrices, currentPrice)) {
+      return {
+        severity: InsightSeverity.STRONG_BUY,
+        badgeText: 'FLASH CRASH',
+        message: INSIGHT_MESSAGES.FLASH_CRASH
+      };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITÀ 3 — MINIMO STORICO con guard clause rigorosa:
+    //   a) ≥3 punti storici registrati
+    //   b) ≥3 giorni di monitoraggio (non è il Giorno 0)
+    //   c) prezzo sceso ≥1% rispetto al primo rilevamento
+    //   d) prezzo attuale ≤ minimo storico (tolleranza 0.5%)
+    // ═══════════════════════════════════════════════════════════
+    const hasRichHistory = historicalPrices.length >= 3 && daysSinceLaunch >= 3;
+    const isActuallyLower = currentPrice < prezzoIniziale * 0.99;
+
+    if (hasRichHistory && isActuallyLower && currentPrice <= minHistoricalPrice * 1.005) {
+      return {
+        severity: InsightSeverity.STRONG_BUY,
+        badgeText: 'MINIMO STORICO',
+        message: INSIGHT_MESSAGES.MINIMO_STORICO
+      };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITÀ 4 — REGOLE BUY per tipo prodotto + finestra temporale
+    // ═══════════════════════════════════════════════════════════
+
+    // Bundle: finestra ideale sotto €42 entro i primi 2 mesi
     if (productState.productType === ProductType.BUNDLE && currentPrice <= 42 && daysSinceLaunch <= 60) {
       return {
         severity: InsightSeverity.BUY,
@@ -191,8 +220,22 @@ export class MarketAnalyzerService {
       };
     }
 
-    // --- REGOLA 7: BUY (BUON AFFARE) ---
-    if (daysSinceLaunch > 90 && scostamentoPercentuale <= -10 && scostamentoPercentuale >= -15) {
+    // Play Booster: race-to-the-bottom nei giorni 30–60 con trend in calo
+    if (productState.productType === ProductType.PLAY_BOOSTER
+        && daysSinceLaunch >= 30
+        && daysSinceLaunch <= 60
+        && this.checkPlayBoosterDecline(historicalPrices)) {
+      return {
+        severity: InsightSeverity.WAIT,
+        badgeText: 'IN CALO (ATTENDI)',
+        message: INSIGHT_MESSAGES.IN_CALO
+      };
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // PRIORITÀ 5 — BUON AFFARE generico: -10% dal lancio dopo 90gg
+    // ═══════════════════════════════════════════════════════════
+    if (daysSinceLaunch > 90 && scostamentoPercentuale <= -10) {
       return {
         severity: InsightSeverity.BUY,
         badgeText: 'BUON AFFARE',
@@ -200,47 +243,14 @@ export class MarketAnalyzerService {
       };
     }
 
-    // --- REGOLA 8: WAIT (IN CALO (ATTENDI)) ---
-    if (productState.productType === ProductType.PLAY_BOOSTER && daysSinceLaunch >= 30 && daysSinceLaunch <= 60) {
-      if (this.checkPlayBoosterDecline(historicalPrices)) {
-        return {
-          severity: InsightSeverity.WAIT,
-          badgeText: 'IN CALO (ATTENDI)',
-          message: INSIGHT_MESSAGES.IN_CALO
-        };
-      }
-    }
-
-    // --- REGOLA 9: WAIT (PREZZO STANDARD) ---
-    if (daysSinceLaunch <= 14 && currentPrice >= baseLaunchPrice * 0.95 && currentPrice <= baseLaunchPrice * 1.05) {
-      return {
-        severity: InsightSeverity.WAIT,
-        badgeText: 'PREZZO STANDARD',
-        message: INSIGHT_MESSAGES.PREZZO_STANDARD
-      };
-    }
-
-    // --- FALLBACK PREDEFINITI ---
-    if (scostamentoPercentuale <= -10) {
-      return {
-        severity: InsightSeverity.BUY,
-        badgeText: 'BUON PREZZO',
-        message: INSIGHT_MESSAGES.DEFAULT_BUY
-      };
-    }
-
-    if (scostamentoPercentuale >= 15) {
-      return {
-        severity: InsightSeverity.AVOID,
-        badgeText: 'SOVRAPPREZZO',
-        message: INSIGHT_MESSAGES.DEFAULT_AVOID
-      };
-    }
-
+    // ═══════════════════════════════════════════════════════════
+    // FALLBACK SICURO — storico piatto, prodotto appena inserito,
+    // nessuna regola soddisfatta → PREZZO STANDARD (WAIT)
+    // ═══════════════════════════════════════════════════════════
     return {
       severity: InsightSeverity.WAIT,
-      badgeText: 'ATTENDI',
-      message: INSIGHT_MESSAGES.DEFAULT_WAIT
+      badgeText: 'PREZZO STANDARD',
+      message: INSIGHT_MESSAGES.PREZZO_STANDARD
     };
   }
 
