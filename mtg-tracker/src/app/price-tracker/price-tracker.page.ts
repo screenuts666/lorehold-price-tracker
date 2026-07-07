@@ -14,7 +14,8 @@ import {
   IonSegment,
   IonSegmentButton,
   IonSelect,
-  IonSelectOption
+  IonSelectOption,
+  ToastController
 } from '@ionic/angular/standalone';
 import { BuyingSectionComponent } from './components/buying-section/buying-section.component';
 import { SellingSectionComponent } from './components/selling-section/selling-section.component';
@@ -67,7 +68,7 @@ export class PriceTrackerPage implements OnInit {
   selectedExpansionFilter: string = 'all';
   selectedTypeFilter: string = 'all';
 
-  constructor(private http: HttpClient, private firestore: Firestore) {
+  constructor(private http: HttpClient, private firestore: Firestore, private toastController: ToastController) {
     addIcons({ 
       refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline,
       searchOutline, closeOutline, settingsOutline, optionsOutline, funnelOutline, sparklesOutline 
@@ -330,7 +331,17 @@ export class PriceTrackerPage implements OnInit {
                 resolve();
               });
           },
-          error: () => resolve(),
+          error: async (err) => {
+            console.error('Error fetching price from API:', err);
+            const toast = await this.toastController.create({
+              message: `Impossibile raggiungere il backend per aggiornare ID ${product.id}. L'emulatore è acceso?`,
+              duration: 3000,
+              color: 'danger',
+              position: 'top'
+            });
+            await toast.present();
+            resolve();
+          },
         });
     });
   }

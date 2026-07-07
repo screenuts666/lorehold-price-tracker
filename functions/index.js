@@ -113,7 +113,7 @@ app.get("/map-cardtrader", async (req, res) => {
       id: matchedBp.id,
       name: matchedBp.name,
       url: cardTraderUrl,
-      image: matchedBp.image?.url ? (matchedBp.image.url.startsWith("http") ? matchedBp.image.url : `https://api.cardtrader.com${matchedBp.image.url}`) : null
+      image: matchedBp.image?.url ? (matchedBp.image.url.startsWith("http") ? matchedBp.image.url : `https://www.cardtrader.com${matchedBp.image.url}`) : null
     });
   } catch (error) {
     console.error("Errore mappatura CardTrader:", error.message);
@@ -152,7 +152,7 @@ app.get("/prezzo/:id", async (req, res) => {
         if (bpData.image) {
           const imgPath = bpData.image.preview?.url || bpData.image.url;
           if (imgPath) {
-            immagineUrl = imgPath.startsWith("http") ? imgPath : `https://api.cardtrader.com${imgPath}`;
+            immagineUrl = imgPath.startsWith("http") ? imgPath : `https://www.cardtrader.com${imgPath}`;
           }
         }
         if (bpData.expansion_id) {
@@ -269,6 +269,64 @@ app.get("/prezzo/:id", async (req, res) => {
   }
 });
 
+// 4. Recupero grafico storico (Scraping HTML CardTrader)
+app.get("/ct-history/:id", async (req, res) => {
+  const idProdotto = req.params.id;
+  try {
+    // Il formato dell'URL richiede di solito l'ID seguito dallo slug, ma se passiamo solo l'ID 
+    // a volte CardTrader reindirizza o comunque funziona. Per sicurezza, l'ID esatto o url parziale.
+    // L'utente passerà l'URL o l'ID. E.g. 389300
+    
+    // Per bypassare i blocchi Cloudflare, simuliamo Googlebot o un browser standard.
+    const url = `https://www.cardtrader.com/it/cards/${idProdotto}`;
+    console.log("Scraping history da:", url);
+    
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+        "Accept-Language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Cache-Control": "max-age=0",
+        "Sec-Ch-Ua": "\"Not.A/Brand\";v=\"8\", \"Chromium\";v=\"114\", \"Google Chrome\";v=\"114\"",
+        "Sec-Ch-Ua-Mobile": "?0",
+        "Sec-Ch-Ua-Platform": "\"Windows\"",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Upgrade-Insecure-Requests": "1"
+      }
+    });
+    
+    const html = await response.text();
+    
+    if (!response.ok) {
+       console.log("Cloudflare o errore! Status:", response.status);
+       return res.status(response.status).send(html);
+    }
+    
+    // Cerchiamo il JSON della chart usando RegEx
+    const regex = /&quot;prices_for_graph&quot;:{.*?&quot;ct_market&quot;:(\[\[.*?\]\])/s;
+    const match = html.match(regex);
+    
+    if (match && match[1]) {
+      let dataStr = match[1].replace(/&quot;/g, '"');
+      try {
+        const ctMarket = JSON.parse(dataStr);
+        return res.json({ history: ctMarket });
+      } catch (e) {
+        return res.status(500).json({ error: "Errore parsing JSON" });
+      }
+    }
+    
+    return res.status(404).json({ error: "Grafico non trovato nell'HTML" });
+    
+  } catch (err) {
+    console.error("Errore nello scraping del grafico:", err.message);
+    return res.status(500).json({ error: "Errore interno scraping" });
+  }
+});
+
 // Esporta l'app Express come Cloud Function
 exports.api = onRequest({ 
   cors: true, 
@@ -331,10 +389,11 @@ exports.updatePricesScheduler = onSchedule({
           if (blueprintResponse && blueprintResponse.ok) {
             const bpData = await blueprintResponse.json();
             updateData.nome = bpData.name || bpData.translated_name;
+
             if (bpData.image) {
               const imgPath = bpData.image.preview?.url || bpData.image.url;
               if (imgPath) {
-                updateData.immagine = imgPath.startsWith("http") ? imgPath : `https://api.cardtrader.com${imgPath}`;
+                updateData.immagine = imgPath.startsWith("http") ? imgPath : `https://www.cardtrader.com${imgPath}`;
               }
             }
             if (bpData.expansion_id && expansionsCache) {

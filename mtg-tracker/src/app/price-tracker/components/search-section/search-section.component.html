@@ -34,7 +34,7 @@
   <div *ngIf="!searching && searchResults.length > 0" style="display: flex; flex-direction: column; gap: 10px;">
     <div *ngFor="let card of searchResults" (click)="selectPrint(card)" class="table-row-hover" style="display: flex; gap: 16px; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); background: rgba(30, 41, 59, 0.25); cursor: pointer; align-items: center; transition: all 0.25s;">
       <!-- IMAGE PREVIEW -->
-      <img *ngIf="card.image" [src]="card.image" style="width: 44px; height: 60px; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);" />
+      <img *ngIf="card.image" [src]="card.image" referrerpolicy="no-referrer" style="width: 44px; height: 60px; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);" />
       <div *ngIf="!card.image" style="width: 44px; height: 60px; background: rgba(0,0,0,0.15); border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 1px dashed rgba(255,255,255,0.08);">
         <ion-icon name="image" style="color: #475569; font-size: 16px;"></ion-icon>
       </div>

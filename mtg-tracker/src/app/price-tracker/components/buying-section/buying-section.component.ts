@@ -269,56 +269,120 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
       }
 
       const history = item.storico || [];
-      if (history.length === 0) return;
+      if (history.length === 0 && (!item.ctHistory || item.ctHistory.length === 0)) return;
 
-      const labels = history.map((h: any) => h.data);
-      const data = history.map((h: any) => h.prezzo);
-
+      let labels: string[] = [];
+      const datasets: any[] = [];
       const ctx = canvas.getContext('2d');
       let gradient = null;
+      let gradientBlue = null;
+
       if (ctx) {
         gradient = ctx.createLinearGradient(0, 0, 0, 90);
         gradient.addColorStop(0, 'rgba(139, 92, 246, 0.15)');
         gradient.addColorStop(1, 'rgba(139, 92, 246, 0.00)');
+        
+        gradientBlue = ctx.createLinearGradient(0, 0, 0, 90);
+        gradientBlue.addColorStop(0, 'rgba(56, 189, 248, 0.15)');
+        gradientBlue.addColorStop(1, 'rgba(56, 189, 248, 0.00)');
       }
 
-      const datasets: any[] = [{
-        label: 'Selected Price',
-        data: data,
-        borderColor: '#a78bfa',
-        borderWidth: 2.5,
-        pointRadius: data.length === 1 ? 3 : 0,
-        pointHoverRadius: 5,
-        fill: true,
-        backgroundColor: gradient || 'rgba(139, 92, 246, 0.1)',
-        tension: 0.3
-      }];
+      // If we have CardTrader full history, use that as the primary X-axis and dataset
+      if (item.ctHistory && item.ctHistory.length > 0) {
+        labels = item.ctHistory.map((h: any) => {
+          const d = new Date(h.t);
+          return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
+        });
+        
+        datasets.push({
+          label: 'CT Market',
+          data: item.ctHistory.map((h: any) => h.p),
+          borderColor: '#38bdf8',
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 4,
+          fill: true,
+          backgroundColor: gradientBlue || 'rgba(56, 189, 248, 0.1)',
+          tension: 0.3
+        });
+      } else {
+        // Fallback to our limited cron history
+        labels = history.map((h: any) => h.data);
+      }
+
+      // Always show our own "Selected Price" history if it has data
+      if (history.length > 0) {
+        // If CT history is present, we need to align the data points to the end of the array
+        let data = history.map((h: any) => h.prezzo);
+        if (item.ctHistory && item.ctHistory.length > 0) {
+           const paddedData = new Array(labels.length).fill(null);
+           // Put our data at the very end (assuming our history is the most recent)
+           for (let i = 0; i < data.length; i++) {
+             if (labels.length - data.length + i >= 0) {
+               paddedData[labels.length - data.length + i] = data[i];
+             }
+           }
+           data = paddedData;
+        }
+
+        datasets.push({
+          label: 'Selected Price',
+          data: data,
+          borderColor: '#a78bfa',
+          borderWidth: 2.5,
+          pointRadius: history.length === 1 ? 3 : 0,
+          pointHoverRadius: 5,
+          fill: !item.ctHistory || item.ctHistory.length === 0,
+          backgroundColor: gradient || 'rgba(139, 92, 246, 0.1)',
+          tension: 0.3
+        });
+      }
 
       // English history comparisons
-      const enData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.en : null);
+      let enData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.en : null);
       if (enData.some((v: any) => v !== null && v !== undefined)) {
+        if (item.ctHistory && item.ctHistory.length > 0) {
+           const paddedData = new Array(labels.length).fill(null);
+           for (let i = 0; i < enData.length; i++) {
+             if (labels.length - enData.length + i >= 0) {
+               paddedData[labels.length - enData.length + i] = enData[i];
+             }
+           }
+           enData = paddedData;
+        }
         datasets.push({
           label: 'EN Price',
           data: enData,
           borderColor: '#60a5fa',
           borderWidth: 1.5,
           borderDash: [3, 3],
-          pointRadius: 0,
+          pointRadius: enData.filter((v: any) => v !== null).length === 1 ? 3 : 0,
+          pointHoverRadius: 5,
           fill: false,
           tension: 0.3
         });
       }
 
       // Italian history comparisons
-      const itData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.it : null);
+      let itData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.it : null);
       if (itData.some((v: any) => v !== null && v !== undefined)) {
+        if (item.ctHistory && item.ctHistory.length > 0) {
+           const paddedData = new Array(labels.length).fill(null);
+           for (let i = 0; i < itData.length; i++) {
+             if (labels.length - itData.length + i >= 0) {
+               paddedData[labels.length - itData.length + i] = itData[i];
+             }
+           }
+           itData = paddedData;
+        }
         datasets.push({
           label: 'IT Price',
           data: itData,
           borderColor: '#f59e0b',
           borderWidth: 1.5,
           borderDash: [3, 3],
-          pointRadius: 0,
+          pointRadius: itData.filter((v: any) => v !== null).length === 1 ? 3 : 0,
+          pointHoverRadius: 5,
           fill: false,
           tension: 0.3
         });
@@ -346,7 +410,17 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
             } 
           },
           scales: {
-            x: { display: false },
+            x: { 
+              display: true,
+              grid: { color: 'rgba(255, 255, 255, 0.03)' },
+              ticks: {
+                color: '#64748b',
+                font: { size: 9 },
+                maxRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 6
+              }
+            },
             y: {
               grid: { color: 'rgba(255, 255, 255, 0.03)' },
               ticks: {

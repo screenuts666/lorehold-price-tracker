@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://127.0.0.1:5001/lorehold-price-tracker/us-central1/api',
+  apiBaseUrl: 'https://us-central1-lorehold-price-tracker.cloudfunctions.net/api',
   firebaseConfig: {
     apiKey: "AIzaSyCDTGB0c3xCcz1pc2kabmQmqeqQQlYjydU",
     authDomain: "lorehold-price-tracker.firebaseapp.com",

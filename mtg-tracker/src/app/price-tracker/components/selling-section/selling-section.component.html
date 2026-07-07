@@ -75,14 +75,16 @@
               <ng-container *ngIf="item.immagine; else noImage">
                 <img 
                   *ngIf="detectMtgType(item.nome).nameType === 'Generico'; else sealedBox"
-                  [src]="item.immagine" 
+                  [src]="item.immagine"
+                  referrerpolicy="no-referrer"
                   class="product-single-card"
                   style="width: 80px; height: 112px; object-fit: contain; border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); transition: transform 0.3s ease;"
                 />
                 <ng-template #sealedBox>
                   <div class="product-large-img-container" style="width: 90px; height: 90px; border-radius: 8px; overflow: hidden; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
                     <img 
-                      [src]="item.immagine" 
+                      [src]="item.immagine"
+                      referrerpolicy="no-referrer"
                       style="max-width: 90%; max-height: 90%; object-fit: contain; mix-blend-mode: multiply;"
                     />
                   </div>
@@ -113,10 +115,16 @@
                   </ion-button>
                 </div>
               </div>
-              <!-- EXPANSION SET BADGE -->
-              <span *ngIf="item.expansion" style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); display: inline-block; margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; width: fit-content; text-transform: uppercase; letter-spacing: 0.3px;">
-                {{ item.expansion }}
-              </span>
+
+              <!-- BADGES ROW: SET & TYPE -->
+              <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 3px;">
+                <span *ngIf="item.expansion" style="font-size: 0.65rem; color: #94a3b8; font-weight: 700; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.06); text-transform: uppercase; letter-spacing: 0.3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 130px;">
+                  {{ item.expansion }}
+                </span>
+                <span *ngIf="detectMtgType(item.nome).nameType !== 'Generico'" style="font-size: 0.65rem; color: #60a5fa; font-weight: 800; background: rgba(59, 130, 246, 0.1); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(59, 130, 246, 0.2); text-transform: uppercase; letter-spacing: 0.3px;">
+                  📦 {{ detectMtgType(item.nome).nameType }}
+                </span>
+              </div>
 
               <h3 style="font-size: 0.95rem; font-weight: 700; color: #f8fafc; margin: 4px 0 6px 0; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.5em;">
                 {{ item.nome }}
@@ -225,12 +233,13 @@
             <ng-container *ngIf="item.immagine; else noTableImage">
               <img 
                 *ngIf="detectMtgType(item.nome).nameType === 'Generico'; else tableSealedBox"
-                [src]="item.immagine" 
+                [src]="item.immagine"
+                referrerpolicy="no-referrer"
                 style="width: 36px; height: 50px; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);"
               />
               <ng-template #tableSealedBox>
                 <div class="product-thumbnail-container" style="width: 50px; height: 50px; padding: 2px; border-radius: 6px;">
-                  <img [src]="item.immagine" class="product-thumbnail-img" />
+                  <img [src]="item.immagine" referrerpolicy="no-referrer" class="product-thumbnail-img" />
                 </div>
               </ng-template>
             </ng-container>
