@@ -32,6 +32,14 @@ export class SellingSectionComponent implements AfterViewInit, OnChanges, OnDest
   @Output() onRemove = new EventEmitter<string>();
   @Output() onEditFilters = new EventEmitter<any>();
 
+  expandedCardId: string | null = null;
+
+  toggleExpand(id: string, event: Event) {
+    if (window.innerWidth < 576) {
+      this.expandedCardId = this.expandedCardId === id ? null : id;
+    }
+  }
+
   urlInput: string = '';
   totalCards: number = 0;
   totalInitialValue: number = 0;

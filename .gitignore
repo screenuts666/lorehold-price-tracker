@@ -24,3 +24,9 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
+
+# Firebase
+.firebase/
+functions/node_modules/
+functions/.env
+functions/service-account.json

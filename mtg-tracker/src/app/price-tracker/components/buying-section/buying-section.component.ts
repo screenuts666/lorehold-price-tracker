@@ -31,8 +31,16 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
   
   @Output() onAdd = new EventEmitter<{url: string, releaseDate: string}>();
   @Output() onRemove = new EventEmitter<string>();
-  @Output() onUpdate = new EventEmitter<void>();
+  @Output() onUpdate = new EventEmitter<any>();
   @Output() onEditFilters = new EventEmitter<any>();
+
+  expandedCardId: string | null = null;
+
+  toggleExpand(id: string, event: Event) {
+    if (window.innerWidth < 576) {
+      this.expandedCardId = this.expandedCardId === id ? null : id;
+    }
+  }
 
   urlInput: string = '';
   releaseDateInput: string = '';
@@ -85,7 +93,7 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
 
   updateReleaseDate(item: any, date: string) {
     item.releaseDate = date || undefined;
-    this.onUpdate.emit();
+    this.onUpdate.emit(item);
     this.suggestionCache.delete(item.id);
   }
 
