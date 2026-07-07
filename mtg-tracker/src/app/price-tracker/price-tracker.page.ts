@@ -393,8 +393,8 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     const iniz = item.storico[0].prezzo;
     const att = item.prezzoAttuale;
     if (!iniz || !att) return '#94a3b8';
-    // Per chi compra, un calo di prezzo è positivo (verde), un aumento è negativo (rosso)
-    return att < item.storico[0].prezzo ? '#10b981' : '#ef4444';
+    // Per chi vende, un incremento di valore è positivo (verde), un calo è negativo (rosso)
+    return att >= iniz ? '#10b981' : '#ef4444';
   }
 
   calcolaVariazioneValore(item: any): number {

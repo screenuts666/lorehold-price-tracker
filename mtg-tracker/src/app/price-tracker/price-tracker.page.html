@@ -58,10 +58,10 @@
       >
         <ion-select-option value="recente">Più recente</ion-select-option>
         <ion-select-option value="nome">Nome (A-Z)</ion-select-option>
-        <ion-select-option value="prezzo-crescente">Prezzo: Crescente</ion-select-option>
-        <ion-select-option value="prezzo-decrescente">Prezzo: Decrescente</ion-select-option>
-        <ion-select-option value="variazione-migliore">Miglior risparmio</ion-select-option>
-        <ion-select-option value="variazione-peggiore">Maggior incremento</ion-select-option>
+        <ion-select-option value="prezzo-crescente">Valore: Crescente</ion-select-option>
+        <ion-select-option value="prezzo-decrescente">Valore: Decrescente</ion-select-option>
+        <ion-select-option value="variazione-peggiore">Miglior incremento (Guadagno)</ion-select-option>
+        <ion-select-option value="variazione-migliore">Maggior calo (Perdita)</ion-select-option>
       </ion-select>
     </div>
   </div>
@@ -200,7 +200,7 @@
       <ion-card-content style="padding-top: 4px;">
         <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px;">
           <div>
-            <span style="font-size: 0.75rem; color: #94a3b8; display: block; font-weight: 500;">Prezzo Minimo</span>
+            <span style="font-size: 0.75rem; color: #94a3b8; display: block; font-weight: 500;">Valore di Mercato</span>
             <div style="display: flex; align-items: baseline; gap: 8px;">
               <span style="font-size: 1.8rem; font-weight: 800; color: var(--ion-color-success);">
                 {{ item.prezzoAttuale ? ('€' + (item.prezzoAttuale | number:'1.2-2')) : 'N/D' }}
@@ -262,10 +262,10 @@
           <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(15, 23, 42, 0.3);">
             <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Carta</th>
             <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Dettagli</th>
-            <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Prezzo Iniziale</th>
-            <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Prezzo Attuale</th>
+            <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Valore Iniziale</th>
+            <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Valore Attuale</th>
             <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Variazione</th>
-            <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Consiglio</th>
+            <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Consiglio Vendita</th>
             <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Azioni</th>
           </tr>
         </thead>
