@@ -300,31 +300,31 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
     const max = prezzi.length > 0 ? Math.max(...prezzi) : prezzoAttuale;
     const media = prezzi.length > 0 ? prezzi.reduce((a: number, b: number) => a + b, 0) / prezzi.length : prezzoAttuale;
 
-    // --- ALGORITMO BASATO SUL TIPO DI PRODOTTO MTG ---
+    // --- ALGORITMO DI VENDITA BASATO SUL TIPO DI PRODOTTO MTG ---
     if (tipo.standard > 0) {
-      // Caso 1: Prezzo eccezionale rispetto al mercato MTG standard
-      if (prezzoAttuale <= tipo.ottimo) {
-        const risparmioMercato = (((tipo.standard - prezzoAttuale) / tipo.standard) * 100).toFixed(0);
-        return {
-          stato: '🔥 PREZZO SHOCK',
-          colore: '#10b981', // Verde smeraldo neon
-          spiegazione: `Prezzo eccezionale per un ${tipo.nomeTipo}! Risparmi il ${risparmioMercato}% rispetto al prezzo medio di mercato (€${tipo.standard}).`,
-          icona: 'trending-down-outline'
-        };
-      }
-      // Caso 2: Prezzo caro rispetto al mercato MTG standard
+      // Se il prezzo è molto alto rispetto al mercato standard -> Ottimo momento per vendere
       if (prezzoAttuale >= tipo.caro) {
         const rincaroMercato = (((prezzoAttuale - tipo.standard) / tipo.standard) * 100).toFixed(0);
         return {
-          stato: '🔴 EVITA',
+          stato: '🔥 VENDI ORA',
+          colore: '#10b981', // Verde smeraldo neon
+          spiegazione: `Valore eccellente per un ${tipo.nomeTipo}! Costa il ${rincaroMercato}% in più rispetto al prezzo standard di lancio (€${tipo.standard}). Massimizza il profitto!`,
+          icona: 'trending-up-outline'
+        };
+      }
+      // Se il prezzo è molto basso rispetto al mercato standard -> Evita di vendere ora, aspetta
+      if (prezzoAttuale <= tipo.ottimo) {
+        const risparmioMercato = (((tipo.standard - prezzoAttuale) / tipo.standard) * 100).toFixed(0);
+        return {
+          stato: '🔴 TIENI (HOLD)',
           colore: '#ef4444', // Rosso neon
-          spiegazione: `Prezzo fuori mercato per un ${tipo.nomeTipo}! Costa il ${rincaroMercato}% in più del prezzo standard di lancio (€${tipo.standard}).`,
+          spiegazione: `Prezzo estremamente basso rispetto al valore standard di mercato (€${tipo.standard}). Evita di svendere adesso!`,
           icona: 'alert-circle-outline'
         };
       }
     }
 
-    // --- ALGORITMO BASATO SULLO STORICO DEI PREZZI ---
+    // --- ALGORITMO DI VENDITA BASATO SULLO STORICO DEI PREZZI ---
     if (prezzi.length < 2) {
       return { 
         stato: 'IN CODA', 
@@ -334,45 +334,45 @@ export class PriceTrackerPage implements OnInit, OnDestroy {
       };
     }
 
-    // Minimo storico (entro il 2%)
-    if (prezzoAttuale <= min * 1.02) {
-      const risparmio = max > prezzoAttuale ? (((max - prezzoAttuale) / max) * 100).toFixed(0) : '0';
+    // Se siamo vicino al massimo storico (entro il 5%) -> VENDI ORA
+    if (prezzoAttuale >= max * 0.95) {
+      const incremento = min > 0 ? (((prezzoAttuale - min) / min) * 100).toFixed(0) : '0';
       return {
-        stato: 'COMPRA ORA',
+        stato: 'VENDI ORA',
         colore: '#10b981', // Verde smeraldo neon
-        spiegazione: `Minimo storico locale! Risparmi il ${risparmio}% rispetto al picco massimo (€${max.toFixed(2)}).`,
+        spiegazione: `Picco massimo storico locale! Valore aumentato del ${incremento}% rispetto al minimo (€${min.toFixed(2)}).`,
         icona: 'trending-down-outline'
       };
     }
     
-    // Sotto la media
-    if (prezzoAttuale < media) {
-      const scontoMedia = (((media - prezzoAttuale) / media) * 100).toFixed(0);
+    // Se siamo sopra la media -> BUON PREZZO (Vendita vantaggiosa)
+    if (prezzoAttuale > media) {
+      const guadagnoMedia = (((prezzoAttuale - media) / media) * 100).toFixed(0);
       return {
         stato: 'BUON PREZZO',
         colore: '#34d399', // Verde chiaro
-        spiegazione: `Prezzo inferiore del ${scontoMedia}% rispetto alla media dello storico (€${media.toFixed(2)}).`,
+        spiegazione: `Valore superiore del ${guadagnoMedia}% rispetto alla media dello storico (€${media.toFixed(2)}). Buon momento per vendere.`,
         icona: 'checkmark-circle-outline'
       };
     }
     
-    // Picco massimo
-    if (prezzoAttuale >= max * 0.95) {
-      const rincaro = min > 0 ? (((prezzoAttuale - min) / min) * 100).toFixed(0) : '0';
+    // Se siamo vicino al minimo storico (entro il 2%) -> EVITA VENDITA (TIENI)
+    if (prezzoAttuale <= min * 1.02) {
+      const perditaPicco = max > prezzoAttuale ? (((max - prezzoAttuale) / max) * 100).toFixed(0) : '0';
       return {
-        stato: 'EVITA',
+        stato: 'TIENI (HOLD)',
         colore: '#ef4444', // Rosso neon
-        spiegazione: `Vicino al picco massimo registrato! È aumentato del ${rincaro}% rispetto al minimo (€${min.toFixed(2)}).`,
+        spiegazione: `Minimo storico registrato! Valore sceso del ${perditaPicco}% rispetto al picco massimo (€${max.toFixed(2)}). Evita di vendere ora.`,
         icona: 'alert-circle-outline'
       };
     }
     
-    // Sopra la media ma non massimo
-    const eccessoMedia = (((prezzoAttuale - media) / media) * 100).toFixed(0);
+    // Se siamo sotto la media -> ATTENDI RIALZO
+    const deficitMedia = (((media - prezzoAttuale) / media) * 100).toFixed(0);
     return {
-      stato: 'ATTENDI',
+      stato: 'ATTENDI RIALZO',
       colore: '#f59e0b', // Arancione
-      spiegazione: `Prezzo superiore del ${eccessoMedia}% rispetto alla media dello storico (€${media.toFixed(2)}).`,
+      spiegazione: `Valore inferiore del ${deficitMedia}% rispetto alla media dello storico (€${media.toFixed(2)}). Attendi che si rialzi.`,
       icona: 'time-outline'
     };
   }
