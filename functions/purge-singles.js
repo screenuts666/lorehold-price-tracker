@@ -1,47 +1,59 @@
+require("dotenv").config();
 const admin = require("firebase-admin");
 const { getFirestore } = require("firebase-admin/firestore");
 const path = require("path");
 
 const serviceAccount = require(path.join(__dirname, "service-account.json"));
-admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+if (admin.apps.length === 0) {
+  admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
+}
 const db = getFirestore("default");
 
-async function purgeSinglesAndOldSets() {
-  console.log("🧹 Pulizia carte singole e vecchi set (es. Commander Strixhaven del 2021)...");
+async function purgeSinglesAndInvalidProducts() {
+  console.log("🧹 Avvio pulizia carte singole e prodotti non sigillati da Firestore...");
+
   const snapshot = await db.collection("products").get();
+  console.log(`Analisi di ${snapshot.size} prodotti totali nel database...`);
+
+  const sealedKeywords = [
+    "booster", "box", "pack", "deck", "bundle", "fat pack", "kit", "display", 
+    "prerelease", "pre-release", "collector", "commander", "starter", "collection", 
+    "intro", "challenger", "clash", "event", "gift", "scene"
+  ];
+
+  // Parole chiave che indicano carte singole/oversized
+  const singleCardKeywords = [
+    "zedruu", "vorosh", "teneb", "tariel", "saheeli", "lord windgrace", "estrid", "aminatou", 
+    "the ur-dragon", "inalla", "edgar markov", "arahbo", "oversized", "promo card", "singola"
+  ];
 
   let deletedCount = 0;
+
   for (const docSnap of snapshot.docs) {
     const p = docSnap.data();
-    const name = (p.nome || '').toLowerCase();
-    const exp = (p.expansion || '').toLowerCase();
+    const name = (p.nome || "").toLowerCase();
+    const exp = (p.expansion || "").toLowerCase();
 
-    // 1. Rimuovi carte singole (es. Adrix and Nev, Osgir, Breena, Zaffai, Willowdusk)
-    const isSingleCard = !name.includes("box") && 
-                         !name.includes("pack") && 
-                         !name.includes("bundle") && 
-                         !name.includes("deck") && 
-                         !name.includes("display") && 
-                         !name.includes("prerelease") && 
-                         !name.includes("scene") && 
-                         !name.includes("booster") && 
-                         p.prezzoAttuale < 5.0;
+    // Verifico se e' una carta singola o non contiene parole da prodotto sigillato
+    const isSingleByName = singleCardKeywords.some(kw => name.includes(kw));
+    const hasSealedKeyword = sealedKeywords.some(kw => name.includes(kw) || exp.includes(kw));
 
-    // 2. Rimuovi vecchi set del 2021 come "Commander: Strixhaven" o "Strixhaven: School of Mages" (vecchi)
-    const isOldSet = exp.includes("commander: strixhaven") || (exp.includes("strixhaven") && !exp.includes("secrets of strixhaven"));
+    // Se il nome della carta e' palesemente una carta singola (es: "Zedruu the Greathearted") senza parole come "Deck" o "Box"
+    const isExplicitSingle = isSingleByName && !name.includes("deck") && !name.includes("box");
+    const isMissingSealedKeyword = !hasSealedKeyword && (p.prezzoAttuale < 5.00 || exp === "commander");
 
-    if (isSingleCard || isOldSet) {
-      console.log(`❌ Eliminazione: ${p.nome} (${exp}) - Prezzo: €${p.prezzoAttuale}`);
+    if (isExplicitSingle || isMissingSealedKeyword) {
+      console.log(`❌ Eliminazione non-sigillato/singola: "${p.nome}" (€${p.prezzoAttuale}) - Set: ${p.expansion}`);
       await docSnap.ref.delete();
       deletedCount++;
     }
   }
 
-  console.log(`\n✅ Pulizia completata! Eliminati ${deletedCount} elementi errati/singole.`);
+  console.log(`\n🎉 PULIZIA COMPLETATA! Eliminati ${deletedCount} prodotti non sigillati/carte singole.`);
   process.exit(0);
 }
 
-purgeSinglesAndOldSets().catch(err => {
+purgeSinglesAndInvalidProducts().catch(err => {
   console.error("Errore pulizia:", err);
   process.exit(1);
 });

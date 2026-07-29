@@ -666,7 +666,11 @@ export class PriceTrackerPage implements OnInit {
     localStorage.setItem('mtg_tracker_sezione', this.activeSection);
     this.router.navigate([], { relativeTo: this.route, queryParams: { set: expName } });
 
-    const existing = this.products.filter(p => p.expansion && p.expansion.toLowerCase().includes(expName.toLowerCase()));
+    const normTarget = expName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const existing = this.products.filter(p => p.expansion && (
+      p.expansion.toLowerCase() === expName.toLowerCase() ||
+      p.expansion.toLowerCase().replace(/[^a-z0-9]/g, '') === normTarget
+    ));
     if (existing.length === 0) {
       this.autoDiscoverExpansion(expName);
     }
@@ -705,7 +709,11 @@ export class PriceTrackerPage implements OnInit {
   }
 
   get productsForExpansionDetail(): any[] {
-    let list = this.productsSorted.filter(p => p.expansion === this.selectedExpansionForDetail);
+    const targetNorm = (this.selectedExpansionForDetail || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    let list = this.productsSorted.filter(p => p.expansion && (
+      p.expansion.toLowerCase() === this.selectedExpansionForDetail.toLowerCase() ||
+      p.expansion.toLowerCase().replace(/[^a-z0-9]/g, '') === targetNorm
+    ));
     const q = (this.searchSealedQuery || '').toLowerCase().trim();
 
     if (!this.includeCollectorBoxes) {

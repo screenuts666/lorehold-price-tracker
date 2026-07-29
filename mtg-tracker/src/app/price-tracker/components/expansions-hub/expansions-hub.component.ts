@@ -103,16 +103,20 @@ export class ExpansionsHubComponent implements OnInit {
       }
     });
 
-    // Helper per trovare prodotti per nome set (con fuzzy matching per gestire differenze tra Scryfall e CardTrader)
+    // Helper per trovare prodotti per nome set (gestendo differenze tra Scryfall e CardTrader ed evitando sovrapposizioni su set generici)
     const getSetProductsInfo = (setName: string) => {
       const normTarget = setName.toLowerCase().replace(/[^a-z0-9]/g, '');
       let count = expProductsCount[setName] || 0;
       let cover = expCoverMap[setName] || null;
 
-      if (count === 0 && normTarget.length > 3) {
+      // Parole generiche che non devono fare partial-match con sub-set (es: "Commander" non deve catturare "Commander 2018")
+      const genericWords = ['commander', 'masters', 'horizons', 'coreset', 'duels', 'anthology', 'remastered', 'chronicles', 'promo', 'promos'];
+      const isGeneric = genericWords.some(w => normTarget === w || normTarget.endsWith(w));
+
+      if (count === 0 && normTarget.length > 3 && !isGeneric) {
         Object.keys(expProductsCount).forEach(expKey => {
           const normExp = expKey.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (normExp === normTarget || normExp.includes(normTarget) || normTarget.includes(normExp)) {
+          if (normExp === normTarget) {
             count += expProductsCount[expKey];
             if (!cover && expCoverMap[expKey]) cover = expCoverMap[expKey];
           }
@@ -137,13 +141,16 @@ export class ExpansionsHubComponent implements OnInit {
         if (s.digital) return false;
         if (!s.released_at) return false;
         
-        // Escludiamo espressamente Foundations se desiderato
-        if (s.name.toLowerCase().includes('foundations')) return false;
+        const nameLower = s.name.toLowerCase();
+
+        // Escludiamo set generici/promo senza prodotti sigillati o promo come generic "Commander"
+        if (nameLower.includes('foundations')) return false;
+        if (nameLower === 'commander' && s.code === 'cmd') return false;
 
         const info = getSetProductsInfo(s.name);
         if (info.count === 0) {
-          if (s.set_type !== 'expansion') return false;
-          if (s.name.toLowerCase().includes('commander')) return false;
+          if (s.set_type !== 'expansion' && s.set_type !== 'masters' && s.set_type !== 'draft_innovation') return false;
+          if (nameLower.includes('commander') && !nameLower.includes('20') && !nameLower.includes('legends') && !nameLower.includes('masters')) return false;
         }
 
         // Finestra temporale configurabile
@@ -156,7 +163,7 @@ export class ExpansionsHubComponent implements OnInit {
       futureScryfallSets.forEach(s => {
         addedNames.add(s.name.toLowerCase());
         const info = getSetProductsInfo(s.name);
-        const cover = info.cover || productsList.find(p => p.expansion && p.expansion.toLowerCase().includes(s.name.toLowerCase()) && p.immagine)?.immagine || null;
+        const cover = info.cover || productsList.find(p => p.expansion && p.expansion.toLowerCase() === s.name.toLowerCase() && p.immagine)?.immagine || null;
 
         const isPreorder = s.released_at >= todayStr;
 
