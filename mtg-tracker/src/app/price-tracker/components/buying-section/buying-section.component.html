@@ -58,28 +58,28 @@
 
                   <!-- INFO & HEADER -->
                   <div class="info-container" style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0; justify-content: space-between;">
-                    <div class="action-buttons-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 4px;">
-                      <span style="font-size: 0.65rem; color: #a78bfa; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9;">
+                    <div class="action-buttons-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 6px;">
+                      <span style="font-size: 0.78rem; color: #a78bfa; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9;">
                         ID: {{ item.id }}
                       </span>
                       <!-- ACTION BUTTONS TOOLBAR -->
-                      <div style="display: flex; gap: 5px; align-items: center;" (click)="$event.stopPropagation();">
+                      <div style="display: flex; gap: 6px; align-items: center;" (click)="$event.stopPropagation();">
                         <button class="action-btn-icon btn-funnel" (click)="editFilters(item)" title="Filtri Specifici">
-                          <ion-icon name="funnel-outline" style="font-size: 12px;"></ion-icon>
+                          <ion-icon name="funnel-outline" style="font-size: 14px;"></ion-icon>
                         </button>
                         <a [href]="item.url || 'https://www.cardtrader.com/it/cards/' + item.id" target="_blank" class="action-btn-icon btn-open" title="Apri CardTrader">
-                          <ion-icon name="open-outline" style="font-size: 12px;"></ion-icon>
+                          <ion-icon name="open-outline" style="font-size: 14px;"></ion-icon>
                         </a>
                         <button class="action-btn-icon btn-trash" (click)="remove(item.id)" title="Rimuovi">
-                          <ion-icon name="trash" style="font-size: 12px;"></ion-icon>
+                          <ion-icon name="trash" style="font-size: 14px;"></ion-icon>
                         </button>
                       </div>
                     </div>
 
                     <!-- BADGES ROW: SET & DYNAMIC CATEGORY -->
-                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-bottom: 4px;">
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px;">
                       @if (item.expansion) {
-                        <span style="font-size: 0.62rem; color: #94a3b8; font-weight: 700; background: rgba(255,255,255,0.06); padding: 2px 7px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; letter-spacing: 0.3px; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                        <span style="font-size: 0.78rem; color: #cbd5e1; font-weight: 700; background: rgba(255,255,255,0.08); padding: 3px 9px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); text-transform: uppercase; letter-spacing: 0.3px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                           {{ item.expansion }}
                         </span>
                       }
@@ -91,35 +91,35 @@
                     </div>
 
                     <!-- TITLE -->
-                    <h3 style="font-size: 0.92rem; font-weight: 700; color: #f8fafc; margin: 2px 0 6px 0; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.3em;" [title]="item.nome">
+                    <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffffff; margin: 4px 0 8px 0; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.3em;" [title]="item.nome">
                       {{ item.nome }}
                     </h3>
 
                     <!-- ACTIVE FILTERS BADGES -->
                     @if (item.foil !== null || item.lingua || item.condizione) {
-                      <div class="badges-row" style="display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px;">
+                      <div class="badges-row" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
                         @if (item.foil === true) {
-                          <span style="font-size: 0.58rem; font-weight: 800; color: #fff; background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 2px 6px; border-radius: 4px; text-transform: uppercase;">Foil</span>
+                          <span style="font-size: 0.72rem; font-weight: 800; color: #fff; background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">Foil</span>
                         }
                         @if (item.foil === false) {
-                          <span style="font-size: 0.58rem; font-weight: 700; color: #94a3b8; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">Normal</span>
+                          <span style="font-size: 0.72rem; font-weight: 700; color: #cbd5e1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">Normal</span>
                         }
                         @if (item.lingua) {
-                          <span style="font-size: 0.58rem; font-weight: 800; color: #3b82f6; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.25); padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">{{ item.lingua | uppercase }}</span>
+                          <span style="font-size: 0.72rem; font-weight: 800; color: #3b82f6; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">{{ item.lingua | uppercase }}</span>
                         }
                         @if (item.condizione) {
-                          <span style="font-size: 0.58rem; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); padding: 1px 5px; border-radius: 4px; text-transform: uppercase;">{{ item.condizione }}</span>
+                          <span style="font-size: 0.72rem; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">{{ item.condizione }}</span>
                         }
                       </div>
                     }
 
                     <!-- PRICE ROW -->
-                    <div class="price-row" style="display: flex; align-items: baseline; gap: 8px;">
-                      <span style="font-size: 1.4rem; font-weight: 800; color: #10b981; letter-spacing: -0.5px;">
+                    <div class="price-row" style="display: flex; align-items: baseline; gap: 10px; margin-top: 2px;">
+                      <span style="font-size: 1.65rem; font-weight: 800; color: #10b981; letter-spacing: -0.5px;">
                         {{ item.prezzoAttuale ? ('€' + (item.prezzoAttuale | number:'1.2-2')) : 'N/A' }}
                       </span>
                       @if (item.storico && item.storico.length > 1) {
-                        <span [style.color]="calculateVariationColor(item)" style="font-size: 0.75rem; font-weight: 800; background: rgba(255,255,255,0.05); padding: 2px 6px; border-radius: 4px;">
+                        <span [style.color]="calculateVariationColor(item)" style="font-size: 0.85rem; font-weight: 800; background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px;">
                           {{ calculateVariationText(item) }}
                         </span>
                       }
@@ -129,9 +129,9 @@
 
                 <!-- DYNAMIC SMART BARGAIN PULSE BANNER -->
                 @if (item.prezzoAttuale && item.prezzoAttuale > 0 && item.prezzoAttuale <= detectMtgType(item.nome).defaultThreshold) {
-                  <div class="bargain-banner" style="margin-top: 10px;">
-                    <span style="font-size: 0.9rem;">🎯</span>
-                    <span style="font-size: 0.68rem; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.3px;">
+                  <div class="bargain-banner" style="margin-top: 12px; padding: 8px 12px;">
+                    <span style="font-size: 1.05rem;">🎯</span>
+                    <span style="font-size: 0.85rem; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.3px;">
                       Occasione {{ detectMtgType(item.nome).nameType }} (≤ {{ detectMtgType(item.nome).defaultThreshold }}€)!
                     </span>
                   </div>
@@ -140,28 +140,28 @@
                 <!-- MOBILE DETAILS DRAWER -->
                 <div class="mobile-details-drawer" (click)="$event.stopPropagation();" style="width: 100%;">
                   <!-- ROW 2: CONTROL DETAILS -->
-                  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 10px;">
-                    <span style="font-size: 0.65rem; color: #64748b;">
-                      Iniziale: <strong style="color: #94a3b8;">€{{ item.storico && item.storico.length > 0 ? (item.storico[0].prezzo | number:'1.2-2') : 'N/D' }}</strong>
+                  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 12px;">
+                    <span style="font-size: 0.78rem; color: #94a3b8;">
+                      Iniziale: <strong style="color: #f8fafc;">€{{ item.storico && item.storico.length > 0 ? (item.storico[0].prezzo | number:'1.2-2') : 'N/D' }}</strong>
                     </span>
-                    <span style="font-size: 0.65rem; color: #64748b; text-align: right;">
-                      Ultimo Controllo: <strong style="color: #94a3b8;">{{ item.storico && item.storico.length > 0 ? item.storico[item.storico.length - 1].data : 'Mai' }}</strong>
+                    <span style="font-size: 0.78rem; color: #94a3b8; text-align: right;">
+                      Ultimo Controllo: <strong style="color: #f8fafc;">{{ item.storico && item.storico.length > 0 ? item.storico[item.storico.length - 1].data : 'Mai' }}</strong>
                     </span>
                   </div>
                   <!-- ROW 3: SPARK CHART -->
-                  <div class="chart-container" style="position: relative; height: 90px; width: 100%; margin-top: 10px;">
+                  <div class="chart-container" style="position: relative; height: 100px; width: 100%; margin-top: 10px;">
                     @if (hasPriceVariation(item)) {
                       <canvas [id]="'chart-acquisto-' + item.id"></canvas>
                     } @else {
                       <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.4); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.08); padding: 8px;">
-                        <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600; display: flex; align-items: center; gap: 6px;">
                           <span style="color: #38bdf8;">⚖️</span> Prezzo Iniziale Stabile (€{{ item.prezzoAttuale || (item.storico && item.storico.length > 0 ? item.storico[0].prezzo : 0) }})
                         </span>
                       </div>
                     }
                   </div>
                   <!-- ROW 4: RECOMMENDATION DETAILS -->
-                  <div style="margin-top: 10px; border-top: 1px dashed rgba(255,255,255,0.06); padding-top: 10px; width: 100%;">
+                  <div style="margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 12px; width: 100%;">
                     @if (getSuggestion(item); as sg) {
                       <!-- BADGE -->
                       <div
@@ -169,42 +169,39 @@
                         [style.color]="sg.color"
                         [style.box-shadow]="sg.label.includes('✨') ? ('0 0 15px ' + sg.color + '40') : severityToGlow(sg.severity)"
                         [style.background]="sg.label.includes('✨') ? 'rgba(15, 23, 42, 0.6)' : 'rgba(15, 23, 42, 0.25)'"
-                        [style.padding]="sg.label.includes('✨') ? '5px 10px' : '3px 8px'"
-                        [style.font-size]="sg.label.includes('✨') ? '0.78rem' : '0.68rem'"
-                        style="display: inline-flex; align-items: center; gap: 6px; border-radius: 6px; border: 1px solid; font-weight: 800; text-transform: uppercase;"
+                        style="display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; border: 1px solid; font-weight: 800; text-transform: uppercase; padding: 6px 12px; font-size: 0.85rem;"
                         >
-                        <ion-icon [name]="sg.severity === InsightSeverity.STRONG_BUY ? 'star' : sg.icon" [style.font-size]="sg.label.includes('✨') ? '15px' : '12px'"></ion-icon>
+                        <ion-icon [name]="sg.severity === InsightSeverity.STRONG_BUY ? 'star' : sg.icon" style="font-size: 15px;"></ion-icon>
                         <span>{{ sg.label }}</span>
                       </div>
                       <!-- EXPLANATION -->
                       <p
-                        [style.color]="sg.label.includes('✨') ? '#cbd5e1' : '#94a3b8'"
-                        [style.font-size]="sg.label.includes('✨') ? '0.75rem' : '0.7rem'"
-                        style="margin: 6px 0 0 0; line-height: 1.4; font-weight: 500;"
+                        [style.color]="sg.label.includes('✨') ? '#f1f5f9' : '#cbd5e1'"
+                        style="margin: 8px 0 0 0; line-height: 1.45; font-weight: 500; font-size: 0.85rem;"
                         >
                         {{ sg.explanation }}
                       </p>
                     }
                     <!-- CARDTRADER MARKET INSIGHTS -->
                     @if (item.stock !== undefined || item.sellerCountry || item.avgTop5) {
-                      <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.04); display: flex; flex-direction: column; gap: 4px;">
+                      <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 6px;">
                         @if (item.stock !== undefined) {
                           <div class="market-metric-pill">
-                            <span style="color: #94a3b8; font-weight: 500;">Disponibilità Mercato:</span>
-                            <span style="font-weight: 700; color: #cbd5e1;">📦 {{ item.stock || 0 }} unità</span>
+                            <span style="color: #cbd5e1; font-weight: 500;">Disponibilità Mercato:</span>
+                            <span style="font-weight: 700; color: #f8fafc;">📦 {{ item.stock || 0 }} unità</span>
                           </div>
                         }
                         @if (item.sellerCountry) {
                           <div class="market-metric-pill">
-                            <span style="color: #94a3b8; font-weight: 500;">Paese Venditore:</span>
-                            <span style="font-weight: 700; color: #cbd5e1; text-transform: uppercase;">
-                              📍 {{ item.sellerCountry }} <span style="font-size: 0.6rem; color: #64748b;">({{ item.sellerType || 'privato' }})</span>
+                            <span style="color: #cbd5e1; font-weight: 500;">Paese Venditore:</span>
+                            <span style="font-weight: 700; color: #f8fafc; text-transform: uppercase;">
+                              📍 {{ item.sellerCountry }} <span style="font-size: 0.72rem; color: #94a3b8;">({{ item.sellerType || 'privato' }})</span>
                             </span>
                           </div>
                         }
                         @if (item.avgTop5) {
                           <div class="market-metric-pill">
-                            <span style="color: #94a3b8; font-weight: 500;">Media Top 5 Offerte:</span>
+                            <span style="color: #cbd5e1; font-weight: 500;">Media Top 5 Offerte:</span>
                             <span style="font-weight: 700; color: #34d399;">📊 €{{ item.avgTop5 | number:'1.2-2' }}</span>
                           </div>
                         }

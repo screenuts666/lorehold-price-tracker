@@ -413,15 +413,22 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
   }
 
   .product-glass-card {
-    padding: 14px !important;
-    margin-bottom: 14px !important;
+    padding: 16px !important;
+    margin-bottom: 16px !important;
 
     h3 {
-      font-size: 0.98rem !important;
+      font-size: 1.15rem !important;
+      font-weight: 700 !important;
+      color: #ffffff !important;
       line-height: 1.35 !important;
       margin: 4px 0 8px 0 !important;
       -webkit-line-clamp: 3 !important;
       white-space: normal !important;
+    }
+
+    .thumbnail-wrapper {
+      width: 85px !important;
+      height: 110px !important;
     }
   }
 }

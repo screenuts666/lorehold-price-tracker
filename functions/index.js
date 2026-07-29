@@ -714,7 +714,7 @@ app.post("/telegram-webhook", async (req, res) => {
 
     // 1. /start o /help o /comandi
     if (textLower === "/start" || textLower === "/help" || textLower === "/comandi") {
-      const welcome = `🏰 Lorehold Price Tracker AI Bot\n\nCiao! Sono l'Agente IA per i prodotti sigillati Magic: The Gathering (MTG).\n\n📜 Comandi Rapidi Disponibili:\n• /affari - Migliori occasioni d'acquisto con sconti & verdict IA\n• /espansioni - Set e collezioni monitorate nel tracker\n• /cerca <nome> - Cerca prodotti (es: /cerca Play Booster Box)\n• /consigli - Top 5 acquisti consigliati dall'IA\n• /stats - Statistiche complessive del tracker\n• /prezzo <nome> - Consulta prezzo e stock di un prodotto\n• /help - Mostra questa guida\n\n💬 Oppure scrivimi qualsiasi domanda in linguaggio naturale!\nEs: "Quali sono i booster box sotto i 100 euro?" o "Conviene comprare ora Star Trek?"`;
+      const welcome = `🏰 Lorehold Price Tracker AI Bot\n\nCiao! Sono l'Agente IA per i prodotti sigillati Magic: The Gathering (MTG).\n\n🌐 SITO WEB TRACKER:\nhttps://lorehold-price-tracker.web.app\n\n📜 Comandi Rapidi Disponibili:\n• /affari - Migliori occasioni d'acquisto con sconti & verdict IA\n• /espansioni - Set e collezioni monitorate nel tracker\n• /cerca <nome> - Cerca prodotti (es: /cerca Play Booster Box)\n• /consigli - Top 5 acquisti consigliati dall'IA\n• /stats - Statistiche complessive del tracker\n• /prezzo <nome> - Consulta prezzo e stock di un prodotto\n• /help - Mostra questa guida\n\n💬 Oppure scrivimi qualsiasi domanda in linguaggio naturale!\nEs: "Quali sono i booster box sotto i 100 euro?" o "Conviene comprare ora Star Trek?"\n\n🌐 Apri il Tracker Web Completo:\nhttps://lorehold-price-tracker.web.app`;
       await sendTelegramMessage(chatId, welcome);
       return res.status(200).send("OK");
     }
@@ -740,6 +740,7 @@ app.post("/telegram-webhook", async (req, res) => {
         const linkStr = link ? `\n[Vedi Offerta su CardTrader](${link})` : '';
         reply += `📦 ${d.nome}\n💰 Prezzo: EUR ${d.prezzoAttuale || 'N/D'}\n🎨 Set: ${d.expansion || 'Generico'}\n🧠 IA: ${v} (${d.ai_reason || 'Ottimo punto di ingresso'})${linkStr}\n\n`;
       });
+      reply += `🌐 [Apri il Tracker Web Completo](https://lorehold-price-tracker.web.app)`;
       await sendTelegramMessage(chatId, reply);
       return res.status(200).send("OK");
     }
@@ -759,7 +760,7 @@ app.post("/telegram-webhook", async (req, res) => {
       } else {
         expList.forEach(exp => { reply += `• ${exp}: ${expMap[exp]} prodotti sigillati\n`; });
       }
-      reply += `\nUsa /cerca <nome_set> per cercare prodotti di un set specifico!`;
+      reply += `\nUsa /cerca <nome_set> per cercare prodotti di un set specifico!\n🌐 [Apri il Tracker Web Completo](https://lorehold-price-tracker.web.app)`;
       await sendTelegramMessage(chatId, reply);
       return res.status(200).send("OK");
     }
@@ -770,7 +771,7 @@ app.post("/telegram-webhook", async (req, res) => {
       queryParts.shift(); // rimuovi comando
       const searchQuery = queryParts.join(" ").trim().toLowerCase();
       if (!searchQuery) {
-        await sendTelegramMessage(chatId, "⚠️ Specificare un nome o una parola chiave da cercare.\nEsempio: /cerca Zendikar oppure /prezzo Play Booster");
+        await sendTelegramMessage(chatId, "⚠️ Specificare un nome o una parola chiave da cercare.\nEsempio: /cerca Zendikar oppure /prezzo Play Booster\n\n🌐 https://lorehold-price-tracker.web.app");
         return res.status(200).send("OK");
       }
 
@@ -785,7 +786,7 @@ app.post("/telegram-webhook", async (req, res) => {
       });
 
       if (matched.length === 0) {
-        await sendTelegramMessage(chatId, `🔍 Nessun prodotto trovato per "${searchQuery}". Prova con un nome più generale o usa /espansioni per la lista.`);
+        await sendTelegramMessage(chatId, `🔍 Nessun prodotto trovato per "${searchQuery}". Prova con un nome più generale o usa /espansioni per la lista.\n\n🌐 https://lorehold-price-tracker.web.app`);
         return res.status(200).send("OK");
       }
 
@@ -795,6 +796,7 @@ app.post("/telegram-webhook", async (req, res) => {
         const linkStr = link ? `\n[Apri su CardTrader](${link})` : '';
         reply += `📦 ${p.nome}\n💰 Prezzo: EUR ${p.prezzoAttuale || 'N/D'} | Stock: ${p.stock ?? 'N/D'}\n🏷️ Set: ${p.expansion || 'N/D'} | IA: ${p.ai_verdict || 'STABILE'}${linkStr}\n\n`;
       });
+      reply += `🌐 [Apri il Tracker Web Completo](https://lorehold-price-tracker.web.app)`;
       await sendTelegramMessage(chatId, reply);
       return res.status(200).send("OK");
     }
@@ -820,6 +822,7 @@ app.post("/telegram-webhook", async (req, res) => {
         const linkStr = link ? `\n[Vedi Offerta](${link})` : '';
         reply += `${idx + 1}. ${p.nome}\n   💰 EUR ${p.prezzoAttuale} | Set: ${p.expansion || 'Generico'}\n   🧠 IA Verdict: ${p.ai_verdict || 'COMPRA'} (${p.ai_reason || 'Punto di ingresso favorevole'})${linkStr}\n\n`;
       });
+      reply += `🌐 [Apri il Tracker Web Completo](https://lorehold-price-tracker.web.app)`;
       await sendTelegramMessage(chatId, reply);
       return res.status(200).send("OK");
     }
@@ -852,6 +855,7 @@ app.post("/telegram-webhook", async (req, res) => {
       reply += `💶 Prezzo Medio: EUR ${avgPrice}\n`;
       if (minPriceItem) reply += `📉 Prezzo Più Basso: EUR ${minPriceItem.prezzoAttuale} (${minPriceItem.nome})\n`;
       if (maxPriceItem) reply += `📈 Prezzo Più Alto: EUR ${maxPriceItem.prezzoAttuale} (${maxPriceItem.nome})\n`;
+      reply += `\n🌐 [Apri il Tracker Web Completo](https://lorehold-price-tracker.web.app)`;
       await sendTelegramMessage(chatId, reply);
       return res.status(200).send("OK");
     }
