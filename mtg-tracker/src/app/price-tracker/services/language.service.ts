@@ -6,6 +6,7 @@ export interface Translations {
   HUB_TAB: string;
   SEALED_TAB: string;
   BARGAINS_TAB: string;
+  SEARCH_TAB: string;
   CLOUD_SCAN: string;
   SEARCH_EXP: string;
   SEARCH_SEALED: string;
@@ -54,6 +55,7 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     HUB_TAB: 'HUB ESPANSIONI',
     SEALED_TAB: 'TUTTI I SIGILLATI',
     BARGAINS_TAB: 'TOP OCCASIONI',
+    SEARCH_TAB: 'RICERCA',
     CLOUD_SCAN: 'Scansione IA Cloud',
     SEARCH_EXP: '🔍 Cerca espansione...',
     SEARCH_SEALED: '🔍 Cerca sigillato per nome...',
@@ -100,6 +102,7 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     HUB_TAB: 'EXPANSIONS HUB',
     SEALED_TAB: 'ALL SEALED',
     BARGAINS_TAB: 'TOP DEALS',
+    SEARCH_TAB: 'SEARCH',
     CLOUD_SCAN: 'Cloud AI Scan',
     SEARCH_EXP: '🔍 Search expansion...',
     SEARCH_SEALED: '🔍 Search sealed product...',

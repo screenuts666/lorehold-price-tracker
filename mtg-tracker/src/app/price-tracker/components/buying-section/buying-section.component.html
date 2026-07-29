@@ -187,21 +187,21 @@
                       <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 6px;">
                         @if (item.stock !== undefined) {
                           <div class="market-metric-pill">
-                            <span style="color: #cbd5e1; font-weight: 500;">Disponibilità Mercato:</span>
-                            <span style="font-weight: 700; color: #f8fafc;">📦 {{ item.stock || 0 }} unità</span>
+                            <span style="color: #cbd5e1; font-weight: 500;">{{ langService.t().MARKET_STOCK }}</span>
+                            <span style="font-weight: 700; color: #f8fafc;">📦 {{ item.stock || 0 }} {{ langService.t().UNITS }}</span>
                           </div>
                         }
                         @if (item.sellerCountry) {
                           <div class="market-metric-pill">
-                            <span style="color: #cbd5e1; font-weight: 500;">Paese Venditore:</span>
+                            <span style="color: #cbd5e1; font-weight: 500;">{{ langService.t().SELLER_LOCATION }}</span>
                             <span style="font-weight: 700; color: #f8fafc; text-transform: uppercase;">
-                              📍 {{ item.sellerCountry }} <span style="font-size: 0.72rem; color: #94a3b8;">({{ item.sellerType || 'privato' }})</span>
+                              📍 {{ item.sellerCountry }} <span style="font-size: 0.72rem; color: #94a3b8;">({{ item.sellerType || langService.t().PRIVATE_SELLER }})</span>
                             </span>
                           </div>
                         }
                         @if (item.avgTop5) {
                           <div class="market-metric-pill">
-                            <span style="color: #cbd5e1; font-weight: 500;">Media Top 5 Offerte:</span>
+                            <span style="color: #cbd5e1; font-weight: 500;">{{ langService.t().AVG_TOP5 }}</span>
                             <span style="font-weight: 700; color: #34d399;">📊 €{{ item.avgTop5 | number:'1.2-2' }}</span>
                           </div>
                         }

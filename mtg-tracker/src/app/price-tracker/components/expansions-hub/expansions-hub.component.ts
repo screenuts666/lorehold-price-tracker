@@ -1,7 +1,8 @@
-import { Component, input, output, OnInit, effect, signal, computed } from '@angular/core';
+import { Component, input, output, OnInit, effect, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { IonGrid, IonRow, IonCol, IonCard, IonIcon } from '@ionic/angular/standalone';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-expansions-hub',
@@ -13,6 +14,9 @@ import { IonGrid, IonRow, IonCol, IonCard, IonIcon } from '@ionic/angular/standa
 export class ExpansionsHubComponent implements OnInit {
   products = input<any[]>([]);
   onSelectExpansion = output<string>();
+
+  public langService = inject(LanguageService);
+  public t = computed(() => this.langService.t());
 
   expansionsData = signal<any[]>([]);
   loadingSets = signal<boolean>(true);

@@ -2,10 +2,10 @@
   <div class="hub-header" style="flex-wrap: wrap; gap: 16px;">
     <div>
       <h2 class="hub-title">
-        <span>🔥</span> Prossime Espansioni in Prevendita
+        <span>🔥</span> {{ t().UPCOMING_EXPANSIONS }}
       </h2>
       <p class="hub-subtitle">
-        Seleziona un'espansione per visualizzare i prodotti sigillati e l'analisi prezzi con l'IA.
+        {{ t().EXPANSION_SUBTITLE }}
       </p>
     </div>
 
@@ -17,7 +17,7 @@
           type="text"
           [ngModel]="searchQuery()"
           (ngModelChange)="updateSearchQuery($event)"
-          placeholder="🔍 Cerca espansione..."
+          [placeholder]="t().SEARCH_EXP"
           style="width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 500; transition: border-color 0.2s ease;"
         />
       </div>
@@ -28,9 +28,9 @@
         (ngModelChange)="updateStatusFilter($event)"
         style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 600; cursor: pointer;"
       >
-        <option value="all">Tutti gli stati</option>
-        <option value="preorder">Solo Prevendita</option>
-        <option value="released">Solo Rilasciate</option>
+        <option value="all">{{ t().STATUS_ALL }}</option>
+        <option value="preorder">{{ t().STATUS_PREORDER }}</option>
+        <option value="released">{{ t().STATUS_RELEASED }}</option>
       </select>
 
       <!-- TIME WINDOW FILTER -->
@@ -39,10 +39,10 @@
         (ngModelChange)="updateTimeWindow($event)"
         style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 10px; color: #a78bfa; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 700; cursor: pointer;"
       >
-        <option value="3months">📅 Ultimi 3 Mesi & Future</option>
-        <option value="6months">📅 Ultimi 6 Mesi</option>
-        <option value="1year">📅 Ultimo Anno (12 Mesi)</option>
-        <option value="all">📜 Tutte le Espansioni (Tutto)</option>
+        <option value="3months">{{ t().TIME_3M }}</option>
+        <option value="6months">{{ t().TIME_6M }}</option>
+        <option value="1year">{{ t().TIME_1Y }}</option>
+        <option value="all">{{ t().TIME_ALL }}</option>
       </select>
 
       <!-- SORT ORDER -->
@@ -51,10 +51,10 @@
         (ngModelChange)="updateSortOrder($event)"
         style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 600; cursor: pointer;"
       >
-        <option value="date-desc">Uscita: Più Futura</option>
-        <option value="date-asc">Uscita: Meno Futura</option>
-        <option value="products-desc">Più Prodotti Sigillati</option>
-        <option value="name-asc">Nome (A-Z)</option>
+        <option value="date-desc">{{ t().SORT_DATE_DESC }}</option>
+        <option value="date-asc">{{ t().SORT_DATE_ASC }}</option>
+        <option value="products-desc">{{ t().SORT_PRODUCTS_DESC }}</option>
+        <option value="name-asc">{{ t().SORT_NAME_ASC }}</option>
       </select>
     </div>
   </div>
@@ -70,11 +70,11 @@
             <!-- PREVENDITA BANNER BADGE -->
             @if (exp.isPreorder) {
               <div class="badge-banner preorder">
-                Prevendita
+                {{ t().STATUS_PREORDER }}
               </div>
             } @else {
               <div class="badge-banner released">
-                Rilasciata
+                {{ t().STATUS_RELEASED }}
               </div>
             }
 

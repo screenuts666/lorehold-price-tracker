@@ -7,6 +7,7 @@ import { Chart } from 'chart.js/auto';
 import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard } from '@ionic/angular/standalone';
 import { MarketAnalyzerService, ProductType, Product, InsightSeverity } from '../../services/market-analyzer.service';
 import { MtgCategoryService } from '../../services/mtg-category.service';
+import { LanguageService } from '../../services/language.service';
 
 @Component({
   selector: 'app-buying-section',
@@ -50,6 +51,7 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
   readonly InsightSeverity = InsightSeverity;
   
   private marketAnalyzer = inject(MarketAnalyzerService);
+  public langService = inject(LanguageService);
 
   // Cache to avoid recalculating suggestion on every change detection cycle
   private suggestionCache: Map<string, { label: string; color: string; explanation: string; icon: string; severity?: InsightSeverity }> = new Map();
