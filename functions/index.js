@@ -645,7 +645,7 @@ Ecco i dati del prodotto:
 });
 
 // --- TELEGRAM BOT AI WEBHOOK ENDPOINT ---
-const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8653736095:AAFlKj11USRKSHcG0ycsOzVXW9vaWGgyFW0";
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
 async function sendTelegramMessage(chatId, text, parseMode = "Markdown") {
   try {

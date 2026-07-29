@@ -7,7 +7,7 @@ const serviceAccount = require(path.join(__dirname, "service-account.json"));
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 const db = getFirestore("default");
 
-const API_TOKEN = process.env.CARDTRADER_API_TOKEN || "uV928-u-kL_v_YjUeQz-4zJ";
+const API_TOKEN = process.env.CARDTRADER_API_TOKEN;
 
 async function seedAllUpcomingExpansions() {
   console.log("🚀 Avvio popolamento automatico di tutte le nuove espansioni in Firestore...");

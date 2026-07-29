@@ -11,7 +11,7 @@ admin.initializeApp({
 });
 
 const db = getFirestore("default");
-const API_TOKEN = process.env.CARDTRADER_API_TOKEN || "eyJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJjYXJkdHJhZGVyLXByb2R1Y3Rpb24iLCJzdWIiOiJhcHA6MTA0NjUiLCJhdWQiOiJhcHA6MTA0NjUiLCJleHAiOjQ5MzkwNjE5MDQsImp0aSI6IjA2MWY1MTNkLTdiZjQtNDExMi1iOThhLWY1MzdmMWM2YzQzNyIsImlhdCI6MTc4MzM4NDcwNCwibmFtZSI6IkdpcmFkaXNjaGk2NjYgQXBwIDIwMjQwNTI3MTU0NjMwIn0.q7FOsIKwIUwFino1wNpKRV-ItPDS8VKIvpXAMYFdOkiACfEuqMdMZqjQjNm1G80wC6opDswWghxMf-qCzxp86cWYFR1z1Sr6UHSGvp5s6Ih6VYFRs_1g9VtATW9J77YCfzoyMJ91tG-MHX5jXqtkCiNss4c_KjB5imQ4gs4jOvP79K8JpmnW40zhZEvY-PdjXdmyhhLfDK5EKZt5mr6rkDmUlTGQDBSyhFmIz4FlOifevMlQvJbheJKj87Cq80nkbjbfQsvWPgDhHDbtQYD0DTZJya-FtoiFQ65RkSidVkDUJ-O67fCfLp3-X4zW_zzi4wF96CkKKJZVGoCCBRuotQ";
+const API_TOKEN = process.env.CARDTRADER_API_TOKEN;
 
 const headers = {
   "Authorization": `Bearer ${API_TOKEN}`,
