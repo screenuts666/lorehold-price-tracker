@@ -42,7 +42,7 @@ export class MtgCategoryService {
 
   public isSealedProduct(name: string): boolean {
     if (!name || name.includes('//')) return false;
-    const sealedRegex = /\b(box|boxes|booster|boosters|pack|packs|deck|decks|bundle|bundles|display|displays|prerelease|pre-release|fat pack|starter kit|scene box|challenger|intro pack)\b/i;
+    const sealedRegex = /\b(booster|boosters|collector box|collector booster|collector display|play box|play booster|play display|draft box|draft booster|draft display|booster box|booster pack|booster display|prerelease|pre-release|fat pack|bundle|bundles|starter kit|starter deck|scene box|challenger deck|intro pack|tournament pack|display box|display of \d+|theme booster|deck builder's toolkit|starter set|starter box)\b/i;
     return sealedRegex.test(name);
   }
 

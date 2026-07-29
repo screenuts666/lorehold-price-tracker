@@ -9,11 +9,11 @@ if (admin.apps.length === 0) {
 }
 const db = getFirestore("default");
 
-// Regex rigorosa per rilevare i veri contenitori sigillati (usando Word Boundaries \b per evitare falso-positivi come "Toolbox")
-const SEALED_PRODUCT_REGEX = /\b(box|boxes|booster|boosters|pack|packs|deck|decks|bundle|bundles|display|displays|prerelease|pre-release|fat pack|starter kit|scene box|challenger|intro pack)\b/i;
+// Regex iper-rigorosa per prodotti sigillati MTG (impedisce a carte come "A Display of My Dark Power" di essere scambiate per un box/display sigillato)
+const SEALED_PRODUCT_REGEX = /\b(booster|boosters|collector box|collector booster|collector display|play box|play booster|play display|draft box|draft booster|draft display|booster box|booster pack|booster display|prerelease|pre-release|fat pack|bundle|bundles|starter kit|starter deck|scene box|challenger deck|intro pack|tournament pack|display box|display of \d+|theme booster|deck builder's toolkit|starter set|starter box)\b/i;
 
 async function purgeStrictSingles() {
-  console.log("🧹 Avvio pulizia RIGOROSA ed ASSOLUTA di tutte le carte singole da Firestore...");
+  console.log("🧹 Avvio eliminazione di 'A Display of My Dark Power' e di qualsiasi altra carta promo/singola residua...");
 
   const snapshot = await db.collection("products").get();
   console.log(`Trovati ${snapshot.size} prodotti totali nel database...`);
@@ -27,13 +27,13 @@ async function purgeStrictSingles() {
     const isSealed = SEALED_PRODUCT_REGEX.test(name) && !name.includes("//");
 
     if (!isSealed) {
-      console.log(`❌ ELIMINATO: "${p.nome}" (€${p.prezzoAttuale || '0'}) - Set: ${p.expansion || 'N/D'}`);
+      console.log(`❌ ELIMINATO: [${docSnap.id}] "${p.nome}" (€${p.prezzoAttuale || '0'}) - Set: ${p.expansion || 'N/D'}`);
       await docSnap.ref.delete();
       deleted++;
     }
   }
 
-  console.log(`\n🎉 COMPLETATO! Eliminati ${deleted} prodotti non sigillati/carte singole dal database Firestore.`);
+  console.log(`\n🎉 COMPLETATO! Eliminati ${deleted} prodotti non sigillati dal database Firestore.`);
   process.exit(0);
 }
 
