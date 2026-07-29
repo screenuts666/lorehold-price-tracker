@@ -548,7 +548,7 @@ export class PriceTrackerPage implements OnInit {
   }
 
   get allSealedProducts(): any[] {
-    let list = [...this.productsSorted];
+    let list = [...this.productsSorted].filter(p => this.categoryService.isSealedProduct(p.nome));
     const q = (this.searchSealedQuery || '').toLowerCase().trim();
 
     // Flexible Category Toggles Filter

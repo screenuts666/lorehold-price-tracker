@@ -40,6 +40,12 @@ export class MtgCategoryService {
     }
   }
 
+  public isSealedProduct(name: string): boolean {
+    if (!name || name.includes('//')) return false;
+    const sealedRegex = /\b(box|boxes|booster|boosters|pack|packs|deck|decks|bundle|bundles|display|displays|prerelease|pre-release|fat pack|starter kit|scene box|challenger|intro pack)\b/i;
+    return sealedRegex.test(name);
+  }
+
   public detectCategory(name: string): MtgSmartCategoryInfo {
     const n = (name || '').toLowerCase();
 
