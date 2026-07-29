@@ -38,6 +38,16 @@ async function seedHistoricalExpansions() {
       console.log(`📦 Set "${exp.name}" (${exp.id}): Trovati ${sealedBlueprints.length} prodotti sigillati.`);
 
       for (const bp of sealedBlueprints) {
+        const bpNameLower = (bp.name || "").toLowerCase();
+        
+        // Categoria 7 comprende mazzi ma anche carte singole/oversized. Filtriamo rigorosamente per prodotti sigillati!
+        if (bp.category_id === 7) {
+          const isSealedDeckOrBox = bpNameLower.includes("deck") || bpNameLower.includes("box") || bpNameLower.includes("pack") || bpNameLower.includes("kit") || bpNameLower.includes("set") || bpNameLower.includes("collection") || bpNameLower.includes("display") || bpNameLower.includes("intro");
+          if (!isSealedDeckOrBox) continue; // Salta le carte singole/oversized promo
+        }
+
+        if (bpNameLower.includes("//")) continue; // Salta carte trasformabili singole (es. Mayor of Avabruck // Howlpack Alpha)
+
         const docRef = db.collection("products").doc(bp.id.toString());
         const docSnap = await docRef.get();
 

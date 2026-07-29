@@ -85,7 +85,7 @@ export class MtgCategoryService {
         defaultThreshold: this.categoryThresholds[MtgProductCategoryKey.SCENE_BOX]
       };
     }
-    if (n.includes('commander deck') || n.includes('commander')) {
+    if (n.includes('commander deck') || n.includes('commander display') || (n.includes('commander') && (n.includes('deck') || n.includes('box') || n.includes('pack')))) {
       return {
         key: MtgProductCategoryKey.COMMANDER_DECK,
         nameType: 'Commander Deck',

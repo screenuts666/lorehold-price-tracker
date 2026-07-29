@@ -180,7 +180,7 @@ export class ExpansionsHubComponent implements OnInit {
       });
     }
 
-    // 2. Aggiungi le espansioni presenti nel DB che non sono già state incluse
+    // 2. Aggiungi le espansioni presenti nel DB che non sono già state incluse (rispettando il filtro temporale)
     Object.keys(expProductsCount).forEach(expName => {
       if (!addedNames.has(expName.toLowerCase())) {
         let scryfallSet = this.scryfallSetsCache.find(s => s.name.toLowerCase() === expName.toLowerCase());
@@ -193,6 +193,13 @@ export class ExpansionsHubComponent implements OnInit {
 
         const relDate = scryfallSet?.released_at || null;
         const isPreorder = relDate ? relDate >= todayStr : true;
+
+        // Applica la finestra temporale (3 mesi, 6 mesi, 1 anno) anche alle espansioni presenti nel DB
+        if (relDate) {
+          if (tw === '3months' && relDate < threeMonthsAgoStr) return;
+          if (tw === '6months' && relDate < sixMonthsAgoStr) return;
+          if (tw === '1year' && relDate < oneYearAgoStr) return;
+        }
 
         setsList.push({
           name: expName,
