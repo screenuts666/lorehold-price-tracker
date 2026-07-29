@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, AfterViewInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import { Component, input, output, inject, AfterViewInit, OnChanges, SimpleChanges, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
@@ -6,6 +6,7 @@ import { trash, image, openOutline, cartOutline, trendingDownOutline, checkmarkC
 import { Chart } from 'chart.js/auto';
 import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard } from '@ionic/angular/standalone';
 import { MarketAnalyzerService, ProductType, Product, InsightSeverity } from '../../services/market-analyzer.service';
+import { MtgCategoryService } from '../../services/mtg-category.service';
 
 @Component({
   selector: 'app-buying-section',
@@ -22,35 +23,38 @@ import { MarketAnalyzerService, ProductType, Product, InsightSeverity } from '..
     IonCard
   ],
   templateUrl: './buying-section.component.html',
-  styleUrls: []
+  styleUrls: ['./buying-section.component.scss']
 })
 export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestroy {
-  @Input() products: any[] = [];
-  @Input() viewMode: 'grid' | 'table' = 'grid';
-  @Input() gridColumns: number = 4;
+  products = input<any[]>([]);
+  viewMode = input<'grid' | 'table'>('grid');
+  gridColumns = input<number>(4);
+  isDetailView = input<boolean>(false);
   
-  @Output() onAdd = new EventEmitter<{url: string, releaseDate: string}>();
-  @Output() onRemove = new EventEmitter<string>();
-  @Output() onUpdate = new EventEmitter<any>();
-  @Output() onEditFilters = new EventEmitter<any>();
+  onAdd = output<{url: string, releaseDate: string}>();
+  onRemove = output<string>();
+  onUpdate = output<any>();
+  onEditFilters = output<any>();
 
-  expandedCardId: string | null = null;
+  expandedCardId = signal<string | null>(null);
 
   toggleExpand(id: string, event: Event) {
     if (window.innerWidth < 576) {
-      this.expandedCardId = this.expandedCardId === id ? null : id;
+      this.expandedCardId.set(this.expandedCardId() === id ? null : id);
     }
   }
 
-  urlInput: string = '';
-  releaseDateInput: string = '';
+  urlInput = signal<string>('');
+  releaseDateInput = signal<string>('');
   private chartInstances: { [key: string]: Chart } = {};
   readonly InsightSeverity = InsightSeverity;
   
+  private marketAnalyzer = inject(MarketAnalyzerService);
+
   // Cache to avoid recalculating suggestion on every change detection cycle
   private suggestionCache: Map<string, { label: string; color: string; explanation: string; icon: string; severity?: InsightSeverity }> = new Map();
 
-  constructor(private marketAnalyzer: MarketAnalyzerService) {
+  constructor(public categoryService: MtgCategoryService) {
     addIcons({ 
       trash, image, openOutline, cartOutline, trendingDownOutline, 
       checkmarkCircleOutline, alertCircleOutline, timeOutline, star, calendarOutline, funnelOutline
@@ -73,13 +77,13 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   add() {
-    if (this.urlInput.trim()) {
+    if (this.urlInput().trim()) {
       this.onAdd.emit({
-        url: this.urlInput.trim(),
-        releaseDate: this.releaseDateInput
+        url: this.urlInput().trim(),
+        releaseDate: this.releaseDateInput()
       });
-      this.urlInput = '';
-      this.releaseDateInput = '';
+      this.urlInput.set('');
+      this.releaseDateInput.set('');
     }
   }
 
@@ -97,35 +101,31 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
     this.suggestionCache.delete(item.id);
   }
 
-  detectMtgType(name: string): { nameType: string } {
-    const n = (name || '').toLowerCase();
-    if (n.includes('play booster box') || n.includes('play box')) {
-      return { nameType: 'Play Box' };
-    }
-    if (n.includes('collector booster box') || n.includes('collector box')) {
-      return { nameType: 'Collector Box' };
-    }
-    if (n.includes('prerelease pack') || n.includes('prerelease')) {
-      return { nameType: 'Prerelease Pack' };
-    }
-    if (n.includes('fat pack') || n.includes('bundle') || n.includes('gift edition')) {
-      return { nameType: 'Bundle' };
-    }
-    if (n.includes('commander') && n.includes('deck')) {
-      return { nameType: 'Commander Deck' };
-    }
-    if (n.includes('draft night')) {
-      return { nameType: 'Draft Night Kit' };
-    }
-    if (n.includes('collector booster') || n.includes('booster pack') || n.includes('pack')) {
-      return { nameType: 'Single Pack' };
-    }
-    return { nameType: 'Generico' };
+  detectMtgType(name: string) {
+    return this.categoryService.detectCategory(name);
   }
 
   getSuggestion(item: any): { label: string; color: string; explanation: string; icon: string; severity?: InsightSeverity } {
     if (this.suggestionCache.has(item.id)) {
       return this.suggestionCache.get(item.id)!;
+    }
+
+    if (item.ai_verdict && item.ai_reason) {
+      let severity = InsightSeverity.NEUTRAL;
+      const verdictUpper = item.ai_verdict.toUpperCase();
+      if (verdictUpper.includes('COMPRA')) severity = InsightSeverity.BUY;
+      else if (verdictUpper.includes('ASPETTA')) severity = InsightSeverity.WAIT;
+      else if (verdictUpper.includes('SOVRAPPREZZO')) severity = InsightSeverity.AVOID;
+
+      const suggestion = {
+        label: `✨ AI: ${item.ai_verdict}`,
+        color: this.severityToHex(severity),
+        explanation: item.ai_reason,
+        icon: severity === InsightSeverity.BUY ? 'star' : (severity === InsightSeverity.AVOID ? 'alert-circle-outline' : 'time-outline'),
+        severity: severity
+      };
+      this.suggestionCache.set(item.id, suggestion);
+      return suggestion;
     }
 
     try {
@@ -236,6 +236,18 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
     return (currentPrice - initialPrice) < 0 ? '#10b981' : '#ef4444'; // Green is good for buy (decline)
   }
 
+  hasPriceVariation(item: any): boolean {
+    if (item.ctHistory && item.ctHistory.length > 1) {
+      const firstP = item.ctHistory[0].p;
+      return item.ctHistory.some((h: any) => h.p !== firstP);
+    }
+    if (item.storico && item.storico.length > 1) {
+      const firstP = item.storico[0].prezzo;
+      return item.storico.some((h: any) => h.prezzo !== firstP);
+    }
+    return false;
+  }
+
   severityToHex(severity: InsightSeverity): string {
     switch (severity) {
       case InsightSeverity.STRONG_BUY: return '#8b5cf6'; // Violet glow
@@ -256,9 +268,9 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   private renderCharts() {
-    if (this.viewMode !== 'grid') return;
+    if (this.viewMode() !== 'grid') return;
     
-    this.products.forEach(item => {
+    this.products().forEach(item => {
       const canvasId = 'chart-acquisto-' + item.id;
       const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
       

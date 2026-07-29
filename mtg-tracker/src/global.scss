@@ -264,122 +264,149 @@ ion-grid ion-col:nth-child(5) { animation-delay: 0.25s; }
 ion-grid ion-col:nth-child(6) { animation-delay: 0.3s; }
 ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
 
-/* Responsive UI/UX Optimizations for Android/Mobile Devices */
-@media (max-width: 576px) {
-  // Hide non-essential view options on mobile
+/* Responsive UI/UX Optimizations for Mobile & Small Devices */
+@media (max-width: 768px) {
+  // Hide desktop navigation segment from header on mobile
   .hide-on-mobile {
     display: none !important;
   }
-  
-  // Make grid cards compact on mobile
+
+  .show-on-mobile {
+    display: flex !important;
+  }
+
+  // Padding adjustment for mobile screens
+  ion-content {
+    --padding-bottom: 75px !important;
+  }
+
+  // Make grid cards compact & clean on mobile
   .glass-card {
-    padding: 10px !important;
+    padding: 12px !important;
     border-radius: 12px !important;
     margin-bottom: 10px !important;
   }
 
-  // Header part of card: stack image and text vertically
+  // Header flex layout for cards on mobile
   .card-header-flex {
-    flex-direction: column !important;
+    flex-direction: row !important;
     align-items: center !important;
-    text-align: center !important;
-    gap: 8px !important;
-    min-height: auto !important;
+    text-align: left !important;
+    gap: 10px !important;
   }
 
-  // Center elements within card header flexbox
   .card-header-flex .thumbnail-container {
-    width: 100% !important;
-    display: flex !important;
-    justify-content: center !important;
-    margin-bottom: 4px !important;
+    width: 64px !important;
+    height: 64px !important;
+    flex-shrink: 0;
   }
 
   .card-header-flex .info-container {
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
   .card-header-flex h3 {
-    text-align: center !important;
-    font-size: 0.82rem !important;
-    min-height: auto !important;
-    margin: 4px 0 !important;
-    -webkit-line-clamp: 2 !important;
+    text-align: left !important;
+    font-size: 0.88rem !important;
+    margin: 2px 0 !important;
   }
 
-  .card-header-flex .price-row {
-    justify-content: center !important;
-    margin-top: 4px !important;
-  }
+  // Mobile Bottom Navigation Bar
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: rgba(9, 13, 22, 0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) 8px;
+    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.6);
 
-  .card-header-flex .badges-row {
-    justify-content: center !important;
-  }
+    .nav-tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      padding: 6px 4px;
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 12px;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      outline: none;
 
-  .card-header-flex .action-buttons-row {
-    justify-content: center !important;
-    margin-top: 4px !important;
-  }
+      ion-icon, span.tab-emoji {
+        font-size: 1.25rem;
+        transition: transform 0.2s ease;
+      }
 
-  // Drawer for full details: hidden on mobile by default
-  .mobile-details-drawer {
-    display: none;
-    margin-top: 10px;
-    border-top: 1px dashed rgba(255, 255, 255, 0.08);
-    padding-top: 10px;
-    animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
+      &.active {
+        color: #f8fafc;
+        background: rgba(139, 92, 246, 0.18);
+        border: 1px solid rgba(139, 92, 246, 0.3);
 
-  // Show details drawer when card is expanded
-  .glass-card.expanded {
-    border-color: rgba(139, 92, 246, 0.5) !important;
-    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.15) !important;
-  }
-
-  .glass-card.expanded .mobile-details-drawer {
-    display: block !important;
-  }
-
-  // Indicate the card is clickable
-  .glass-card {
-    cursor: pointer;
-    position: relative;
-  }
-
-  // Add a visual indicator to expand (a tiny down arrow or tap label)
-  .glass-card::after {
-    content: "Tap to expand";
-    display: block;
-    text-align: center;
-    font-size: 0.55rem;
-    color: #64748b;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 6px;
-    border-top: 1px solid rgba(255, 255, 255, 0.03);
-    padding-top: 4px;
-    width: 100%;
-  }
-
-  .glass-card.expanded::after {
-    content: "Tap to collapse";
-    color: #a78bfa;
-  }
-
-  // Expand animation
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
+        ion-icon {
+          color: #a78bfa !important;
+          transform: scale(1.1);
+        }
+      }
     }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-bottom-nav {
+    display: none !important;
+  }
+  .show-on-mobile {
+    display: none !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .product-large-img-container {
+    width: 90px !important;
+    height: 80px !important;
+  }
+
+  .gradient-title {
+    font-size: 1.05rem !important;
+  }
+
+  .expansions-hub-container {
+    padding: 12px 10px !important;
+  }
+}
+
+/* Global Select & Option Dropdown Fix for Dark Mode */
+select {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  -webkit-appearance: auto;
+  appearance: auto;
+
+  option,
+  option:checked,
+  option:hover,
+  option:focus {
+    background-color: #1e293b !important;
+    background: #1e293b !important;
+    color: #f8fafc !important;
+    font-weight: 600 !important;
   }
 }
 

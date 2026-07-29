@@ -4,6 +4,7 @@ const admin = require("firebase-admin");
 const { getFirestore } = require("firebase-admin/firestore");
 const express = require("express");
 const cors = require("cors");
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // Inizializza Firebase Admin SDK
 admin.initializeApp();
@@ -544,5 +545,450 @@ exports.updatePricesScheduler = onSchedule({
     }
   } catch (err) {
     console.error("Errore generico nello scheduler:", err.message);
+  }
+});
+
+// ============================================================
+// --- RATE LIMITER STATE (IN-MEMORY, locale per istanza) ---
+// ============================================================
+const AI_SCAN_COOLDOWN_MS = 30 * 60 * 1000; // 30 minuti
+const AI_SCAN_GLOBAL_KEY = "ai_scan_global_lock";
+
+async function getGlobalScanLock() {
+  const lockRef = db.collection("_system").doc("ai_scan_lock");
+  const lockDoc = await lockRef.get();
+  if (!lockDoc.exists) return null;
+  return lockDoc.data();
+}
+
+async function setGlobalScanLock(data) {
+  const lockRef = db.collection("_system").doc("ai_scan_lock");
+  await lockRef.set(data, { merge: true });
+}
+
+// --- MANUAL AI ADVISOR TRIGGER ENDPOINT ---
+app.post("/run-ai-advisor", async (req, res) => {
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) return res.status(500).json({ error: "Manca GEMINI_API_KEY!" });
+
+    // Controlla il lock globale su Firestore (blocca se gia' in corso o troppo recente)
+    const lock = await getGlobalScanLock();
+    const now = Date.now();
+    if (lock) {
+      if (lock.isRunning) {
+        return res.status(429).json({ message: "Una scansione IA e' attualmente in corso da un altro dispositivo. Attendi che termini!" });
+      }
+      const remainingMs = AI_SCAN_COOLDOWN_MS - (now - lock.lastRun);
+      if (remainingMs > 0) {
+        const remainingMin = Math.ceil(remainingMs / 60000);
+        return res.status(429).json({
+          message: `Limitazione chiamate: Scansione IA eseguita di recente. Attendi ${remainingMin} minut${remainingMin === 1 ? 'o' : 'i'} prima di rilanciare.`,
+          remainingMs
+        });
+      }
+    }
+
+    // Imposta il lock
+    await setGlobalScanLock({ isRunning: true, lastRun: now, startedAt: new Date().toISOString() });
+    res.status(202).json({ message: "Avvio scansione IA in background. Aggiorna tra qualche minuto!" });
+
+    // --- ESEGUI L'ANALISI IN BACKGROUND ---
+    (async () => {
+      try {
+        console.log("Avvio MANUALE AI Advisor Agent...");
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
+        const snapshot = await db.collection("products").get();
+        if (snapshot.empty) { await setGlobalScanLock({ isRunning: false, lastRun: now }); return; }
+
+        const promptPrefix = `Sei un consulente finanziario esperto in investimenti su carte collezionabili di Magic: The Gathering (MTG).
+Ti forniro' i dati di un prodotto sigillato (nome, prezzo attuale, e gli ultimi punti dello storico prezzi).
+Il tuo compito e' analizzare rapidamente il trend.
+Rispondi SOLO con un oggetto JSON valido contenente due campi:
+- "verdict": una singola parola tra "COMPRA", "ASPETTA", "SOVRAPPREZZO".
+- "reason": una frase sintetica (massimo 15 parole) che motiva la scelta.
+Esempio: {"verdict": "COMPRA", "reason": "Prezzo ai minimi storici, ottimo punto di ingresso."}
+
+Ecco i dati del prodotto:
+`;
+
+        for (const doc of snapshot.docs) {
+          const p = doc.data();
+          if (!p.prezzoAttuale || p.prezzoAttuale === 0) continue;
+          const storicoLimitato = (p.storico || []).slice(-15).map(s => `Data: ${s.data}, Prezzo: ${s.prezzo}EUR`).join(" | ");
+          const prompt = promptPrefix + `Nome: ${p.nome}\nPrezzo Attuale: ${p.prezzoAttuale}EUR\nStorico recente: ${storicoLimitato}`;
+          try {
+            const result = await model.generateContent(prompt);
+            let text = result.response.text();
+            text = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            const aiData = JSON.parse(text);
+            await doc.ref.update({ ai_verdict: aiData.verdict, ai_reason: aiData.reason, ai_last_update: Date.now() });
+            console.log(`Aggiornato ${p.nome}: ${aiData.verdict}`);
+            await new Promise(resolve => setTimeout(resolve, 4000));
+          } catch (err) {
+            console.error(`Errore AI per ${p.nome}:`, err.message);
+          }
+        }
+        console.log("AI Advisor Agent manuale terminato!");
+      } catch (err) {
+        console.error("Errore AI Advisor manuale:", err);
+      } finally {
+        await setGlobalScanLock({ isRunning: false, lastRun: now });
+      }
+    })();
+
+  } catch (err) {
+    console.error("Errore /run-ai-advisor:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- TELEGRAM BOT AI WEBHOOK ENDPOINT ---
+const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN || "8653736095:AAFlKj11USRKSHcG0ycsOzVXW9vaWGgyFW0";
+
+async function sendTelegramMessage(chatId, text, parseMode = "Markdown") {
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+    const payload = { chat_id: chatId, text: text };
+    if (parseMode) payload.parse_mode = parseMode;
+
+    let response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      console.warn(`Telegram sendMessage status ${response.status}: ${errText}. Retrying without parse_mode...`);
+      delete payload.parse_mode;
+      await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    }
+  } catch (err) {
+    console.error("Errore invio messaggio Telegram:", err);
+  }
+}
+
+// Funzione per impostare i comandi nativi di Telegram
+async function setupTelegramBotCommands() {
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/setMyCommands`;
+    const commands = [
+      { command: "start", description: "Avvia il Bot e mostra il benvenuto" },
+      { command: "affari", description: "Migliori occasioni e sconti MTG" },
+      { command: "espansioni", description: "Lista dei set monitorati nel tracker" },
+      { command: "cerca", description: "Cerca un prodotto (es: /cerca booster box)" },
+      { command: "consigli", description: "Top 5 consigli d'acquisto dell'IA" },
+      { command: "stats", description: "Statistiche generali del database" },
+      { command: "prezzo", description: "Verifica rapida prezzo (es: /prezzo zendikar)" },
+      { command: "help", description: "Guida e lista di tutti i comandi" }
+    ];
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ commands: commands })
+    });
+    console.log("Comandi nativi Telegram impostati con successo!");
+  } catch (e) {
+    console.error("Errore impostazione comandi Telegram:", e.message);
+  }
+}
+
+app.post("/telegram-webhook", async (req, res) => {
+  try {
+    const body = req.body;
+    if (!body || !body.message) return res.status(200).send("OK");
+
+    const message = body.message;
+    const chatId = message.chat.id;
+    const userText = (message.text || "").trim();
+    if (!userText) return res.status(200).send("OK");
+
+    console.log(`Telegram Bot messaggio da ${chatId}: "${userText}"`);
+    const textLower = userText.toLowerCase();
+
+    // 1. /start o /help o /comandi
+    if (textLower === "/start" || textLower === "/help" || textLower === "/comandi") {
+      const welcome = `🏰 Lorehold Price Tracker AI Bot\n\nCiao! Sono l'Agente IA per i prodotti sigillati Magic: The Gathering (MTG).\n\n📜 Comandi Rapidi Disponibili:\n• /affari - Migliori occasioni d'acquisto con sconti & verdict IA\n• /espansioni - Set e collezioni monitorate nel tracker\n• /cerca <nome> - Cerca prodotti (es: /cerca Play Booster Box)\n• /consigli - Top 5 acquisti consigliati dall'IA\n• /stats - Statistiche complessive del tracker\n• /prezzo <nome> - Consulta prezzo e stock di un prodotto\n• /help - Mostra questa guida\n\n💬 Oppure scrivimi qualsiasi domanda in linguaggio naturale!\nEs: "Quali sono i booster box sotto i 100 euro?" o "Conviene comprare ora Star Trek?"`;
+      await sendTelegramMessage(chatId, welcome);
+      return res.status(200).send("OK");
+    }
+
+    // 2. /affari o /deals
+    if (textLower === "/affari" || textLower === "/deals") {
+      const snapshot = await db.collection("products").get();
+      const products = [];
+      snapshot.forEach(doc => products.push(doc.data()));
+      const deals = products.filter(p => {
+        const v = (p.ai_verdict || p.verdict || '').toUpperCase();
+        const price = p.prezzoAttuale || 0;
+        return v.includes("COMPRA") || (price > 0 && price <= 110);
+      });
+      if (deals.length === 0) {
+        await sendTelegramMessage(chatId, "🎯 Al momento non ci sono prodotti con verdict COMPRA in forte sconto. Ricontrolla tra poco!");
+        return res.status(200).send("OK");
+      }
+      let reply = `🎯 OCCASIONI & AFFARI MTG SIGILLATI\n\n`;
+      deals.slice(0, 8).forEach(d => {
+        const v = d.ai_verdict || "COMPRA";
+        const link = d.url || (d.id ? `https://www.cardtrader.com/it/cards/${d.id}` : null);
+        const linkStr = link ? `\n[Vedi Offerta su CardTrader](${link})` : '';
+        reply += `📦 ${d.nome}\n💰 Prezzo: EUR ${d.prezzoAttuale || 'N/D'}\n🎨 Set: ${d.expansion || 'Generico'}\n🧠 IA: ${v} (${d.ai_reason || 'Ottimo punto di ingresso'})${linkStr}\n\n`;
+      });
+      await sendTelegramMessage(chatId, reply);
+      return res.status(200).send("OK");
+    }
+
+    // 3. /espansioni o /sets
+    if (textLower === "/espansioni" || textLower === "/sets") {
+      const snapshot = await db.collection("products").get();
+      const expMap = {};
+      snapshot.forEach(doc => {
+        const p = doc.data();
+        if (p.expansion) expMap[p.expansion] = (expMap[p.expansion] || 0) + 1;
+      });
+      let reply = `📦 ESPANSIONI MONITORATE NEL TRACKER\n\n`;
+      const expList = Object.keys(expMap).sort();
+      if (expList.length === 0) {
+        reply += "Nessuna espansione attualmente in archivio.";
+      } else {
+        expList.forEach(exp => { reply += `• ${exp}: ${expMap[exp]} prodotti sigillati\n`; });
+      }
+      reply += `\nUsa /cerca <nome_set> per cercare prodotti di un set specifico!`;
+      await sendTelegramMessage(chatId, reply);
+      return res.status(200).send("OK");
+    }
+
+    // 4. /cerca o /prezzo
+    if (textLower.startsWith("/cerca") || textLower.startsWith("/prezzo")) {
+      const queryParts = userText.split(" ");
+      queryParts.shift(); // rimuovi comando
+      const searchQuery = queryParts.join(" ").trim().toLowerCase();
+      if (!searchQuery) {
+        await sendTelegramMessage(chatId, "⚠️ Specificare un nome o una parola chiave da cercare.\nEsempio: /cerca Zendikar oppure /prezzo Play Booster");
+        return res.status(200).send("OK");
+      }
+
+      const snapshot = await db.collection("products").get();
+      const matched = [];
+      snapshot.forEach(doc => {
+        const p = doc.data();
+        const fullStr = `${p.nome || ''} ${p.expansion || ''}`.toLowerCase();
+        if (fullStr.includes(searchQuery)) {
+          matched.push(p);
+        }
+      });
+
+      if (matched.length === 0) {
+        await sendTelegramMessage(chatId, `🔍 Nessun prodotto trovato per "${searchQuery}". Prova con un nome più generale o usa /espansioni per la lista.`);
+        return res.status(200).send("OK");
+      }
+
+      let reply = `🔍 RISULTATI RICERCA PER "${searchQuery.toUpperCase()}" (${matched.length} trovati):\n\n`;
+      matched.slice(0, 7).forEach(p => {
+        const link = p.url || (p.id ? `https://www.cardtrader.com/it/cards/${p.id}` : "");
+        const linkStr = link ? `\n[Apri su CardTrader](${link})` : '';
+        reply += `📦 ${p.nome}\n💰 Prezzo: EUR ${p.prezzoAttuale || 'N/D'} | Stock: ${p.stock ?? 'N/D'}\n🏷️ Set: ${p.expansion || 'N/D'} | IA: ${p.ai_verdict || 'STABILE'}${linkStr}\n\n`;
+      });
+      await sendTelegramMessage(chatId, reply);
+      return res.status(200).send("OK");
+    }
+
+    // 5. /consigli o /top
+    if (textLower === "/consigli" || textLower === "/top") {
+      const snapshot = await db.collection("products").get();
+      const products = [];
+      snapshot.forEach(doc => products.push(doc.data()));
+
+      const recommended = products
+        .filter(p => p.prezzoAttuale && p.prezzoAttuale > 0)
+        .sort((a, b) => {
+          const scoreA = (a.ai_verdict === "COMPRA" ? 2 : 0) + (a.stock > 0 ? 1 : 0);
+          const scoreB = (b.ai_verdict === "COMPRA" ? 2 : 0) + (b.stock > 0 ? 1 : 0);
+          return scoreB - scoreA;
+        })
+        .slice(0, 5);
+
+      let reply = `💡 TOP 5 ACQUISTI CONSIGLIATI DALL'IA\n\n`;
+      recommended.forEach((p, idx) => {
+        const link = p.url || (p.id ? `https://www.cardtrader.com/it/cards/${p.id}` : "");
+        const linkStr = link ? `\n[Vedi Offerta](${link})` : '';
+        reply += `${idx + 1}. ${p.nome}\n   💰 EUR ${p.prezzoAttuale} | Set: ${p.expansion || 'Generico'}\n   🧠 IA Verdict: ${p.ai_verdict || 'COMPRA'} (${p.ai_reason || 'Punto di ingresso favorevole'})${linkStr}\n\n`;
+      });
+      await sendTelegramMessage(chatId, reply);
+      return res.status(200).send("OK");
+    }
+
+    // 6. /stats o /statistiche
+    if (textLower === "/stats" || textLower === "/statistiche") {
+      const snapshot = await db.collection("products").get();
+      let totalProducts = 0;
+      let totalValue = 0;
+      const expSet = new Set();
+      let minPriceItem = null;
+      let maxPriceItem = null;
+
+      snapshot.forEach(doc => {
+        const p = doc.data();
+        totalProducts++;
+        if (p.expansion) expSet.add(p.expansion);
+        const price = p.prezzoAttuale || 0;
+        if (price > 0) {
+          totalValue += price;
+          if (!minPriceItem || price < minPriceItem.prezzoAttuale) minPriceItem = p;
+          if (!maxPriceItem || price > maxPriceItem.prezzoAttuale) maxPriceItem = p;
+        }
+      });
+
+      const avgPrice = totalProducts > 0 ? (totalValue / totalProducts).toFixed(2) : 0;
+      let reply = `📊 STATISTICHE LOREHOLD PRICE TRACKER\n\n`;
+      reply += `📦 Prodotti Sigillati Tracciati: ${totalProducts}\n`;
+      reply += `🎨 Espansioni Monitorate: ${expSet.size}\n`;
+      reply += `💶 Prezzo Medio: EUR ${avgPrice}\n`;
+      if (minPriceItem) reply += `📉 Prezzo Più Basso: EUR ${minPriceItem.prezzoAttuale} (${minPriceItem.nome})\n`;
+      if (maxPriceItem) reply += `📈 Prezzo Più Alto: EUR ${maxPriceItem.prezzoAttuale} (${maxPriceItem.nome})\n`;
+      await sendTelegramMessage(chatId, reply);
+      return res.status(200).send("OK");
+    }
+
+    // 7. Risposta in linguaggio naturale con Gemini 2.5 Flash + Fallback Locale DB
+    const apiKey = process.env.GEMINI_API_KEY;
+    const snapshot = await db.collection("products").get();
+    const productsList = [];
+    snapshot.forEach(doc => {
+      const p = doc.data();
+      if (!p.prezzoAttuale || p.prezzoAttuale === 0) return;
+      const link = p.url || (p.id ? `https://www.cardtrader.com/it/cards/${p.id}` : "");
+      productsList.push({ nome: p.nome, prezzoAttuale: p.prezzoAttuale, expansion: p.expansion, verdict: p.ai_verdict || p.verdict || "STABILE", reason: p.ai_reason || "", link: link });
+    });
+
+    // Se l'API Gemini e' disponibile, proviamo con il modello di punta
+    if (apiKey) {
+      const limitedList = productsList.slice(0, 60);
+      const contextStr = limitedList.map(p =>
+        `- ${p.nome} (${p.expansion || 'Generico'}): EUR${p.prezzoAttuale} | IA: ${p.verdict}. ${p.reason} | ${p.link}`
+      ).join("\n");
+
+      const prompt = `Sei l'Assistente IA Telegram di "Lorehold Price Tracker", esperto di investimenti su prodotti sigillati Magic: The Gathering (MTG).
+Rispondi in italiano, in modo chiaro, amichevole e conciso (max 250 parole). Usa emoji per rendere il messaggio visivo.
+Quando citi un prodotto con link, usa il formato: [Nome Prodotto](URL).
+NON usare ** per il grassetto: usa solo testo normale e link cliccabili.
+
+Dati aggiornati dal nostro database (${limitedList.length} prodotti monitorati):
+${contextStr}
+
+Domanda dell'utente: "${userText}"
+
+Rispondi basandoti sui dati sopra. Se l'utente chiede consigli o prezzi, indica i dettagli esatti.`;
+
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const candidateModels = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-flash-latest"];
+      let aiAnswer = null;
+
+      for (const mName of candidateModels) {
+        try {
+          const model = genAI.getGenerativeModel({ model: mName });
+          const result = await model.generateContent(prompt);
+          aiAnswer = result.response.text();
+          if (aiAnswer) break;
+        } catch (mErr) {
+          console.warn(`Modello ${mName} non disponibile:`, mErr.message);
+        }
+      }
+
+      if (aiAnswer) {
+        aiAnswer = aiAnswer.replace(/\*\*(.*?)\*\*/g, "$1");
+        if (aiAnswer.length > 4000) aiAnswer = aiAnswer.substring(0, 3990) + "\n\n..._(risposta troncata)_";
+        await sendTelegramMessage(chatId, aiAnswer);
+        return res.status(200).send("OK");
+      }
+    }
+
+    // FALLBACK LOCALE INTELIGENTE (se l'API AI fallisce o e' in rate-limit)
+    console.log("Fallback locale DB per query:", userText);
+    const keywords = userText.toLowerCase().split(/\s+/).filter(k => k.length > 2);
+    const matchedProducts = productsList.filter(p => {
+      const full = `${p.nome} ${p.expansion}`.toLowerCase();
+      return keywords.some(kw => full.includes(kw));
+    });
+
+    let fallbackReply = `🤖 LOREHOLD BOT - RISPOSTA RAPIDA\n\n`;
+    if (matchedProducts.length > 0) {
+      fallbackReply += `Ho trovato questi prodotti nel tracker correlati alla tua richiesta:\n\n`;
+      matchedProducts.slice(0, 5).forEach(p => {
+        const linkStr = p.link ? `\n[Vedi su CardTrader](${p.link})` : '';
+        fallbackReply += `📦 ${p.nome}\n💰 Prezzo: EUR ${p.prezzoAttuale} | Set: ${p.expansion || 'Generico'}\n🧠 IA Verdict: ${p.verdict}${linkStr}\n\n`;
+      });
+    } else {
+      fallbackReply += `Non ho trovato prodotti specifici per "${userText}".\n\nComandi utili:\n/affari - Migliori sconti\n/cerca <nome> - Cerca qualsiasi set o box\n/espansioni - Set monitorati\n/stats - Statistiche database`;
+    }
+    await sendTelegramMessage(chatId, fallbackReply);
+
+    return res.status(200).send("OK");
+  } catch (err) {
+    console.error("Errore Telegram Webhook:", err);
+    return res.status(200).send("OK");
+  }
+});
+
+// Endpoint per configurare il Webhook ed i Comandi Telegram
+app.get("/set-telegram-webhook", async (req, res) => {
+  try {
+    const webhookUrl = "https://api-ll4z4qe4ga-uc.a.run.app/telegram-webhook";
+    const resTelegram = await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/setWebhook?url=${webhookUrl}`);
+    const data = await resTelegram.json();
+    await setupTelegramBotCommands();
+    return res.json({ message: "Webhook e Comandi Telegram configurati con successo!", result: data });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// --- AI ADVISOR AGENT SCHEDULATO (ogni 24 ore) ---
+exports.aiAdvisorAgent = onSchedule({
+  schedule: "every 24 hours",
+  timeoutSeconds: 540,
+  memory: "256MiB"
+}, async (event) => {
+  console.log("Avvio AI Advisor Agent schedulato...");
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) { console.error("Manca GEMINI_API_KEY!"); return; }
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const snapshot = await db.collection("products").get();
+    if (snapshot.empty) return;
+    const promptPrefix = `Sei un consulente finanziario esperto in investimenti su carte collezionabili di Magic: The Gathering (MTG).
+Ti forniro' i dati di un prodotto sigillato.
+Rispondi SOLO con un oggetto JSON valido:
+- "verdict": "COMPRA", "ASPETTA", o "SOVRAPPREZZO".
+- "reason": frase sintetica max 15 parole.
+Esempio: {"verdict": "COMPRA", "reason": "Prezzo ai minimi storici, ottimo punto di ingresso."}
+Dati del prodotto:
+`;
+    for (const doc of snapshot.docs) {
+      const p = doc.data();
+      if (!p.prezzoAttuale || p.prezzoAttuale === 0) continue;
+      const storicoLimitato = (p.storico || []).slice(-15).map(s => `Data: ${s.data}, Prezzo: ${s.prezzo}EUR`).join(" | ");
+      const prompt = promptPrefix + `Nome: ${p.nome}\nPrezzo Attuale: ${p.prezzoAttuale}EUR\nStorico recente: ${storicoLimitato}`;
+      try {
+        const result = await model.generateContent(prompt);
+        let text = result.response.text().replace(/```json/g, "").replace(/```/g, "").trim();
+        const aiData = JSON.parse(text);
+        await doc.ref.update({ ai_verdict: aiData.verdict, ai_reason: aiData.reason, ai_last_update: Date.now() });
+        console.log(`Aggiornato ${p.nome}: ${aiData.verdict}`);
+        await new Promise(resolve => setTimeout(resolve, 4000));
+      } catch (err) {
+        console.error(`Errore AI per ${p.nome}:`, err.message);
+      }
+    }
+    console.log("AI Advisor Agent schedulato terminato!");
+  } catch (err) {
+    console.error("Errore fatale AI Advisor:", err);
   }
 });

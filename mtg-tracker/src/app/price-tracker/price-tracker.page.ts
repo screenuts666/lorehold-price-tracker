@@ -2,8 +2,13 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ActivatedRoute, Router } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline, searchOutline, closeOutline, settingsOutline, optionsOutline, funnelOutline, sparklesOutline } from 'ionicons/icons';
+import { 
+  refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline, 
+  searchOutline, closeOutline, settingsOutline, optionsOutline, funnelOutline, 
+  sparklesOutline, arrowBackOutline 
+} from 'ionicons/icons';
 import {
   IonHeader,
   IonToolbar,
@@ -21,7 +26,11 @@ import { BuyingSectionComponent } from './components/buying-section/buying-secti
 import { SellingSectionComponent } from './components/selling-section/selling-section.component';
 import { SearchSectionComponent } from './components/search-section/search-section.component';
 import { FilterModalComponent } from './components/filter-modal/filter-modal.component';
+import { ExpansionsHubComponent } from './components/expansions-hub/expansions-hub.component';
 import { Firestore, collection, collectionData, doc, setDoc, deleteDoc } from '@angular/fire/firestore';
+import { MtgCategoryService } from './services/mtg-category.service';
+import { StorageFilterService } from './services/storage-filter.service';
+import { LanguageService } from './services/language.service';
 import { environment } from 'src/environments/environment';
 
 @Component({
@@ -37,19 +46,16 @@ import { environment } from 'src/environments/environment';
     IonButton,
     IonIcon,
     IonContent,
-    IonSpinner,
-    IonSegment,
-    IonSegmentButton,
-    IonSelect,
-    IonSelectOption,
     BuyingSectionComponent,
-    SellingSectionComponent,
     SearchSectionComponent,
-    FilterModalComponent
+    FilterModalComponent,
+    ExpansionsHubComponent
   ],
 })
 export class PriceTrackerPage implements OnInit {
-  activeSection: 'buying' | 'selling' | 'search' = 'buying';
+  activeSection: 'expansions-hub' | 'expansion-detail' | 'all-sealed' | 'bargains' | 'search' = 'expansions-hub';
+  selectedExpansionForDetail: string = '';
+  
   products: any[] = [];
   loading: boolean = false;
   viewMode: 'grid' | 'table' = 'grid';
@@ -67,96 +73,146 @@ export class PriceTrackerPage implements OnInit {
 
   selectedExpansionFilter: string = 'all';
   selectedTypeFilter: string = 'all';
+  selectedVerdictFilter: string = 'all';
+  searchSealedQuery: string = '';
+  bargainThreshold: number = 110;
 
-  constructor(private http: HttpClient, private firestore: Firestore, private toastController: ToastController) {
+  includeCollectorBoxes: boolean = true;
+  includePlayBoxes: boolean = true;
+  includePrereleasePacks: boolean = true;
+  includeBundles: boolean = true;
+  includeDraftNight: boolean = true;
+  includeSceneBoxes: boolean = false;
+  includeCommanderDecks: boolean = false;
+  includeStarterDecks: boolean = false;
+  minPriceFilter: number | null = null;
+  maxPriceFilter: number | null = null;
+
+  constructor(
+    private http: HttpClient, 
+    private firestore: Firestore, 
+    private toastController: ToastController,
+    private route: ActivatedRoute,
+    private router: Router,
+    public categoryService: MtgCategoryService,
+    public storageService: StorageFilterService,
+    public langService: LanguageService
+  ) {
     addIcons({ 
       refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline,
-      searchOutline, closeOutline, settingsOutline, optionsOutline, funnelOutline, sparklesOutline 
+      searchOutline, closeOutline, settingsOutline, optionsOutline, funnelOutline, sparklesOutline, arrowBackOutline 
     });
   }
 
-  ngOnInit() {
-    // Load view configuration
-    const savedVista = localStorage.getItem('mtg_tracker_vista');
-    if (savedVista === 'grid' || savedVista === 'table') {
-      this.viewMode = savedVista;
-    }
-    
-    const savedOrdinamento = localStorage.getItem('mtg_tracker_ordinamento');
-    if (savedOrdinamento) {
-      if (savedOrdinamento === 'recente') this.sortMode = 'recent';
-      else if (savedOrdinamento === 'prezzo-crescente') this.sortMode = 'price-ascending';
-      else if (savedOrdinamento === 'prezzo-decrescente') this.sortMode = 'price-descending';
-      else if (savedOrdinamento === 'variazione-peggiore') this.sortMode = 'variation-best';
-      else if (savedOrdinamento === 'variazione-migliore') this.sortMode = 'variation-worst';
-      else this.sortMode = savedOrdinamento;
-    }
+  get t() {
+    return this.langService.t();
+  }
 
-    const savedSezione = localStorage.getItem('mtg_tracker_sezione');
-    if (savedSezione) {
-      if (savedSezione === 'acquisto') this.activeSection = 'buying';
-      else if (savedSezione === 'vendita') this.activeSection = 'selling';
-      else if (savedSezione === 'search') this.activeSection = 'search';
-    }
+  get categoryThresholds() {
+    return this.categoryService.categoryThresholds;
+  }
+
+  ngOnInit() {
+    this.viewMode = this.storageService.getVistaMode();
+
+    const state = this.storageService.loadFilterState();
+    this.selectedExpansionFilter = state.expansionFilter;
+    this.selectedTypeFilter = state.typeFilter;
+    this.selectedVerdictFilter = state.verdictFilter;
+    this.includeCollectorBoxes = state.includeCollectorBoxes;
+    this.includePlayBoxes = state.includePlayBoxes;
+    this.includePrereleasePacks = state.includePrereleasePacks;
+    this.includeBundles = state.includeBundles;
+    this.includeDraftNight = state.includeDraftNight;
+    this.includeSceneBoxes = state.includeSceneBoxes;
+    this.includeCommanderDecks = state.includeCommanderDecks;
+    this.includeStarterDecks = state.includeStarterDecks;
+    this.searchSealedQuery = state.searchQuery;
+    this.minPriceFilter = state.minPrice;
+    this.maxPriceFilter = state.maxPrice;
+    this.sortMode = state.sortMode;
 
     const savedCols = localStorage.getItem('mtg_tracker_colonne');
     if (savedCols) {
       this.gridColumns = parseInt(savedCols, 10) || 4;
     }
 
-    // Subscribe to products from Firestore in real-time
+    // Dynamic URL QueryParams Listener (Browser Back Button & Direct URL Links Support)
+    this.route.queryParams.subscribe(params => {
+      if (params['set']) {
+        this.selectedExpansionForDetail = params['set'];
+        this.activeSection = 'expansion-detail';
+      } else if (params['section']) {
+        this.activeSection = params['section'];
+        this.selectedExpansionForDetail = '';
+      } else {
+        this.activeSection = 'expansions-hub';
+        this.selectedExpansionForDetail = '';
+      }
+    });
+
     const productsCollection = collection(this.firestore, 'products');
     collectionData(productsCollection).subscribe({
       next: (data: any[]) => {
         this.products = data || [];
         this.deduplicatePriceHistory();
+        this.purgeFoundations();
         if (!this.firstLoadDone) {
           this.firstLoadDone = true;
-          this.updateAllPrices(false);
         }
       },
       error: (err) => console.error('Error fetching Firestore products:', err)
     });
   }
 
-  detectMtgType(name: string): { nameType: string } {
-    const n = (name || '').toLowerCase();
-    if (n.includes('play booster box') || n.includes('play box')) {
-      return { nameType: 'Play Box' };
-    }
-    if (n.includes('collector booster box') || n.includes('collector box')) {
-      return { nameType: 'Collector Box' };
-    }
-    if (n.includes('prerelease pack') || n.includes('prerelease')) {
-      return { nameType: 'Prerelease Pack' };
-    }
-    if (n.includes('fat pack') || n.includes('bundle') || n.includes('gift edition')) {
-      return { nameType: 'Bundle' };
-    }
-    if (n.includes('commander') && n.includes('deck')) {
-      return { nameType: 'Commander Deck' };
-    }
-    if (n.includes('draft night')) {
-      return { nameType: 'Draft Night Kit' };
-    }
-    if (n.includes('collector booster') || n.includes('booster pack') || n.includes('pack')) {
-      return { nameType: 'Single Pack' };
-    }
-    return { nameType: 'Generico' };
+  purgeFoundations() {
+    this.products.forEach(p => {
+      const name = (p.nome || '').toLowerCase();
+      const exp = (p.expansion || '').toLowerCase();
+      if (name.includes('foundations') || exp.includes('foundations')) {
+        const docRef = doc(this.firestore, 'products', p.id);
+        deleteDoc(docRef).catch(err => console.error('Error purging Foundations:', err));
+      }
+    });
   }
 
-  // Opens the filters modal when a card is selected from Search Section
+  updateCategoryThreshold(key: string, val: any) {
+    this.categoryService.updateThreshold(key as any, parseFloat(val));
+  }
+
+  onFiltroChange() {
+    this.storageService.saveFilterState({
+      expansionFilter: this.selectedExpansionFilter,
+      typeFilter: this.selectedTypeFilter,
+      verdictFilter: this.selectedVerdictFilter,
+      includeCollectorBoxes: this.includeCollectorBoxes,
+      includePlayBoxes: this.includePlayBoxes,
+      includePrereleasePacks: this.includePrereleasePacks,
+      includeBundles: this.includeBundles,
+      includeDraftNight: this.includeDraftNight,
+      includeSceneBoxes: this.includeSceneBoxes,
+      includeCommanderDecks: this.includeCommanderDecks,
+      includeStarterDecks: this.includeStarterDecks,
+      searchQuery: this.searchSealedQuery,
+      minPrice: this.minPriceFilter,
+      maxPrice: this.maxPriceFilter,
+      sortMode: this.sortMode
+    });
+  }
+
+  detectMtgType(name: string) {
+    return this.categoryService.detectCategory(name);
+  }
+
   handleCardSelected(mappedCard: any) {
     this.selectedProduct = mappedCard;
     this.foilFilter = 'any';
     this.langFilter = 'any';
     this.condFilter = 'any';
-    this.intentFilter = this.activeSection === 'selling' ? 'sell' : 'buy';
-    
+    this.intentFilter = 'buy';
     this.showFilterModal = true;
   }
 
-  // Opens the filters modal to edit an existing product
   openEditFilters(product: any) {
     this.selectedProduct = product;
     this.foilFilter = product.foil === true ? 'foil' : product.foil === false ? 'normal' : 'any';
@@ -164,7 +220,6 @@ export class PriceTrackerPage implements OnInit {
     this.condFilter = product.condizione || 'any';
     this.intentFilter = product.intento;
     this.selectedProduct.isNew = false;
-    
     this.showFilterModal = true;
   }
 
@@ -172,7 +227,6 @@ export class PriceTrackerPage implements OnInit {
     if (!this.selectedProduct) return;
 
     if (this.selectedProduct.isNew) {
-      // Create new tracked product
       const newProduct = {
         id: this.selectedProduct.id,
         nome: this.selectedProduct.name,
@@ -191,8 +245,7 @@ export class PriceTrackerPage implements OnInit {
       if (!this.products.find(p => p.id === newProduct.id)) {
         const docRef = doc(this.firestore, 'products', newProduct.id);
         setDoc(docRef, newProduct).then(() => {
-          // Go to target section tab
-          this.activeSection = event.intent === 'buy' ? 'buying' : 'selling';
+          this.activeSection = 'all-sealed';
           this.onSezioneChange();
           this.updateSingleProductPrice(newProduct, true);
         }).catch(err => console.error('Error adding product:', err));
@@ -200,7 +253,6 @@ export class PriceTrackerPage implements OnInit {
         alert('Product already tracked!');
       }
     } else {
-      // Update existing product
       const updatedProduct = {
         ...this.selectedProduct,
         foil: event.foil,
@@ -221,12 +273,28 @@ export class PriceTrackerPage implements OnInit {
     this.selectedProduct = null;
   }
 
+  getExpansionReleaseDate(expansionName: string): string | null {
+    if (!expansionName) return null;
+    const p = this.products.find(item => item.expansion === expansionName && item.releaseDate);
+    if (p && p.releaseDate) {
+      try {
+        const parts = p.releaseDate.split('-');
+        if (parts.length === 3) {
+          return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+        return p.releaseDate;
+      } catch (e) {
+        return p.releaseDate;
+      }
+    }
+    return null;
+  }
+
   handleCloseFilters() {
     this.showFilterModal = false;
     this.selectedProduct = null;
   }
 
-  // Adding via manual url input inside buying/selling sections
   addManualProduct(intent: 'buy' | 'sell', target: string | { url: string; releaseDate?: string }) {
     const url = typeof target === 'string' ? target : target.url;
     const releaseDate = typeof target === 'string' ? undefined : target.releaseDate;
@@ -334,13 +402,6 @@ export class PriceTrackerPage implements OnInit {
           },
           error: async (err) => {
             console.error('Error fetching price from API:', err);
-            const toast = await this.toastController.create({
-              message: `Impossibile raggiungere il backend per aggiornare ID ${product.id}. L'emulatore è acceso?`,
-              duration: 3000,
-              color: 'danger',
-              position: 'top'
-            });
-            await toast.present();
             resolve();
           },
         });
@@ -358,6 +419,35 @@ export class PriceTrackerPage implements OnInit {
 
     Promise.all(updates).then(() => {
       this.loading = false;
+    });
+  }
+
+  // --- TRIGGER SCANNER CLOUD AGENT ON DEMAND ---
+  triggerAiAgent() {
+    this.loading = true;
+    this.http.get(`${environment.apiBaseUrl}/trigger-ai`).subscribe({
+      next: async (res: any) => {
+        this.loading = false;
+        const toast = await this.toastController.create({
+          message: res.message || '⚡ Scansione AI e aggiornamento completati!',
+          duration: 4000,
+          color: 'success',
+          position: 'top'
+        });
+        await toast.present();
+      },
+      error: async (err) => {
+        this.loading = false;
+        console.error('Errore trigger AI:', err);
+        const errorMsg = err.error?.message || err.error?.error || '⚠️ La Scansione IA è protetta da rate-limiting. Attendi 5 minuti tra le chiamate.';
+        const toast = await this.toastController.create({
+          message: errorMsg,
+          duration: 4500,
+          color: err.status === 429 ? 'warning' : 'primary',
+          position: 'top'
+        });
+        await toast.present();
+      }
     });
   }
 
@@ -399,12 +489,7 @@ export class PriceTrackerPage implements OnInit {
         }
       }
     });
-
-    if (modified) {
-      console.log('Deduplicated historical pricing logs.');
-    }
   }
-
 
   calculateValueVariation(item: any): number {
     if (!item.storico || item.storico.length < 2) return 0;
@@ -414,168 +499,140 @@ export class PriceTrackerPage implements OnInit {
     return ((currentPrice - initialPrice) / initialPrice) * 100;
   }
 
-  // --- MEMOIZATION CACHE PER PRESTAZIONI ED EVITARE LAG DI RE-RENDER ---
-  private lastProductsSortedSource: any[] = [];
-  private lastSortModeSorted: string = '';
-  private cachedProductsSorted: any[] = [];
-
   get productsSorted(): any[] {
-    if (
-      this.products === this.lastProductsSortedSource &&
-      this.sortMode === this.lastSortModeSorted
-    ) {
-      return this.cachedProductsSorted;
-    }
-
-    this.lastProductsSortedSource = this.products;
-    this.lastSortModeSorted = this.sortMode;
-
     const list = [...this.products];
-    let result = [];
     switch (this.sortMode) {
       case 'name':
-        result = list.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-        break;
+        return list.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
       case 'release-date':
-        result = list.sort((a, b) => {
+        return list.sort((a, b) => {
           const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : Infinity;
           const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : Infinity;
           return dateA - dateB;
         });
-        break;
       case 'price-ascending':
-        result = list.sort((a, b) => (a.prezzoAttuale || 0) - (b.prezzoAttuale || 0));
-        break;
+        return list.sort((a, b) => (a.prezzoAttuale || 0) - (b.prezzoAttuale || 0));
       case 'price-descending':
-        result = list.sort((a, b) => (b.prezzoAttuale || 0) - (a.prezzoAttuale || 0));
-        break;
+        return list.sort((a, b) => (b.prezzoAttuale || 0) - (a.prezzoAttuale || 0));
       case 'variation-best':
-        result = list.sort((a, b) => this.calculateValueVariation(b) - this.calculateValueVariation(a));
-        break;
+        return list.sort((a, b) => this.calculateValueVariation(b) - this.calculateValueVariation(a));
       case 'variation-worst':
-        result = list.sort((a, b) => this.calculateValueVariation(a) - this.calculateValueVariation(b));
-        break;
+        return list.sort((a, b) => this.calculateValueVariation(a) - this.calculateValueVariation(b));
       case 'recent':
       default:
-        result = list.reverse();
-        break;
+        return list.reverse();
     }
-    this.cachedProductsSorted = result;
-    return result;
   }
-
-  private lastProductsExpSource: any[] = [];
-  private lastActiveSectionExp: string = '';
-  private cachedUniqueExpansions: string[] = [];
 
   get uniqueExpansions(): string[] {
-    if (
-      this.products === this.lastProductsExpSource &&
-      this.activeSection === this.lastActiveSectionExp
-    ) {
-      return this.cachedUniqueExpansions;
-    }
-
-    this.lastProductsExpSource = this.products;
-    this.lastActiveSectionExp = this.activeSection;
-
     const sets = new Set<string>();
-    const intentFilter = this.activeSection === 'buying' ? 'buy' : this.activeSection === 'selling' ? 'sell' : null;
     this.products.forEach(p => {
-      if (intentFilter && p.intento !== intentFilter) return;
       if (p.expansion) sets.add(p.expansion);
     });
-    this.cachedUniqueExpansions = Array.from(sets).sort();
-    return this.cachedUniqueExpansions;
+    return Array.from(sets).sort();
   }
 
-  private lastProductsTypeSource: any[] = [];
-  private lastActiveSectionType: string = '';
-  private cachedUniqueTypes: string[] = [];
-
   get uniqueTypes(): string[] {
-    if (
-      this.products === this.lastProductsTypeSource &&
-      this.activeSection === this.lastActiveSectionType
-    ) {
-      return this.cachedUniqueTypes;
-    }
-
-    this.lastProductsTypeSource = this.products;
-    this.lastActiveSectionType = this.activeSection;
-
     const types = new Set<string>();
-    const intentFilter = this.activeSection === 'buying' ? 'buy' : this.activeSection === 'selling' ? 'sell' : null;
     this.products.forEach(p => {
-      if (intentFilter && p.intento !== intentFilter) return;
       const typeInfo = this.detectMtgType(p.nome);
       types.add(typeInfo.nameType);
     });
-    this.cachedUniqueTypes = Array.from(types).sort();
-    return this.cachedUniqueTypes;
+    return Array.from(types).sort();
   }
 
-  private lastProductsBuyingSource: any[] = [];
-  private lastSortModeBuying: string = '';
-  private lastExpansionFilterBuying: string = '';
-  private lastTypeFilterBuying: string = '';
-  private cachedProductsBuying: any[] = [];
+  updateBargainThreshold(val: any) {
+    const num = parseFloat(val);
+    this.bargainThreshold = isNaN(num) ? 110 : num;
+    localStorage.setItem('mtg_tracker_soglia_affari', this.bargainThreshold.toString());
+  }
 
-  get productsBuying(): any[] {
-    if (
-      this.products === this.lastProductsBuyingSource &&
-      this.sortMode === this.lastSortModeBuying &&
-      this.selectedExpansionFilter === this.lastExpansionFilterBuying &&
-      this.selectedTypeFilter === this.lastTypeFilterBuying
-    ) {
-      return this.cachedProductsBuying;
+  get allSealedProducts(): any[] {
+    let list = [...this.productsSorted];
+    const q = (this.searchSealedQuery || '').toLowerCase().trim();
+
+    // Flexible Category Toggles Filter
+    if (!this.includeCollectorBoxes) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'collector-box');
+    }
+    if (!this.includePlayBoxes) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'play-box');
+    }
+    if (!this.includePrereleasePacks) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'prerelease');
+    }
+    if (!this.includeBundles) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'bundle');
+    }
+    if (!this.includeDraftNight) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'draft-night');
+    }
+    if (!this.includeSceneBoxes) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'scene-box');
+    }
+    if (!this.includeCommanderDecks) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'commander-deck');
+    }
+    if (!this.includeStarterDecks) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'starter-deck');
     }
 
-    this.lastProductsBuyingSource = this.products;
-    this.lastSortModeBuying = this.sortMode;
-    this.lastExpansionFilterBuying = this.selectedExpansionFilter;
-    this.lastTypeFilterBuying = this.selectedTypeFilter;
+    if (q) {
+      list = list.filter(p => (p.nome || '').toLowerCase().includes(q) || (p.expansion || '').toLowerCase().includes(q));
+    }
+    if (this.minPriceFilter !== null && !isNaN(this.minPriceFilter) && this.minPriceFilter > 0) {
+      list = list.filter(p => (p.prezzoAttuale || 0) >= (this.minPriceFilter as number));
+    }
+    if (this.maxPriceFilter !== null && !isNaN(this.maxPriceFilter) && this.maxPriceFilter > 0) {
+      list = list.filter(p => (p.prezzoAttuale || 0) <= (this.maxPriceFilter as number));
+    }
+    if (this.selectedExpansionFilter !== 'all') {
+      list = list.filter(p => p.expansion === this.selectedExpansionFilter);
+    }
+    if (this.selectedTypeFilter !== 'all') {
+      list = list.filter(p => this.detectMtgType(p.nome).key === this.selectedTypeFilter);
+    }
+    if (this.selectedVerdictFilter !== 'all') {
+      list = list.filter(p => {
+        const v = (p.verdict || p.aiVerdict || '').toUpperCase();
+        return v.includes(this.selectedVerdictFilter.toUpperCase());
+      });
+    }
+    return list;
+  }
 
+  get bargainProducts(): any[] {
+    return this.allSealedProducts.filter(p => {
+      const v = (p.verdict || p.aiVerdict || '').toUpperCase();
+      const isCompra = v.includes('COMPRA');
+      
+      const cat = this.detectMtgType(p.nome);
+      const threshold = this.categoryThresholds[cat.key] !== undefined ? this.categoryThresholds[cat.key] : cat.defaultThreshold;
+      const isUnderThreshold = p.prezzoAttuale && p.prezzoAttuale > 0 && p.prezzoAttuale <= threshold;
+      
+      return isCompra || isUnderThreshold;
+    });
+  }
+
+  get productsBuying(): any[] {
     let list = this.productsSorted.filter(p => p.intento === 'buy');
     if (this.selectedExpansionFilter !== 'all') {
       list = list.filter(p => p.expansion === this.selectedExpansionFilter);
     }
     if (this.selectedTypeFilter !== 'all') {
-      list = list.filter(p => this.detectMtgType(p.nome).nameType === this.selectedTypeFilter);
+      list = list.filter(p => p.nome && this.detectMtgType(p.nome).key === this.selectedTypeFilter);
     }
-    this.cachedProductsBuying = list;
     return list;
   }
 
-  private lastProductsSellingSource: any[] = [];
-  private lastSortModeSelling: string = '';
-  private lastExpansionFilterSelling: string = '';
-  private lastTypeFilterSelling: string = '';
-  private cachedProductsSelling: any[] = [];
-
   get productsSelling(): any[] {
-    if (
-      this.products === this.lastProductsSellingSource &&
-      this.sortMode === this.lastSortModeSelling &&
-      this.selectedExpansionFilter === this.lastExpansionFilterSelling &&
-      this.selectedTypeFilter === this.lastTypeFilterSelling
-    ) {
-      return this.cachedProductsSelling;
-    }
-
-    this.lastProductsSellingSource = this.products;
-    this.lastSortModeSelling = this.sortMode;
-    this.lastExpansionFilterSelling = this.selectedExpansionFilter;
-    this.lastTypeFilterSelling = this.selectedTypeFilter;
-
     let list = this.productsSorted.filter(p => p.intento === 'sell');
     if (this.selectedExpansionFilter !== 'all') {
       list = list.filter(p => p.expansion === this.selectedExpansionFilter);
     }
     if (this.selectedTypeFilter !== 'all') {
-      list = list.filter(p => this.detectMtgType(p.nome).nameType === this.selectedTypeFilter);
+      list = list.filter(p => p.nome && this.detectMtgType(p.nome).key === this.selectedTypeFilter);
     }
-    this.cachedProductsSelling = list;
     return list;
   }
 
@@ -594,13 +651,106 @@ export class PriceTrackerPage implements OnInit {
 
   onSezioneChange() {
     localStorage.setItem('mtg_tracker_sezione', this.activeSection);
-    // Reset filters on section change
     this.selectedExpansionFilter = 'all';
     this.selectedTypeFilter = 'all';
+    this.router.navigate([], { relativeTo: this.route, queryParams: { set: null, section: this.activeSection } });
   }
 
   onColonneGridChange() {
     localStorage.setItem('mtg_tracker_colonne', this.gridColumns.toString());
-    this.products = [...this.products];
+  }
+
+  openExpansionDetail(expName: string) {
+    this.selectedExpansionForDetail = expName;
+    this.activeSection = 'expansion-detail';
+    localStorage.setItem('mtg_tracker_sezione', this.activeSection);
+    this.router.navigate([], { relativeTo: this.route, queryParams: { set: expName } });
+
+    const existing = this.products.filter(p => p.expansion && p.expansion.toLowerCase().includes(expName.toLowerCase()));
+    if (existing.length === 0) {
+      this.autoDiscoverExpansion(expName);
+    }
+  }
+
+  autoDiscoverExpansion(expName: string) {
+    this.loading = true;
+    this.http.get(`${environment.apiBaseUrl}/discover-expansion-sealed?name=${encodeURIComponent(expName)}`).subscribe({
+      next: async (res: any) => {
+        this.loading = false;
+        const toast = await this.toastController.create({
+          message: res.message || `🤖 Ricerca automatica per '${expName}' completata!`,
+          duration: 3500,
+          color: 'success',
+          position: 'top'
+        });
+        await toast.present();
+      },
+      error: async (err) => {
+        this.loading = false;
+        console.error('Errore auto-discovery:', err);
+      }
+    });
+  }
+
+  triggerRePullExpansion() {
+    if (!this.selectedExpansionForDetail) return;
+    this.autoDiscoverExpansion(this.selectedExpansionForDetail);
+  }
+
+  backToHub() {
+    this.activeSection = 'expansions-hub';
+    this.selectedExpansionForDetail = '';
+    localStorage.setItem('mtg_tracker_sezione', this.activeSection);
+    this.router.navigate([], { relativeTo: this.route, queryParams: { set: null, section: null } });
+  }
+
+  get productsForExpansionDetail(): any[] {
+    let list = this.productsSorted.filter(p => p.expansion === this.selectedExpansionForDetail);
+    const q = (this.searchSealedQuery || '').toLowerCase().trim();
+
+    if (!this.includeCollectorBoxes) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'collector-box');
+    }
+    if (!this.includePlayBoxes) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'play-box');
+    }
+    if (!this.includePrereleasePacks) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'prerelease');
+    }
+    if (!this.includeBundles) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'bundle');
+    }
+    if (!this.includeDraftNight) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'draft-night');
+    }
+    if (!this.includeSceneBoxes) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'scene-box');
+    }
+    if (!this.includeCommanderDecks) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'commander-deck');
+    }
+    if (!this.includeStarterDecks) {
+      list = list.filter(p => this.detectMtgType(p.nome).key !== 'starter-deck');
+    }
+
+    if (q) {
+      list = list.filter(p => (p.nome || '').toLowerCase().includes(q));
+    }
+    if (this.minPriceFilter !== null && !isNaN(this.minPriceFilter) && this.minPriceFilter > 0) {
+      list = list.filter(p => (p.prezzoAttuale || 0) >= (this.minPriceFilter as number));
+    }
+    if (this.maxPriceFilter !== null && !isNaN(this.maxPriceFilter) && this.maxPriceFilter > 0) {
+      list = list.filter(p => (p.prezzoAttuale || 0) <= (this.maxPriceFilter as number));
+    }
+    if (this.selectedTypeFilter !== 'all') {
+      list = list.filter(p => this.detectMtgType(p.nome).key === this.selectedTypeFilter);
+    }
+    if (this.selectedVerdictFilter !== 'all') {
+      list = list.filter(p => {
+        const v = (p.verdict || p.aiVerdict || '').toUpperCase();
+        return v.includes(this.selectedVerdictFilter.toUpperCase());
+      });
+    }
+    return list;
   }
 }

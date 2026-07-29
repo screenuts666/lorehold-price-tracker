@@ -1,5 +1,5 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { IonIcon, IonButton, IonSegment, IonSegmentButton, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
@@ -9,7 +9,6 @@ import { closeOutline, optionsOutline } from 'ionicons/icons';
   selector: 'app-filter-modal',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     IonIcon,
     IonButton,
@@ -17,7 +16,7 @@ import { closeOutline, optionsOutline } from 'ionicons/icons';
     IonSegmentButton,
     IonSelect,
     IonSelectOption
-  ],
+],
   templateUrl: './filter-modal.component.html',
   styleUrls: []
 })

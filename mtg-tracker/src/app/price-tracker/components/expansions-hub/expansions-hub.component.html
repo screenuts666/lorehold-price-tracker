@@ -1,0 +1,132 @@
+<div class="expansions-hub-container">
+  <div class="hub-header" style="flex-wrap: wrap; gap: 16px;">
+    <div>
+      <h2 class="hub-title">
+        <span>🔥</span> Prossime Espansioni in Prevendita
+      </h2>
+      <p class="hub-subtitle">
+        Seleziona un'espansione per visualizzare i prodotti sigillati e l'analisi prezzi con l'IA.
+      </p>
+    </div>
+
+    <!-- FILTER TOOLBAR (SEARCH + SORT + STATUS) -->
+    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+      <!-- SEARCH INPUT -->
+      <div style="position: relative; min-width: 220px;">
+        <input
+          type="text"
+          [ngModel]="searchQuery()"
+          (ngModelChange)="updateSearchQuery($event)"
+          placeholder="🔍 Cerca espansione..."
+          style="width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 500; transition: border-color 0.2s ease;"
+        />
+      </div>
+
+      <!-- STATUS FILTER -->
+      <select
+        [ngModel]="statusFilter()"
+        (ngModelChange)="updateStatusFilter($event)"
+        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 600; cursor: pointer;"
+      >
+        <option value="all">Tutti gli stati</option>
+        <option value="preorder">Solo Prevendita</option>
+        <option value="released">Solo Rilasciate</option>
+      </select>
+
+      <!-- TIME WINDOW FILTER -->
+      <select
+        [ngModel]="timeWindowFilter()"
+        (ngModelChange)="updateTimeWindow($event)"
+        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 10px; color: #a78bfa; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 700; cursor: pointer;"
+      >
+        <option value="3months">📅 Ultimi 3 Mesi & Future</option>
+        <option value="6months">📅 Ultimi 6 Mesi</option>
+        <option value="1year">📅 Ultimo Anno (12 Mesi)</option>
+        <option value="all">📜 Tutte le Espansioni (Tutto)</option>
+      </select>
+
+      <!-- SORT ORDER -->
+      <select
+        [ngModel]="sortOrder()"
+        (ngModelChange)="updateSortOrder($event)"
+        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 600; cursor: pointer;"
+      >
+        <option value="date-desc">Uscita: Più Futura</option>
+        <option value="date-asc">Uscita: Meno Futura</option>
+        <option value="products-desc">Più Prodotti Sigillati</option>
+        <option value="name-asc">Nome (A-Z)</option>
+      </select>
+    </div>
+  </div>
+
+  <ion-grid style="padding: 0;">
+    <ion-row style="row-gap: 16px;">
+      @for (exp of filteredExpansionsData(); track exp.name) {
+        <ion-col size="12" size-sm="6" size-md="4" size-lg="3">
+          <ion-card
+            class="expansion-card-custom"
+            (click)="selectExpansion(exp.name)"
+          >
+            <!-- PREVENDITA BANNER BADGE -->
+            @if (exp.isPreorder) {
+              <div class="badge-banner preorder">
+                Prevendita
+              </div>
+            } @else {
+              <div class="badge-banner released">
+                Rilasciata
+              </div>
+            }
+
+            <!-- Background Overlay / Artwork -->
+            <div 
+              class="card-bg-layer"
+              [style.backgroundImage]="exp.coverImage ? 'url(' + exp.coverImage + ')' : 'radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)'"
+            ></div>
+            <div class="card-gradient-overlay"></div>
+
+            <!-- Content Container -->
+            <div class="card-content-wrap">
+              <!-- SET ICON (SVG) -->
+              @if (exp.icon_svg_uri) {
+                <div
+                  class="set-icon"
+                  [style.mask-image]="'url(' + exp.icon_svg_uri + ')'"
+                  [style.-webkit-mask-image]="'url(' + exp.icon_svg_uri + ')'"
+                ></div>
+              } @else {
+                <div style="font-size: 2.2rem; margin-bottom: 12px;">✨</div>
+              }
+
+              <!-- SET NAME -->
+              <h3 class="set-title">
+                {{ exp.name }}
+              </h3>
+
+              <!-- FOOTER DETAILS -->
+              <div class="card-footer-info">
+                <span class="count-pill">
+                  📦 {{ exp.count }} prodotti
+                </span>
+
+                @if (exp.formattedDate) {
+                  <span class="date-pill">
+                    {{ exp.formattedDate }}
+                  </span>
+                }
+              </div>
+
+            </div>
+          </ion-card>
+        </ion-col>
+      }
+    </ion-row>
+  </ion-grid>
+
+  @if (loadingSets()) {
+    <div class="loading-container">
+      <ion-icon name="sparkles-outline" class="spinner-icon"></ion-icon>
+      <h3 style="font-weight: 700; color: #f8fafc;">Caricamento Nuove Espansioni da Scryfall...</h3>
+    </div>
+  }
+</div>
