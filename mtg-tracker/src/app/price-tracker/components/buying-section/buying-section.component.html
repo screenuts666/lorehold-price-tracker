@@ -23,7 +23,7 @@
       <ion-grid>
         <ion-row>
           @for (item of products(); track item.id) {
-            <ion-col size="6" size-sm="6" [sizeMd]="gridColumns() === 3 ? 6 : 4" [sizeLg]="gridColumns() === 3 ? 4 : 3">
+            <ion-col size="12" size-sm="12" [sizeMd]="gridColumns() === 3 ? 6 : 4" [sizeLg]="gridColumns() === 3 ? 4 : 3">
               <ion-card
                 class="product-glass-card"
                 [class.expanded]="expandedCardId() === item.id"

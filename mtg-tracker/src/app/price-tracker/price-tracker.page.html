@@ -109,9 +109,25 @@
     </div>
   </ion-toolbar>
 
-  <!-- ELEGANT 2-ROW GLOBAL FILTER TOOLBAR -->
+  <!-- ELEGANT 2-ROW GLOBAL FILTER TOOLBAR WITH MOBILE ACCORDION -->
   @if (activeSection === 'all-sealed' || activeSection === 'bargains' || activeSection === 'expansion-detail') {
-    <div style="background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding: 12px 24px; display: flex; flex-direction: column; gap: 10px;">
+    <!-- MOBILE ACCORDION TOGGLE BUTTON (VISIBLE ON MOBILE ONLY) -->
+    <div class="mobile-filter-accordion-toggle" (click)="toggleMobileFilters()">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <ion-icon name="funnel-outline" style="color: #38bdf8; font-size: 16px;"></ion-icon>
+        <span>Filtri & Opzioni Sezione</span>
+        @if (activeFilterCount > 0) {
+          <span class="active-filter-badge">{{ activeFilterCount }} attivi</span>
+        }
+      </div>
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 0.72rem; color: #94a3b8;">{{ showMobileFilters ? 'Nascondi' : 'Mostra' }}</span>
+        <ion-icon [name]="showMobileFilters ? 'chevron-up-outline' : 'chevron-down-outline'" style="color: #38bdf8; font-size: 16px;"></ion-icon>
+      </div>
+    </div>
+
+    <!-- FILTER CONTAINER (COLLAPSIBLE ON MOBILE) -->
+    <div class="filter-bar-container" [class.show-mobile-filters]="showMobileFilters">
       <!-- ROW 1: SEARCH & MAIN DROPDOWNS & MIN/MAX PRICE -->
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; width: 100%;">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex-grow: 1;">

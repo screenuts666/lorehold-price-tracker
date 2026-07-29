@@ -541,6 +541,23 @@ export class PriceTrackerPage implements OnInit {
     return Array.from(types).sort();
   }
 
+  showMobileFilters = false;
+
+  toggleMobileFilters() {
+    this.showMobileFilters = !this.showMobileFilters;
+  }
+
+  get activeFilterCount(): number {
+    let count = 0;
+    if (this.searchSealedQuery && this.searchSealedQuery.trim()) count++;
+    if (this.minPriceFilter && this.minPriceFilter > 0) count++;
+    if (this.maxPriceFilter && this.maxPriceFilter > 0) count++;
+    if (this.selectedExpansionFilter !== 'all') count++;
+    if (this.selectedTypeFilter !== 'all') count++;
+    if (this.selectedVerdictFilter !== 'all') count++;
+    return count;
+  }
+
   updateBargainThreshold(val: any) {
     const num = parseFloat(val);
     this.bargainThreshold = isNaN(num) ? 110 : num;

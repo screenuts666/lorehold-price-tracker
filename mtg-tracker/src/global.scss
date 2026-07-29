@@ -367,12 +367,74 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
   }
 }
 
+/* Mobile Accordion Filter Toggle Styles */
+.mobile-filter-accordion-toggle {
+  display: none;
+  background: rgba(15, 23, 42, 0.98);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 10px 16px;
+  cursor: pointer;
+  user-select: none;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+  .active-filter-badge {
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #ffffff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 12px;
+    letter-spacing: 0.3px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mobile-filter-accordion-toggle {
+    display: flex !important;
+  }
+
+  .filter-bar-container {
+    display: none !important;
+
+    &.show-mobile-filters {
+      display: flex !important;
+      padding: 14px 16px !important;
+      animation: fadeIn 0.25s ease-out;
+    }
+  }
+
+  /* Force 100% full width for product cards on mobile for maximum readability */
+  ion-grid ion-row ion-col {
+    flex: 0 0 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .product-glass-card {
+    padding: 14px !important;
+    margin-bottom: 14px !important;
+
+    h3 {
+      font-size: 0.98rem !important;
+      line-height: 1.35 !important;
+      margin: 4px 0 8px 0 !important;
+      -webkit-line-clamp: 3 !important;
+      white-space: normal !important;
+    }
+  }
+}
+
 @media (min-width: 769px) {
   .mobile-bottom-nav {
     display: none !important;
   }
   .show-on-mobile {
     display: none !important;
+  }
+  .filter-bar-container {
+    display: flex !important;
   }
 }
 
