@@ -296,17 +296,6 @@
                         }
                       </div>
                     }
-                    @if (detectMtgType(item.nome).nameType !== 'Generico') {
-                      <div style="margin-top: 6px; display: flex; align-items: center; gap: 6px;">
-                        <ion-icon name="calendar-outline" style="color: #f59e0b; font-size: 13px;"></ion-icon>
-                        <input
-                          type="date"
-                          [ngModel]="item.releaseDate"
-                          (ngModelChange)="updateReleaseDate(item, $event)"
-                          style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 6px; color: #f8fafc; font-size: 0.7rem; padding: 2px 6px; outline: none; cursor: pointer;"
-                          />
-                        </div>
-                      }
                     </td>
                     <td style="padding: 12px 16px; text-align: right; color: #e2e8f0; font-weight: 600;">
                       {{ item.storico && item.storico.length > 0 ? ('€' + (item.storico[0].prezzo | number:'1.2-2')) : 'N/A' }}

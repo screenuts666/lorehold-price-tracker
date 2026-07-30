@@ -187,16 +187,16 @@ export class ExpansionsHubComponent implements OnInit {
     // 2. Aggiungi le espansioni presenti nel DB che non sono già state incluse (rispettando il filtro temporale)
     Object.keys(expProductsCount).forEach(expName => {
       if (!addedNames.has(expName.toLowerCase())) {
-        let scryfallSet = this.scryfallSetsCache.find(s => s.name.toLowerCase() === expName.toLowerCase());
+        const expLower = expName.toLowerCase();
+        let scryfallSet = this.scryfallSetsCache.find(s => s.name.toLowerCase() === expLower);
         if (!scryfallSet) {
           scryfallSet = this.scryfallSetsCache.find(s => 
-            s.name.toLowerCase().includes(expName.toLowerCase()) || 
-            expName.toLowerCase().includes(s.name.toLowerCase())
+            s.name.length > 3 && (expLower.includes(s.name.toLowerCase()) || s.name.toLowerCase().includes(expLower))
           );
         }
 
         const relDate = scryfallSet?.released_at || null;
-        const isPreorder = relDate ? relDate >= todayStr : true;
+        const isPreorder = relDate ? (relDate >= todayStr) : false;
 
         // Applica la finestra temporale (3 mesi, 6 mesi, 1 anno) anche alle espansioni presenti nel DB
         if (relDate) {
@@ -211,7 +211,7 @@ export class ExpansionsHubComponent implements OnInit {
           count: expProductsCount[expName],
           icon_svg_uri: scryfallSet?.icon_svg_uri || null,
           released_at: relDate,
-          formattedDate: relDate ? this.formatItalianDate(relDate) : 'In Arrivo',
+          formattedDate: relDate ? this.formatItalianDate(relDate) : 'Rilasciata',
           isPreorder: isPreorder,
           coverImage: expCoverMap[expName] || null
         });
