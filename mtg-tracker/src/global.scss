@@ -390,6 +390,28 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
   }
 }
 
+.filter-bar-container {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+  width: 100% !important;
+  background: #0f172a !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 14px !important;
+  padding: 14px 16px !important;
+  margin-bottom: 16px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+
+  .filter-row-1, .filter-row-2 {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    width: 100% !important;
+    flex-wrap: wrap !important;
+  }
+}
+
 @media (max-width: 768px) {
   .mobile-filter-accordion-toggle {
     display: flex !important;
@@ -408,48 +430,31 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
       overflow-x: hidden !important;
       animation: fadeIn 0.25s ease-out;
 
-      div {
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-      }
-
-      input[type="text"], select {
+      .filter-row-1, .filter-row-2 {
+        flex-direction: column !important;
+        align-items: stretch !important;
         width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box !important;
-        font-size: 0.88rem !important;
+        gap: 10px !important;
+
+        > div {
+          flex-direction: column !important;
+          align-items: stretch !important;
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+        }
+
+        input[type="text"], select {
+          width: 100% !important;
+          max-width: 100% !important;
+          box-sizing: border-box !important;
+          font-size: 0.88rem !important;
+        }
+
+        label {
+          font-size: 0.8rem !important;
+        }
       }
-
-      label {
-        font-size: 0.8rem !important;
-      }
-    }
-  }
-
-  /* Force 100% full width for product cards on mobile for maximum readability */
-  ion-grid ion-row ion-col {
-    flex: 0 0 100% !important;
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  .product-glass-card {
-    padding: 16px !important;
-    margin-bottom: 16px !important;
-
-    h3 {
-      font-size: 1.15rem !important;
-      font-weight: 700 !important;
-      color: #ffffff !important;
-      line-height: 1.35 !important;
-      margin: 4px 0 8px 0 !important;
-      -webkit-line-clamp: 3 !important;
-      white-space: normal !important;
-    }
-
-    .thumbnail-wrapper {
-      width: 85px !important;
-      height: 110px !important;
     }
   }
 }
@@ -463,6 +468,7 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
   }
   .filter-bar-container {
     display: flex !important;
+    flex-direction: column !important;
   }
 }
 
