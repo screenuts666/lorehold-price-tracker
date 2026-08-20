@@ -1,74 +1,143 @@
-<div class="expansions-hub-container">
-  <div class="hub-header" style="flex-wrap: wrap; gap: 16px;">
+<div class="expansions-hub-container container-fluid px-3 py-3">
+  <!-- TOP BANNER: BURIED DEALS & BARGAINS QUICK ACCESS -->
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 deals-quick-banner" (click)="jumpToBargains.emit()">
+    <div class="d-flex align-items-center gap-2 banner-left">
+      <span class="badge badge-fire">🎯 TOP AFFARI</span>
+      <span class="banner-text fw-bold">Scopri i prodotti sigillati in offerta ed occasioni IA</span>
+    </div>
+    <div class="banner-btn fw-bold">
+      <span>Vedi Affari ➔</span>
+    </div>
+  </div>
+
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 hub-header">
     <div>
-      <h2 class="hub-title">
+      <h2 class="hub-title m-0 fw-bolder">
         <span>🔥</span> {{ t().UPCOMING_EXPANSIONS }}
       </h2>
-      <p class="hub-subtitle">
+      <p class="hub-subtitle m-0 mt-1">
         {{ t().EXPANSION_SUBTITLE }}
       </p>
     </div>
 
-    <!-- FILTER TOOLBAR (SEARCH + SORT + STATUS) -->
-    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+    <!-- FILTER TOOLBAR (SEARCH + QUICK CHIPS) -->
+    <div class="d-flex flex-column gap-2 hub-filter-bar">
       <!-- SEARCH INPUT -->
-      <div style="position: relative; min-width: 220px;">
+      <div class="search-input-wrap">
         <input
           type="text"
-          [ngModel]="searchQuery()"
-          (ngModelChange)="updateSearchQuery($event)"
+          [value]="searchQuery()"
+          (input)="onSearchInput($event)"
           [placeholder]="t().SEARCH_EXP"
-          style="width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 500; transition: border-color 0.2s ease;"
+          class="form-control filter-input"
         />
       </div>
 
-      <!-- STATUS FILTER -->
-      <select
-        [ngModel]="statusFilter()"
-        (ngModelChange)="updateStatusFilter($event)"
-        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 600; cursor: pointer;"
-      >
-        <option value="all">{{ t().STATUS_ALL }}</option>
-        <option value="preorder">{{ t().STATUS_PREORDER }}</option>
-        <option value="released">{{ t().STATUS_RELEASED }}</option>
-      </select>
-
-      <!-- TIME WINDOW FILTER -->
-      <select
-        [ngModel]="timeWindowFilter()"
-        (ngModelChange)="updateTimeWindow($event)"
-        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 10px; color: #a78bfa; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 700; cursor: pointer;"
-      >
-        <option value="3months">{{ t().TIME_3M }}</option>
-        <option value="6months">{{ t().TIME_6M }}</option>
-        <option value="1year">{{ t().TIME_1Y }}</option>
-        <option value="all">{{ t().TIME_ALL }}</option>
-      </select>
-
-      <!-- SORT ORDER -->
-      <select
-        [ngModel]="sortOrder()"
-        (ngModelChange)="updateSortOrder($event)"
-        style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; color: #f8fafc; font-size: 0.85rem; padding: 9px 14px; outline: none; font-weight: 600; cursor: pointer;"
-      >
-        <option value="date-desc">{{ t().SORT_DATE_DESC }}</option>
-        <option value="date-asc">{{ t().SORT_DATE_ASC }}</option>
-        <option value="products-desc">{{ t().SORT_PRODUCTS_DESC }}</option>
-        <option value="name-asc">{{ t().SORT_NAME_ASC }}</option>
-      </select>
+      <!-- SWIPEABLE QUICK-FILTER CHIPS -->
+      <div class="d-flex align-items-center gap-2 quick-chips-scroll">
+        <button
+          class="chip-item"
+          [class.active]="quickChip() === 'preorder'"
+          (click)="selectQuickChip('preorder')"
+        >
+          <span>🔥 Solo Prevendite</span>
+        </button>
+        <button
+          class="chip-item"
+          [class.active]="quickChip() === '3months'"
+          (click)="selectQuickChip('3months')"
+        >
+          <span>📅 Prossimi 3 Mesi</span>
+        </button>
+        <button
+          class="chip-item"
+          [class.active]="quickChip() === 'has-products'"
+          (click)="selectQuickChip('has-products')"
+        >
+          <span>📦 Con Prodotti</span>
+        </button>
+        <button
+          class="chip-item"
+          [class.active]="quickChip() === '6months'"
+          (click)="selectQuickChip('6months')"
+        >
+          <span>📅 6 Mesi</span>
+        </button>
+        <button
+          class="chip-item"
+          [class.active]="quickChip() === 'released'"
+          (click)="selectQuickChip('released')"
+        >
+          <span>✨ Rilasciate</span>
+        </button>
+        <button
+          class="chip-item"
+          [class.active]="quickChip() === 'all'"
+          (click)="selectQuickChip('all')"
+        >
+          <span>🌐 Tutti i Set</span>
+        </button>
+        <button
+          class="chip-item chip-old-school"
+          [class.active]="quickChip() === 'old-school'"
+          (click)="selectQuickChip('old-school')"
+        >
+          <span>🏛️ Old School</span>
+        </button>
+      </div>
     </div>
   </div>
 
-  <ion-grid style="padding: 0;">
-    <ion-row style="row-gap: 16px;">
+  <!-- OLD SCHOOL VINTAGE HEADER -->
+  @if (quickChip() === 'old-school') {
+    <div class="old-school-header mb-4">
+      <div class="old-school-header-inner p-3 p-md-4">
+        <div class="d-flex align-items-center justify-content-between gap-3 text-center old-school-title-row">
+          <span class="old-school-crest fs-4">⚜️</span>
+          <div>
+            <h3 class="old-school-title fs-4 fw-bolder m-0">Archivio Old School</h3>
+            <p class="old-school-sub m-0 mt-1 small">Espansioni con il <strong>bordo classico</strong> — dal 1993 all'estate 2003, prima dell'introduzione del nuovo frame con la <strong>8th Edition</strong></p>
+          </div>
+          <span class="old-school-crest fs-4">⚜️</span>
+        </div>
+        <div class="text-center mt-2 old-school-sets-legend small">
+          <span>Alpha · Beta · Unlimited · Legends · The Dark · Ice Age · Mirage · Tempest · Urza's Saga · Invasion · Odyssey · Onslaught…</span>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (loadingSets()) {
+    <!-- SKELETON GRID LOADER -->
+    <div class="row g-3">
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+          <div class="skeleton-card">
+            <div class="skeleton-badge"></div>
+            <div class="skeleton-icon"></div>
+            <div class="skeleton-title"></div>
+            <div class="skeleton-footer">
+              <div class="skeleton-pill"></div>
+              <div class="skeleton-pill"></div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  } @else {
+    <!-- REAL CARDS GRID -->
+    <div class="row g-3 fade-in-content">
       @for (exp of filteredExpansionsData(); track exp.name) {
-        <ion-col size="12" size-sm="6" size-md="4" size-lg="3">
-          <ion-card
-            class="expansion-card-custom"
+        <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+          <div
+            class="expansion-card-custom h-100 position-relative overflow-hidden"
+            [class.old-school-card]="exp.isOldSchool"
             (click)="selectExpansion(exp.name)"
           >
-            <!-- PREVENDITA BANNER BADGE -->
-            @if (exp.isPreorder) {
+            <!-- OLD SCHOOL BADGE -->
+            @if (exp.isOldSchool && quickChip() === 'old-school') {
+              <div class="badge-banner old-school">🏛️ Old School</div>
+            } @else if (exp.isPreorder) {
               <div class="badge-banner preorder">
                 {{ t().STATUS_PREORDER }}
               </div>
@@ -80,13 +149,13 @@
 
             <!-- Background Overlay / Artwork -->
             <div 
-              class="card-bg-layer"
+              class="card-bg-layer position-absolute top-0 start-0 w-100 h-100"
               [style.backgroundImage]="exp.coverImage ? 'url(' + exp.coverImage + ')' : 'radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)'"
             ></div>
-            <div class="card-gradient-overlay"></div>
+            <div class="card-gradient-overlay position-absolute top-0 start-0 w-100 h-100"></div>
 
             <!-- Content Container -->
-            <div class="card-content-wrap">
+            <div class="card-content-wrap position-relative p-3 d-flex flex-column h-100 justify-content-between">
               <!-- SET ICON (SVG) -->
               @if (exp.icon_svg_uri) {
                 <div
@@ -95,38 +164,35 @@
                   [style.-webkit-mask-image]="'url(' + exp.icon_svg_uri + ')'"
                 ></div>
               } @else {
-                <div style="font-size: 2.2rem; margin-bottom: 12px;">✨</div>
+                <div class="fs-2 mb-2">✨</div>
               }
 
               <!-- SET NAME -->
-              <h3 class="set-title">
+              <h3 class="set-title fw-bold text-light fs-5 m-0 mb-2">
                 {{ exp.name }}
               </h3>
 
               <!-- FOOTER DETAILS -->
-              <div class="card-footer-info">
-                <span class="count-pill">
-                  📦 {{ exp.count }} prodotti
+              <div class="d-flex align-items-center flex-wrap gap-2 card-footer-info">
+                <span class="badge rounded-pill count-pill">
+                  📦 {{ exp.count }} {{ exp.count === 1 ? 'prodotto' : 'prodotti' }}
                 </span>
 
                 @if (exp.formattedDate) {
-                  <span class="date-pill">
+                  <span class="badge rounded-pill date-pill">
                     {{ exp.formattedDate }}
                   </span>
                 }
               </div>
 
+              <!-- TAP INVITATION PILL -->
+              <div class="explore-action-pill mt-2">
+                <span>Esplora prodotti ➔</span>
+              </div>
             </div>
-          </ion-card>
-        </ion-col>
+          </div>
+        </div>
       }
-    </ion-row>
-  </ion-grid>
-
-  @if (loadingSets()) {
-    <div class="loading-container">
-      <ion-icon name="sparkles-outline" class="spinner-icon"></ion-icon>
-      <h3 style="font-weight: 700; color: #f8fafc;">Caricamento Nuove Espansioni da Scryfall...</h3>
     </div>
   }
 </div>

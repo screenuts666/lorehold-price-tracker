@@ -1,60 +1,69 @@
-import { Component, Output, EventEmitter } from '@angular/core';
+import { Component, output, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { IonIcon, IonButton, IonSpinner } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { searchOutline, sparklesOutline, image } from 'ionicons/icons';
 import { environment } from 'src/environments/environment';
+import { FilterModalData, ScryfallCardResult, SearchCardResponse, MapCardTraderResponse } from '../../../models';
 
 @Component({
   selector: 'app-search-section',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     IonIcon,
     IonButton,
     IonSpinner
   ],
   templateUrl: './search-section.component.html',
-  styleUrls: []
+  styleUrls: ['./search-section.component.scss']
 })
 export class SearchSectionComponent {
-  @Output() onSelect = new EventEmitter<any>();
+  cardSelected = output<FilterModalData>();
 
-  searchQuery: string = '';
-  searchResults: any[] = [];
-  searching: boolean = false;
+  searchQuery = signal<string>('');
+  searchResults = signal<ScryfallCardResult[]>([]);
+  searching = signal<boolean>(false);
 
-  constructor(private http: HttpClient) {
+  private http = inject(HttpClient);
+
+  constructor() {
     addIcons({ searchOutline, sparklesOutline, image });
   }
 
+  onSearchInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    if (target) {
+      this.searchQuery.set(target.value);
+    }
+  }
+
   search() {
-    if (!this.searchQuery.trim()) return;
-    this.searching = true;
-    this.http.get<any>(`${environment.apiBaseUrl}/search-card?q=${encodeURIComponent(this.searchQuery)}`).subscribe({
+    const q = this.searchQuery().trim();
+    if (!q) return;
+    this.searching.set(true);
+    this.http.get<SearchCardResponse>(`${environment.apiBaseUrl}/search-card?q=${encodeURIComponent(q)}`).subscribe({
       next: (res) => {
-        this.searchResults = res.cards || [];
-        this.searching = false;
+        this.searchResults.set(res.cards || []);
+        this.searching.set(false);
       },
       error: (err) => {
         console.error('Error searching card on Scryfall:', err);
         alert('Connection error with the tracker backend.');
-        this.searching = false;
+        this.searching.set(false);
       }
     });
   }
 
-  selectPrint(card: any) {
-    this.searching = true;
-    this.http.get<any>(`${environment.apiBaseUrl}/map-cardtrader?name=${encodeURIComponent(card.name)}&set_code=${encodeURIComponent(card.set_code)}`).subscribe({
+  selectPrint(card: ScryfallCardResult) {
+    this.searching.set(true);
+    this.http.get<MapCardTraderResponse>(`${environment.apiBaseUrl}/map-cardtrader?name=${encodeURIComponent(card.name)}&set_code=${encodeURIComponent(card.set_code)}`).subscribe({
       next: (res) => {
-        this.searching = false;
+        this.searching.set(false);
         
         // Emit mapped product details back to parent for filter modal configuration
-        this.onSelect.emit({
+        this.cardSelected.emit({
           id: res.id.toString(),
           name: res.name,
           url: res.url,
@@ -63,11 +72,10 @@ export class SearchSectionComponent {
         });
       },
       error: (err) => {
-        this.searching = false;
+        this.searching.set(false);
         console.error('CardTrader mapping error:', err);
         alert(err.error?.errore || 'This edition/print is not currently mapped or available on CardTrader.');
       }
     });
   }
 }
-
