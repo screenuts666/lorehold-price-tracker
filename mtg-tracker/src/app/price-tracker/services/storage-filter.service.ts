@@ -1,22 +1,7 @@
 import { Injectable } from '@angular/core';
+import { UserFilterState } from '../../models';
 
-export interface UserFilterState {
-  expansionFilter: string;
-  typeFilter: string;
-  verdictFilter: string;
-  includeCollectorBoxes: boolean;
-  includePlayBoxes: boolean;
-  includePrereleasePacks: boolean;
-  includeBundles: boolean;
-  includeDraftNight: boolean;
-  includeSceneBoxes: boolean;
-  includeCommanderDecks: boolean;
-  includeStarterDecks: boolean;
-  searchQuery: string;
-  minPrice: number | null;
-  maxPrice: number | null;
-  sortMode: string;
-}
+export { UserFilterState };
 
 @Injectable({
   providedIn: 'root'
@@ -34,6 +19,9 @@ export class StorageFilterService {
     INC_SCENE: 'mtg_tracker_inc_scene_boxes',
     INC_CMD: 'mtg_tracker_inc_cmd_decks',
     INC_STR: 'mtg_tracker_inc_str_decks',
+    INC_OTHER: 'mtg_tracker_inc_other',
+    HIDE_NA: 'mtg_tracker_hide_na',
+    ONLY_OLD_SCHOOL: 'mtg_tracker_only_old_school',
     SEARCH: 'mtg_tracker_sealed_search',
     MIN_PRICE: 'mtg_tracker_min_price',
     MAX_PRICE: 'mtg_tracker_max_price',
@@ -42,7 +30,8 @@ export class StorageFilterService {
     HUB_SEARCH: 'mtg_tracker_hub_search',
     HUB_SORT: 'mtg_tracker_hub_sort',
     HUB_STATUS: 'mtg_tracker_hub_status',
-    HUB_TIME_WINDOW: 'mtg_tracker_hub_time_window'
+    HUB_TIME_WINDOW: 'mtg_tracker_hub_time_window',
+    HUB_QUICK_CHIP: 'mtg_tracker_hub_quick_chip'
   };
 
   public loadFilterState(): UserFilterState {
@@ -58,9 +47,12 @@ export class StorageFilterService {
       includePrereleasePacks: localStorage.getItem(this.KEYS.INC_PRERELEASE) !== 'false',
       includeBundles: localStorage.getItem(this.KEYS.INC_BUNDLE) !== 'false',
       includeDraftNight: localStorage.getItem(this.KEYS.INC_DRAFT) !== 'false',
-      includeSceneBoxes: localStorage.getItem(this.KEYS.INC_SCENE) === 'true',
-      includeCommanderDecks: localStorage.getItem(this.KEYS.INC_CMD) === 'true',
-      includeStarterDecks: localStorage.getItem(this.KEYS.INC_STR) === 'true',
+      includeSceneBoxes: localStorage.getItem(this.KEYS.INC_SCENE) !== 'false',
+      includeCommanderDecks: localStorage.getItem(this.KEYS.INC_CMD) !== 'false',
+      includeStarterDecks: localStorage.getItem(this.KEYS.INC_STR) !== 'false',
+      includeOther: localStorage.getItem(this.KEYS.INC_OTHER) !== 'false',
+      hideNAPrices: localStorage.getItem(this.KEYS.HIDE_NA) !== 'false',
+      onlyOldSchool: localStorage.getItem(this.KEYS.ONLY_OLD_SCHOOL) === 'true',
       searchQuery: localStorage.getItem(this.KEYS.SEARCH) || '',
       minPrice: minP ? parseFloat(minP) : null,
       maxPrice: maxP ? parseFloat(maxP) : null,
@@ -80,6 +72,9 @@ export class StorageFilterService {
     if (state.includeSceneBoxes !== undefined) localStorage.setItem(this.KEYS.INC_SCENE, state.includeSceneBoxes.toString());
     if (state.includeCommanderDecks !== undefined) localStorage.setItem(this.KEYS.INC_CMD, state.includeCommanderDecks.toString());
     if (state.includeStarterDecks !== undefined) localStorage.setItem(this.KEYS.INC_STR, state.includeStarterDecks.toString());
+    if (state.includeOther !== undefined) localStorage.setItem(this.KEYS.INC_OTHER, state.includeOther.toString());
+    if (state.hideNAPrices !== undefined) localStorage.setItem(this.KEYS.HIDE_NA, state.hideNAPrices.toString());
+    if (state.onlyOldSchool !== undefined) localStorage.setItem(this.KEYS.ONLY_OLD_SCHOOL, state.onlyOldSchool.toString());
     if (state.searchQuery !== undefined) localStorage.setItem(this.KEYS.SEARCH, state.searchQuery);
     if (state.minPrice !== undefined) localStorage.setItem(this.KEYS.MIN_PRICE, state.minPrice !== null ? state.minPrice.toString() : '');
     if (state.maxPrice !== undefined) localStorage.setItem(this.KEYS.MAX_PRICE, state.maxPrice !== null ? state.maxPrice.toString() : '');

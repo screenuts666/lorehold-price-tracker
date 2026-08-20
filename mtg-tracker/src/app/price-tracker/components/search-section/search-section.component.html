@@ -1,63 +1,65 @@
-<div style="margin: 10px 12px 20px 12px;">
+<div class="container-fluid px-3 pt-2 pb-3 search-bar-wrap">
   <!-- SEARCH BAR -->
-  <div style="display: flex; gap: 12px; align-items: center; background: rgba(30, 41, 59, 0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 4px 12px;">
-    <ion-icon name="search-outline" style="color: #a78bfa; font-size: 20px;"></ion-icon>
+  <div class="d-flex align-items-center gap-3 px-3 py-2 search-input-box">
+    <ion-icon name="search-outline" class="search-icon fs-5"></ion-icon>
     <input
       type="text"
-      [(ngModel)]="searchQuery"
+      [value]="searchQuery()"
+      (input)="onSearchInput($event)"
       (keyup.enter)="search()"
       placeholder="Search card by English or Italian name (e.g. Bloom Tender)..."
-      style="flex-grow: 1; background: transparent; border: none; padding: 10px 0; color: #f8fafc; font-size: 0.85rem; font-weight: 600; outline: none;"
-      />
-      <ion-button (click)="search()" color="primary" size="small" class="neon-btn" style="margin: 0; font-weight: 700; height: 32px;">
-        Search
-      </ion-button>
-    </div>
+      class="form-control bg-transparent border-0 text-light native-search-input flex-grow-1 shadow-none"
+    />
+    <ion-button (click)="search()" color="primary" size="small" class="neon-btn search-action-btn m-0 fw-bold">
+      Search
+    </ion-button>
   </div>
+</div>
 
-  <!-- RESULTS CONTAINER -->
-  <div class="glass-card" style="margin: 12px; padding: 20px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.07); background: rgba(30, 41, 59, 0.35); min-height: 250px;">
-    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px;">
-      <ion-icon name="sparkles-outline" style="color: #a78bfa; font-size: 22px;"></ion-icon>
-      <h2 style="margin: 0; font-size: 1.15rem; font-weight: 800; color: #f8fafc; letter-spacing: 0.5px;">Search Results</h2>
+<!-- RESULTS CONTAINER -->
+<div class="container-fluid px-2 px-md-3">
+  <div class="glass-card p-3 p-md-4 search-results-panel">
+    <div class="d-flex align-items-center gap-2 pb-2 mb-3 border-bottom border-white border-opacity-10 panel-header-title">
+      <ion-icon name="sparkles-outline" class="header-icon text-info fs-4"></ion-icon>
+      <h2 class="header-heading fs-5 fw-bolder text-light m-0">Search Results</h2>
     </div>
 
-    @if (searching) {
-      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px;">
+    @if (searching()) {
+      <div class="d-flex flex-column align-items-center justify-content-center py-5 loading-state-wrap">
         <ion-spinner name="crescent" color="primary"></ion-spinner>
-        <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 10px; font-weight: 600;">Searching Scryfall and mapping editions...</p>
+        <p class="loading-desc text-muted mt-3 mb-0 fw-semibold">Searching Scryfall and mapping editions...</p>
       </div>
     }
 
-    @if (!searching && searchResults.length === 0) {
-      <div style="display: flex; align-items: center; justify-content: center; height: 200px; color: #64748b; font-size: 0.85rem; font-style: italic;">
+    @if (!searching() && searchResults().length === 0) {
+      <div class="d-flex align-items-center justify-content-center py-5 text-secondary fst-italic empty-state-wrap">
         Type a card name above and click Search.
       </div>
     }
 
-    @if (!searching && searchResults.length > 0) {
-      <div style="display: flex; flex-direction: column; gap: 10px;">
-        @for (card of searchResults; track card) {
-          <div (click)="selectPrint(card)" class="table-row-hover" style="display: flex; gap: 16px; padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.03); background: rgba(30, 41, 59, 0.25); cursor: pointer; align-items: center; transition: all 0.25s;">
+    @if (!searching() && searchResults().length > 0) {
+      <div class="d-flex flex-column gap-2 results-list-container">
+        @for (card of searchResults(); track card) {
+          <div (click)="selectPrint(card)" class="d-flex align-items-center gap-3 p-2 rounded-3 search-card-item table-row-hover">
             <!-- IMAGE PREVIEW -->
             @if (card.image) {
-              <img [src]="card.image" referrerpolicy="no-referrer" style="width: 44px; height: 60px; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.4);" />
+              <img [src]="card.image" referrerpolicy="no-referrer" class="card-img-thumb" alt="{{ card.printed_name }}" />
             }
             @if (!card.image) {
-              <div style="width: 44px; height: 60px; background: rgba(0,0,0,0.15); border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 1px dashed rgba(255,255,255,0.08);">
-                <ion-icon name="image" style="color: #475569; font-size: 16px;"></ion-icon>
+              <div class="card-img-placeholder d-flex align-items-center justify-content-center">
+                <ion-icon name="image" class="text-secondary"></ion-icon>
               </div>
             }
             <!-- CARD DETAILS -->
-            <div style="flex-grow: 1; min-width: 0;">
-              <span style="font-size: 0.95rem; font-weight: 700; color: #f8fafc; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            <div class="flex-grow-1 min-w-0 card-details-info">
+              <span class="card-main-name fw-bold text-light d-block text-truncate">
                 {{ card.printed_name }}
               </span>
-              <span style="font-size: 0.72rem; color: #a78bfa; font-weight: 600; display: block; margin-top: 2px;">
+              <span class="card-set-info text-info small fw-semibold d-block mt-1">
                 {{ card.set_name }} ({{ card.set_code | uppercase }}) • #{{ card.collector_number }}
               </span>
               @if (card.name !== card.printed_name) {
-                <span style="font-size: 0.7rem; color: #64748b; font-style: italic; display: block; margin-top: 1px;">
+                <span class="card-en-name text-muted small fst-italic d-block">
                   {{ card.name }}
                 </span>
               }
@@ -67,3 +69,4 @@
       </div>
     }
   </div>
+</div>
