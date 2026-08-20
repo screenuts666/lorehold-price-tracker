@@ -1,12 +1,6 @@
 /*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
+ * App Global CSS - Swiss Minimalist Fintech
+ * Supports dynamic Dark Mode & Light Mode seamlessly
  */
 
 /* Core CSS required for Ionic components to work properly */
@@ -18,168 +12,125 @@
 @import "@ionic/angular/css/typography.css";
 @import "@ionic/angular/css/display.css";
 
-/* Optional CSS utils that can be commented out */
+/* Optional CSS utils */
 @import "@ionic/angular/css/padding.css";
 @import "@ionic/angular/css/float-elements.css";
 @import "@ionic/angular/css/text-alignment.css";
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
-
 :root {
-  --ion-background-color: #0b0f19 !important;
-  --ion-background-color-rgb: 11, 15, 25 !important;
+  --ion-background-color: var(--bg-body) !important;
+  --ion-text-color: var(--text-primary) !important;
+  --ion-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
-  --ion-text-color: #f8fafc !important;
-  --ion-text-color-rgb: 248, 250, 252 !important;
-
-  --ion-color-primary: #8b5cf6;
-  --ion-color-primary-rgb: 139, 92, 246;
+  --ion-color-primary: var(--color-primary);
   --ion-color-primary-contrast: #ffffff;
-  --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #7c3aed;
-  --ion-color-primary-tint: #a78bfa;
-
-  --ion-color-success: #10b981;
-  --ion-color-success-rgb: 16, 185, 129;
+  --ion-color-success: var(--color-success);
   --ion-color-success-contrast: #ffffff;
-  --ion-color-success-contrast-rgb: 255, 255, 255;
-  --ion-color-success-shade: #059669;
-  --ion-color-success-tint: #34d399;
-
-  --ion-color-light: #1e293b;
-  --ion-color-light-rgb: 30, 41, 59;
-  --ion-color-light-contrast: #f8fafc;
-  --ion-color-light-contrast-rgb: 248, 250, 252;
-  --ion-color-light-shade: #0f172a;
-  --ion-color-light-tint: #334155;
 }
 
-/* Glassmorphism custom classes */
+body {
+  background-color: var(--bg-body) !important;
+  color: var(--text-primary) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+ion-content {
+  --background: var(--bg-body) !important;
+  --color: var(--text-primary) !important;
+}
+
+/* Glass & Card custom classes */
 .glass-card {
-  background: rgba(30, 41, 59, 0.4) !important;
-  backdrop-filter: blur(16px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 16px !important;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-glass) !important;
+  border-radius: 14px !important;
+  box-shadow: var(--card-shadow) !important;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease;
 }
 
 .glass-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(139, 92, 246, 0.3) !important;
-  box-shadow: 0 12px 40px 0 rgba(139, 92, 246, 0.2) !important;
+  border-color: var(--border-glass-hover) !important;
+  box-shadow: var(--card-shadow-hover) !important;
 }
 
 .glass-item {
   --background: transparent !important;
-  --border-color: rgba(255, 255, 255, 0.08) !important;
+  --border-color: var(--border-glass) !important;
 }
 
 .glass-input {
-  --background: rgba(15, 23, 42, 0.5) !important;
-  --border-radius: 12px !important;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 8px 16px !important;
-  color: #fff !important;
+  background: var(--bg-surface-input) !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--border-glass) !important;
+  padding: 8px 14px !important;
+  color: var(--text-primary) !important;
 }
 
 .neon-btn {
-  --border-radius: 12px !important;
-  --box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.3) !important;
+  --border-radius: 10px !important;
   font-weight: 600 !important;
 }
 
 .gradient-title {
-  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 50%, #6366f1 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: var(--text-primary);
   font-weight: 800;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.3px;
 }
 
 .product-thumbnail-container {
-  width: 80px;
-  height: 80px;
+  width: 72px;
+  height: 72px;
   background: #ffffff;
   border-radius: 8px;
   padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-glass);
+  transition: transform 0.2s ease;
   overflow: hidden;
 }
 
 .product-thumbnail-container:hover {
-  transform: scale(1.08) rotate(1deg);
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+  transform: scale(1.05);
 }
 
 .product-thumbnail-img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  mix-blend-mode: multiply;
 }
 
 .table-row-hover:hover {
-  background: rgba(255, 255, 255, 0.02) !important;
-}
-
-.product-large-img {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-  mix-blend-mode: multiply;
+  background: var(--border-subtle) !important;
 }
 
 .product-large-img-container {
-  width: 130px;
-  height: 106px;
+  width: 120px;
+  height: 100px;
   background: #ffffff;
   border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 6px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--border-glass);
   overflow: hidden;
 }
 
-.glass-card:hover .product-large-img-container {
-  transform: scale(1.06) rotate(-1deg);
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+.product-large-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
-.product-single-card {
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-}
-
-.glass-card:hover .product-single-card {
-  transform: scale(1.08) rotate(1deg);
-  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.45);
-}
-
-/* iOS Premium Experience Styles */
-
-/* 1. Global macOS/iOS Thin Scrollbar Customization */
+/* Thin Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -188,84 +139,12 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12) !important;
-  border-radius: 10px !important;
-  border: 1px solid transparent;
-  background-clip: padding-box;
+  background: var(--text-muted);
+  opacity: 0.3;
+  border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25) !important;
-}
-
-/* Scrollbar inside Ionic's IonContent shadow DOM */
-ion-content::part(scroll) {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
-}
-ion-content::part(scroll)::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-ion-content::part(scroll)::-webkit-scrollbar-track {
-  background: transparent;
-}
-ion-content::part(scroll)::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  border: 1px solid transparent;
-  background-clip: padding-box;
-}
-ion-content::part(scroll)::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-/* 2. iOS-like Elastic Transition for Buttons & Inputs */
-ion-button, input, ion-input, ion-select, ion-segment, .glass-card {
-  --transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* 3. iOS Spring Animation for hover states */
-.glass-card {
-  transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-              box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
-              border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-/* 4. Table Row Smooth Hover */
-.table-row-hover {
-  transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.table-row-hover:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
-}
-
-/* 5. Fade & Slide-in Animation for Cards/Lists */
-@keyframes iosSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-ion-grid ion-col, .glass-card, .table-row-hover {
-  animation: iosSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* Stagger animation delays for a fluid feel */
-ion-grid ion-col:nth-child(1) { animation-delay: 0.05s; }
-ion-grid ion-col:nth-child(2) { animation-delay: 0.1s; }
-ion-grid ion-col:nth-child(3) { animation-delay: 0.15s; }
-ion-grid ion-col:nth-child(4) { animation-delay: 0.2s; }
-ion-grid ion-col:nth-child(5) { animation-delay: 0.25s; }
-ion-grid ion-col:nth-child(6) { animation-delay: 0.3s; }
-ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
-
-.btn-text-mobile {
-  display: none !important;
+  opacity: 0.6;
 }
 
 /* Responsive UI/UX Optimizations for Mobile & Small Devices */
@@ -277,7 +156,6 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
     display: inline !important;
   }
 
-  // Hide desktop navigation segment from header on mobile
   .hide-on-mobile {
     display: none !important;
   }
@@ -286,67 +164,39 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
     display: flex !important;
   }
 
-  // Padding adjustment for mobile screens
   ion-content {
-    --padding-bottom: 85px !important;
+    --padding-bottom: 80px !important;
   }
 
-  // Header adjustments on mobile
   ion-toolbar {
-    --padding-start: 4px !important;
-    --padding-end: 4px !important;
+    --padding-start: 6px !important;
+    --padding-end: 6px !important;
 
     .header-app-title {
-      font-size: 0.88rem !important;
-      letter-spacing: -0.4px;
+      font-size: 0.9rem !important;
+      font-weight: 700;
+      letter-spacing: -0.3px;
     }
   }
 
   .header-actions-wrap {
-    gap: 3px !important;
+    gap: 4px !important;
 
     button, a {
-      font-size: 0.68rem !important;
-      padding: 4px 6px !important;
+      font-size: 0.72rem !important;
+      padding: 5px 8px !important;
       border-radius: 8px !important;
 
       ion-icon, svg {
-        font-size: 12px !important;
+        font-size: 13px !important;
       }
     }
   }
 
-  // Make grid cards compact & clean on mobile
   .glass-card {
     padding: 12px !important;
     border-radius: 12px !important;
     margin-bottom: 10px !important;
-  }
-
-  // Header flex layout for cards on mobile
-  .card-header-flex {
-    flex-direction: row !important;
-    align-items: center !important;
-    text-align: left !important;
-    gap: 10px !important;
-  }
-
-  .card-header-flex .thumbnail-container {
-    width: 64px !important;
-    height: 64px !important;
-    flex-shrink: 0;
-  }
-
-  .card-header-flex .info-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card-header-flex h3 {
-    text-align: left !important;
-    font-size: 0.88rem !important;
-    margin: 2px 0 !important;
   }
 
   // Mobile Bottom Navigation Bar
@@ -356,15 +206,15 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
     left: 0;
     right: 0;
     z-index: 9999;
-    background: rgba(9, 13, 22, 0.92);
+    background: var(--bg-surface-glass);
     backdrop-filter: blur(20px) saturate(180%);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--border-glass);
     display: flex;
     align-items: center;
     justify-content: space-around;
     padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)) 8px;
-    box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
 
     .nav-tab-item {
       flex: 1;
@@ -372,31 +222,29 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 2px;
       padding: 6px 4px;
       background: transparent;
       border: none;
-      color: #94a3b8;
+      color: var(--text-muted);
       font-size: 0.68rem;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
-      border-radius: 12px;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      border-radius: 10px;
+      transition: all 0.2s ease;
       outline: none;
 
       ion-icon, span.tab-emoji {
-        font-size: 1.25rem;
-        transition: transform 0.2s ease;
+        font-size: 1.2rem;
       }
 
       &.active {
-        color: #f8fafc;
-        background: rgba(139, 92, 246, 0.18);
-        border: 1px solid rgba(139, 92, 246, 0.3);
+        color: var(--color-primary);
+        background: var(--border-subtle);
+        font-weight: 700;
 
         ion-icon {
-          color: #a78bfa !important;
-          transform: scale(1.1);
+          color: var(--color-primary) !important;
         }
       }
     }
@@ -406,23 +254,21 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
 /* Mobile Accordion Filter Toggle Styles */
 .mobile-filter-accordion-toggle {
   display: none;
-  background: rgba(15, 23, 42, 0.98);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border-glass);
   padding: 10px 16px;
   cursor: pointer;
   user-select: none;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 
   .active-filter-badge {
-    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    background: var(--color-primary);
     color: #ffffff;
     font-size: 0.68rem;
-    font-weight: 800;
+    font-weight: 700;
     padding: 2px 8px;
-    border-radius: 12px;
-    letter-spacing: 0.3px;
+    border-radius: 10px;
   }
 }
 
@@ -431,12 +277,12 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
   flex-direction: column !important;
   gap: 10px !important;
   width: 100% !important;
-  background: #0f172a !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
-  border-radius: 14px !important;
-  padding: 14px 16px !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-glass) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
   margin-bottom: 16px !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+  box-shadow: var(--card-shadow) !important;
 
   .filter-row-1, .filter-row-2 {
     display: flex !important;
@@ -460,11 +306,9 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
       display: flex !important;
       flex-direction: column !important;
       gap: 12px !important;
-      padding: 14px 12px !important;
+      padding: 12px !important;
       width: 100% !important;
       box-sizing: border-box !important;
-      overflow-x: hidden !important;
-      animation: fadeIn 0.25s ease-out;
 
       .filter-row-1, .filter-row-2 {
         flex-direction: column !important;
@@ -510,37 +354,27 @@ ion-grid ion-col:nth-child(n+7) { animation-delay: 0.35s; }
 
 @media (max-width: 576px) {
   .product-large-img-container {
-    width: 90px !important;
-    height: 80px !important;
-  }
-
-  .gradient-title {
-    font-size: 1.05rem !important;
+    width: 84px !important;
+    height: 74px !important;
   }
 
   .expansions-hub-container {
-    padding: 12px 10px !important;
+    padding: 10px 8px !important;
   }
 }
 
-/* Global Select & Option Dropdown Fix for Dark Mode */
+/* Global Select & Option Dropdown */
 select {
-  background-color: #1e293b !important;
-  color: #f8fafc !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  background-color: var(--bg-surface-input) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-glass) !important;
+  border-radius: 8px !important;
+  padding: 6px 10px !important;
   -webkit-appearance: auto;
   appearance: auto;
 
-  option,
-  option:checked,
-  option:hover,
-  option:focus {
-    background-color: #1e293b !important;
-    background: #1e293b !important;
-    color: #f8fafc !important;
-    font-weight: 600 !important;
+  option {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
   }
 }
-
-
-

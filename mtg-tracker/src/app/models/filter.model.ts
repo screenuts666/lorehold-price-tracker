@@ -50,7 +50,7 @@ export type FoilFilterType = 'any' | 'normal' | 'foil';
 export type LangFilterType = 'any' | 'it' | 'en';
 export type CondFilterType = 'any' | 'Near Mint';
 export type IntentFilterType = 'buy' | 'sell';
-export type ActiveSectionType = 'expansions-hub' | 'expansion-detail' | 'all-sealed' | 'bargains' | 'search';
+export type ActiveSectionType = 'expansions-hub' | 'expansion-detail' | 'all-sealed' | 'bargains' | 'search' | 'secret-lair';
 export type ViewModeType = 'grid' | 'table';
 export type SortOrderType =
   | 'nome-asc'

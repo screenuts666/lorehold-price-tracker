@@ -49,6 +49,10 @@ export interface MtgProduct {
   immagine?: string;
   isSealed?: boolean;
   isOldSchool?: boolean;
+  isSecretLair?: boolean;
+  dropType?: string;
+  msrp?: number;
+  cardTraderId?: number;
   expansion?: string;
   releaseDate?: string;
   foil?: boolean | null;

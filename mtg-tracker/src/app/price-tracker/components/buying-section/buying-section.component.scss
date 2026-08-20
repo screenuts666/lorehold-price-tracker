@@ -1,501 +1,315 @@
 // ============================================================================
-// BUYING SECTION COMPONENT SCSS
+// BUYING SECTION COMPONENT SCSS - SWISS MINIMALIST FINTECH
 // ============================================================================
 @use 'theme/palette' as *;
 
 // --- INPUTS CONTAINER ---
 .buying-input-container {
   .buying-input-bar {
-    background: rgba(30, 41, 59, 0.35);
-    border: 1px solid $border-glass;
-    border-radius: 12px;
-    transition: all 0.2s ease;
+    background: var(--bg-surface-input);
+    border: 1px solid var(--border-glass);
+    border-radius: 10px;
+    transition: border-color 0.2s ease;
 
     &:focus-within {
-      border-color: rgba(167, 139, 250, 0.4);
-      box-shadow: 0 0 12px rgba(167, 139, 250, 0.15);
+      border-color: var(--color-primary);
     }
 
     .cart-icon {
-      color: $color-primary-light;
+      color: var(--color-primary);
     }
 
     .buying-native-input {
-      font-size: 0.85rem;
-      color: $text-primary;
+      font-size: 0.88rem;
+      color: var(--text-primary);
+
+      &::placeholder {
+        color: var(--text-muted);
+      }
     }
   }
 }
 
-// --- PRODUCT GLASS CARD ---
+// --- PRODUCT CARD ---
 .product-glass-card {
   @include glass-card;
-  border-radius: 16px;
+  background: var(--bg-card) !important;
+  border-radius: 12px;
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  padding: 14px;
 
   &:hover {
-    transform: translateY(-3px);
-    border-color: $border-glass-hover;
-    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4), 0 0 25px $color-primary-glow;
-
-    .thumbnail-overlay {
-      opacity: 1 !important;
-    }
-    .product-img {
-      transform: scale(1.06) !important;
-    }
+    transform: translateY(-2px);
+    border-color: var(--border-glass-hover);
+    box-shadow: var(--card-shadow-hover);
   }
 }
 
 .thumbnail-wrapper {
-  width: 92px;
-  height: 112px;
-  border-radius: 12px;
+  width: 80px;
+  height: 96px;
+  border-radius: 8px;
   overflow: hidden;
   position: relative;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid $border-glass;
+  background: #ffffff;
+  border: 1px solid var(--border-glass);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 
   .product-img {
     max-width: 90%;
     max-height: 90%;
     object-fit: contain;
-    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .thumbnail-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(15, 23, 42, 0.7);
-    backdrop-filter: blur(4px);
-    opacity: 0;
-    transition: opacity 0.25s ease;
-
-    span {
-      font-size: 0.65rem;
-      font-weight: 700;
-      color: $color-cyan;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
+    transition: transform 0.2s ease;
   }
 }
 
 .info-container {
   .product-id-tag {
-    font-size: 0.72rem;
-    color: $text-muted;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid $border-subtle;
-    padding: 2px 7px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    background: var(--border-subtle);
+    border: 1px solid var(--border-glass);
+    padding: 1px 6px;
     border-radius: 4px;
-    letter-spacing: 0.5px;
+    font-weight: 500;
   }
 
   .set-name-badge {
-    font-size: 0.72rem;
-    color: $text-secondary;
+    font-size: 0.7rem;
+    color: var(--text-secondary);
     font-weight: 600;
-    background: rgba(255, 255, 255, 0.04);
-    padding: 3px 8px;
-    border-radius: 6px;
-    border: 1px solid $border-glass;
+    background: var(--cat-badge-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--cat-badge-border);
     text-transform: uppercase;
-    letter-spacing: 0.3px;
-    max-width: 180px;
+    max-width: 160px;
   }
 
   .product-title {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: $text-contrast;
+    color: var(--text-primary);
     line-height: 1.35;
-    min-height: 2.3em;
+    min-height: 2.4em;
   }
 
   .filter-tags-row {
     .badge-foil {
       font-size: 0.68rem;
-      font-weight: 700;
-      color: #fff;
-      background: linear-gradient(135deg, rgba(236, 72, 153, 0.6), rgba(139, 92, 246, 0.6));
-      border: 1px solid rgba(236, 72, 153, 0.4);
-      padding: 2px 7px;
+      font-weight: 600;
+      color: var(--color-warning);
+      background: var(--border-subtle);
+      border: 1px solid var(--border-glass);
+      padding: 1px 5px;
       border-radius: 4px;
-      text-transform: uppercase;
     }
 
-    .badge-normal {
+    .badge-filter-neutral {
       font-size: 0.68rem;
       font-weight: 600;
-      color: $text-muted;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid $border-subtle;
-      padding: 2px 7px;
+      color: var(--text-muted);
+      background: var(--border-subtle);
+      border: 1px solid var(--border-glass);
+      padding: 1px 5px;
       border-radius: 4px;
-      text-transform: uppercase;
-    }
-
-    .badge-lang {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: $color-info;
-      background: rgba(56, 189, 248, 0.08);
-      border: 1px solid rgba(56, 189, 248, 0.25);
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-
-    .badge-cond {
-      font-size: 0.68rem;
-      font-weight: 700;
-      color: $color-success-light;
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      padding: 2px 7px;
-      border-radius: 4px;
-      text-transform: uppercase;
-    }
-  }
-
-  .price-row {
-    .current-price {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: $text-contrast;
-      letter-spacing: -0.5px;
-    }
-
-    .variation-pill {
-      font-size: 0.8rem;
-      font-weight: 700;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 2px 7px;
-      border-radius: 6px;
-
-      &.variation-down {
-        color: $color-success-light;
-        background: rgba(16, 185, 129, 0.10);
-        border: 1px solid rgba(16, 185, 129, 0.25);
-      }
-
-      &.variation-up {
-        color: $color-danger-light;
-        background: rgba(244, 63, 94, 0.10);
-        border: 1px solid rgba(244, 63, 94, 0.25);
-      }
-
-      &.variation-neutral {
-        color: $text-dim;
-      }
     }
   }
 }
 
-// --- CATEGORY BADGES ---
-.category-badge {
-  font-size: 0.72rem;
+// --- UNIFIED SLATE GLASS CATEGORY BADGES (ZERO CANDY RAINBOW) ---
+.category-badge-pill {
+  font-size: 0.68rem;
   font-weight: 600;
-  padding: 3px 8px;
   border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  padding: 3px 7px;
+  border: 1px solid var(--cat-badge-border);
+  background: var(--cat-badge-bg);
+  color: var(--cat-badge-color);
+  letter-spacing: 0.2px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 
-  &.cat-collector-box {
-    background: $cat-collector-bg;
-    border: 1px solid $cat-collector-border;
-    color: $cat-collector-color;
-  }
-
-  &.cat-play-box {
-    background: $cat-play-box-bg;
-    border: 1px solid $cat-play-box-border;
-    color: $cat-play-box-color;
-  }
-
-  &.cat-prerelease {
-    background: $cat-prerelease-bg;
-    border: 1px solid $cat-prerelease-border;
-    color: $cat-prerelease-color;
-  }
-
-  &.cat-bundle {
-    background: $cat-bundle-bg;
-    border: 1px solid $cat-bundle-border;
-    color: $cat-bundle-color;
-  }
-
-  &.cat-draft-night {
-    background: $cat-draft-night-bg;
-    border: 1px solid $cat-draft-night-border;
-    color: $cat-draft-night-color;
-  }
-
-  &.cat-scene-box {
-    background: $cat-scene-box-bg;
-    border: 1px solid $cat-scene-box-border;
-    color: $cat-scene-box-color;
-  }
-
-  &.cat-commander-deck, &.cat-starter-deck {
-    background: $cat-commander-bg;
-    border: 1px solid $cat-commander-border;
-    color: $cat-commander-color;
-  }
-
-  &.cat-other {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid $border-glass;
-    color: $text-muted;
+  &.cat-old-school {
+    color: #d97706;
+    background: rgba(245, 158, 11, 0.08);
+    border-color: rgba(245, 158, 11, 0.25);
+    font-weight: 700;
   }
 }
 
-// --- BARGAIN BANNER ---
+// --- BARGAIN / DEAL PILL ---
 .bargain-banner {
   background: rgba(16, 185, 129, 0.08);
   border: 1px solid rgba(16, 185, 129, 0.25);
-  border-radius: 8px;
-  padding: 6px 10px;
-  animation: pulseGlow 3s infinite ease-in-out;
+  border-radius: 6px;
+  padding: 4px 8px;
 
   .banner-icon {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
   }
 
   .banner-text {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    color: $color-success-light;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
+    color: var(--color-success);
+    letter-spacing: 0.2px;
   }
-}
-
-@keyframes pulseGlow {
-  0% { box-shadow: 0 0 0 0 $color-success-glow; }
-  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 $color-success-glow; }
 }
 
 // --- ACTION BUTTONS ---
 .action-btn-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid $border-medium;
-  color: $text-secondary;
-  transition: all 0.2s ease;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  color: var(--text-secondary);
+  transition: all 0.15s ease;
   cursor: pointer;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.15);
-    color: $text-contrast;
-    transform: scale(1.08);
+    background: var(--border-glass-hover);
+    color: var(--text-primary);
   }
 
   &.btn-funnel:hover {
-    color: $color-primary-light;
-    border-color: rgba(167, 139, 250, 0.4);
+    color: var(--color-brand);
+    border-color: var(--color-brand);
   }
 
   &.btn-open:hover {
-    color: $color-cyan;
-    border-color: $color-cyan-glow;
+    color: var(--color-info);
+    border-color: var(--color-info);
   }
 
   &.btn-trash:hover {
-    color: $color-red-light;
-    border-color: rgba(248, 113, 113, 0.4);
+    color: var(--color-danger);
+    border-color: var(--color-danger);
   }
 }
 
 // --- MOBILE DETAILS DRAWER & CHART ---
 .mobile-details-drawer {
   .meta-dates-row {
-    border-top: 1px solid $border-glass;
+    border-top: 1px solid var(--border-glass);
 
     .date-meta-item {
-      font-size: 0.78rem;
-      color: $text-muted;
+      font-size: 0.75rem;
+      color: var(--text-muted);
 
       strong {
-        color: $text-primary;
+        color: var(--text-primary);
       }
     }
   }
 
   .spark-chart-container {
     position: relative;
-    height: 100px;
+    height: 90px;
     width: 100%;
 
     .stable-price-placeholder {
       height: 100%;
-      background: rgba(15, 23, 42, 0.4);
-      border-radius: 10px;
-      border: 1px dashed $border-glass;
+      background: var(--border-subtle);
+      border-radius: 8px;
+      border: 1px dashed var(--border-glass);
 
       span {
-        font-size: 0.8rem;
-        color: $text-secondary;
+        font-size: 0.78rem;
+        color: var(--text-muted);
       }
-    }
-  }
-
-  .recommendation-section {
-    border-top: 1px dashed $border-glass;
-
-    .recommendation-badge {
-      border-radius: 8px;
-      border: 1px solid;
-      text-transform: uppercase;
-      padding: 6px 12px;
-      font-size: 0.85rem;
-
-      ion-icon {
-        font-size: 15px;
-      }
-    }
-
-    .recommendation-desc {
-      line-height: 1.45;
-      font-size: 0.85rem;
     }
   }
 }
 
 .market-metric-pill {
-  background: $bg-surface-input;
-  border: 1px solid $border-glass;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 0.82rem;
+  background: var(--bg-surface-input);
+  border: 1px solid var(--border-glass);
+  border-radius: 6px;
+  padding: 4px 8px;
 
   .metric-label {
-    color: $text-secondary;
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    font-weight: 500;
   }
 
   .metric-value {
-    color: $text-primary;
-
-    &.success {
-      color: $color-emerald;
-    }
-
-    .sub-info {
-      font-size: 0.72rem;
-      color: $text-muted;
-    }
+    font-size: 0.75rem;
+    color: var(--text-primary);
+    font-weight: 700;
   }
 }
 
-// --- TABLE VIEW STYLES ---
-.buying-table-card {
-  .buying-table {
-    thead tr th {
-      color: $color-primary-light;
-      font-size: 0.8rem;
-      letter-spacing: 0.5px;
-    }
+.market-stock-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 3px 8px;
 
-    tbody tr td {
-      .table-thumb-single {
-        width: 36px;
-        height: 50px;
-        object-fit: contain;
-        border-radius: 4px;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-      }
+  &.stock-high {
+    color: var(--color-success);
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+  }
 
-      .table-thumb-box {
-        width: 50px;
-        height: 50px;
-        padding: 2px;
-        border-radius: 6px;
-        background: #fff;
+  &.stock-medium {
+    color: var(--color-warning);
+    background: rgba(245, 158, 11, 0.08);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+  }
 
-        img {
-          max-width: 90%;
-          max-height: 90%;
-          object-fit: contain;
-          mix-blend-mode: multiply;
-        }
-      }
-
-      .table-thumb-empty {
-        width: 50px;
-        height: 50px;
-        background: rgba(255, 255, 255, 0.02);
-        border-radius: 6px;
-        border: 1px dashed $border-glass;
-
-        ion-icon {
-          color: $text-dim;
-          font-size: 16px;
-        }
-      }
-
-      .table-product-name {
-        color: $text-primary;
-        font-size: 0.95rem;
-      }
-
-      .table-meta-text {
-        font-size: 0.7rem;
-        color: $text-dim;
-
-        .table-expansion-tag {
-          color: $color-primary-light;
-        }
-      }
-
-      .table-price-val {
-        color: var(--ion-color-success);
-        font-size: 1.05rem;
-      }
-
-      .table-variation-val {
-        font-size: 0.9rem;
-        font-weight: 700;
-
-        &.variation-down {
-          color: $color-emerald;
-        }
-
-        &.variation-up {
-          color: $color-red-light;
-        }
-
-        &.variation-neutral {
-          color: $text-dim;
-        }
-      }
-    }
+  &.stock-low {
+    color: var(--color-danger);
+    background: rgba(244, 63, 94, 0.08);
+    border: 1px solid rgba(244, 63, 94, 0.2);
   }
 }
 
-// --- EMPTY STATE ---
-.empty-products-state {
-  background: rgba(15, 23, 42, 0.4);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+// --- CARD FOOTER & PRICE ROW ---
+.card-footer-row {
+  border-top: 1px solid var(--border-glass);
+  padding-top: 8px;
 
-  .empty-title {
-    color: $text-primary;
+  .current-price-tag {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--text-contrast);
+    letter-spacing: -0.5px;
   }
 
-  .empty-desc {
-    color: $text-muted;
-    max-width: 420px;
+  .var-badge {
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 5px;
+
+    &.var-down {
+      color: var(--color-success);
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    &.var-up {
+      color: var(--color-danger);
+      background: rgba(244, 63, 94, 0.08);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+    }
+
+    &.var-zero {
+      color: var(--text-muted);
+      background: var(--border-subtle);
+      border: 1px solid var(--border-glass);
+    }
   }
 }

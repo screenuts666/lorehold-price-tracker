@@ -40,6 +40,16 @@
             <span>{{ t().BARGAINS_TAB }}</span>
           </button>
 
+          <!-- SECRET LAIR TAB -->
+          <button
+            (click)="onSezioneChange('secret-lair')"
+            class="nav-pill-btn d-flex align-items-center justify-content-center gap-2"
+            [class.active-secret-lair]="activeSection() === 'secret-lair'"
+          >
+            <span>🔮</span>
+            <span>{{ t().SECRET_LAIR_TAB }}</span>
+          </button>
+
           <!-- SEARCH BUTTON -->
           <button
             (click)="onSezioneChange('search')"
@@ -52,8 +62,18 @@
         </div>
       </div>
 
-      <!-- Action Tools (AI Scanner & View Toggle & Language Switcher) -->
+      <!-- Action Tools (AI Scanner & View Toggle & Language Switcher & Theme Switcher) -->
       <div class="d-flex align-items-center gap-2 flex-shrink-0 header-actions-wrap">
+        <!-- THEME TOGGLE SWITCH -->
+        <button
+          (click)="themeService.toggleTheme()"
+          [title]="themeService.isLight() ? 'Passa a Dark Mode' : 'Passa a Light Mode'"
+          class="theme-toggle-btn d-flex align-items-center gap-1"
+        >
+          <ion-icon [name]="themeService.isLight() ? 'moon-outline' : 'sunny-outline'"></ion-icon>
+          <span class="d-none d-sm-inline fw-bold">{{ themeService.isLight() ? 'Dark' : 'Light' }}</span>
+        </button>
+
         <!-- LANGUAGE TOGGLE SWITCH -->
         <button
           (click)="langService.toggleLanguage()"
@@ -454,6 +474,16 @@
     </div>
   }
 
+  <!-- SECRET LAIR SECTION -->
+  @if (activeSection() === 'secret-lair' && !loading()) {
+    <app-secret-lair-section
+      [products]="products()"
+      [viewMode]="viewMode()"
+      [gridColumns]="gridColumns()"
+      (removeProduct)="removeProduct($event)"
+    ></app-secret-lair-section>
+  }
+
   <!-- SEARCH SECTION -->
   @if (activeSection() === 'search' && !loading()) {
     <app-search-section
@@ -491,6 +521,15 @@
     >
       <ion-icon name="cart-outline"></ion-icon>
       <span>Prodotti</span>
+    </button>
+
+    <button
+      class="nav-tab-item"
+      [class.active]="activeSection() === 'secret-lair'"
+      (click)="onSezioneChange('secret-lair')"
+    >
+      <span class="tab-emoji">🔮</span>
+      <span>Secret Lair</span>
     </button>
 
     <button

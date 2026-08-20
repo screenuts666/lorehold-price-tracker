@@ -1,35 +1,35 @@
 // ============================================================================
-// LOREHOLD PRICE TRACKER - FINANCIAL SAAS DESIGN SYSTEM & COLOR PALETTE
-// Minimalist, Clean, High-Contrast Dark Theme (Obsidian & Emerald)
+// LOREHOLD PRICE TRACKER - SWISS MINIMALIST FINTECH PALETTE
+// Mature, Elegant, Ultra-Sober Design System (Dark Obsidian & Light Studio)
 // ============================================================================
 
-// --- 1. BRAND & CORE ACCENTS (Focused 4-Color Semantic Spectrum) ---
-$color-brand: #8b5cf6;            // Lorehold Signature Violet
-$color-brand-light: #a78bfa;
-$color-brand-glow: rgba(139, 92, 246, 0.25);
+// --- 1. CORE BRAND ANCHOR (Deep Iris / Indigo) ---
+$color-brand: #6366f1;
+$color-brand-dark: #4f46e5;
+$color-brand-light: #818cf8;
 
-$color-primary: #8b5cf6;
-$color-primary-light: #a78bfa;
-$color-primary-dark: #7c3aed;
-$color-primary-glow: rgba(139, 92, 246, 0.25);
+$color-primary: #818cf8;
+$color-primary-light: #a5b4fc;
+$color-primary-dark: #6366f1;
 
-// Semantic Trading Statuses
-$color-success: #10b981;          // Emerald (Profits, Buy Deals, Discount)
+// --- 2. SEMANTIC MARKET STATUSES (Only 2 Functional Colors) ---
+$color-success: #10b981;          // Emerald (Profits, Buy, Discount)
 $color-success-light: #34d399;
-$color-success-glow: rgba(16, 185, 129, 0.20);
+$color-success-dark: #059669;
 
-$color-warning: #f59e0b;          // Warm Amber (Wait, Caution, Preorder)
-$color-warning-light: #fbbf24;
-$color-warning-glow: rgba(245, 158, 11, 0.20);
-
-$color-danger: #f43f5e;           // Rose Coral (Overpriced, Loss, Critical)
+$color-danger: #f43f5e;           // Rose/Crimson (Overpriced, Loss, Critical)
 $color-danger-light: #fb7185;
-$color-danger-glow: rgba(244, 63, 94, 0.20);
+$color-danger-dark: #e11d48;
 
-$color-info: #38bdf8;             // Subtle Sky (CardTrader Market Benchmark)
+$color-warning: #fbbf24;          // Warm Amber (Neutral, Wait, Preorder)
+$color-warning-light: #fcd34d;
+$color-warning-dark: #d97706;
+
+$color-info: #38bdf8;             // CardTrader Market line
 $color-cyan: #38bdf8;
-$color-cyan-glow: rgba(56, 189, 248, 0.25);
 $color-pink: #f472b6;
+
+// Backward-compatibility variable aliases
 $color-emerald: $color-success-light;
 $color-gold: $color-warning;
 $color-gold-vintage: #d4af37;
@@ -38,111 +38,203 @@ $color-purple: $color-brand-light;
 $color-purple-dark: $color-brand;
 $color-blue: #3b82f6;
 $color-indigo: #818cf8;
-$color-teal: #2dd4bf;
+$color-teal: #0d9488;
 $color-red: $color-danger;
 $color-red-light: $color-danger-light;
+$color-cyan-glow: rgba(56, 189, 248, 0.2);
+$color-success-glow: rgba(16, 185, 129, 0.2);
+$color-danger-glow: rgba(244, 63, 94, 0.2);
+$color-primary-glow: rgba(129, 140, 248, 0.2);
+$color-warning-glow: rgba(251, 191, 36, 0.2);
 
-// --- 2. DEEP OBSIDIAN SURFACES & BACKGROUNDS ---
-$bg-body: #07090e;                // Deepest Obsidian Night
-$bg-header: rgba(7, 9, 14, 0.85);
-$bg-surface-dark: #0b0f17;
-$bg-surface-glass: rgba(18, 24, 38, 0.55);
-$bg-surface-medium: rgba(22, 29, 45, 0.70);
-$bg-surface-subtle: rgba(14, 18, 29, 0.65);
-$bg-surface-input: rgba(11, 15, 23, 0.75);
+// --- 3. DARK MODE TOKENS (Rich Obsidian Graphite) ---
+$bg-body-dark: #0a0e1a;
+$bg-card-dark: #131b2e;
+$bg-card-hover-dark: #19233c;
+$bg-surface-glass-dark: rgba(19, 27, 46, 0.95);
+$bg-surface-input-dark: #0e1424;
+$border-glass-dark: rgba(255, 255, 255, 0.16);
+$border-glass-hover-dark: rgba(129, 140, 248, 0.6);
+$text-primary-dark: #ffffff;
+$text-secondary-dark: #f1f5f9;
+$text-muted-dark: #cbd5e1;
+$text-dim-dark: #94a3b8;
 
-// Sophisticated Glass Borders
-$border-glass: rgba(255, 255, 255, 0.07);
-$border-glass-hover: rgba(139, 92, 246, 0.35);
-$border-medium: rgba(255, 255, 255, 0.12);
-$border-subtle: rgba(255, 255, 255, 0.05);
+// --- 4. LIGHT MODE TOKENS (Pure Studio White) ---
+$bg-body-light: #f1f5f9;
+$bg-card-light: #ffffff;
+$bg-card-hover-light: #f8fafc;
+$bg-surface-glass-light: rgba(255, 255, 255, 0.95);
+$bg-surface-input-light: #ffffff;
+$border-glass-light: #cbd5e1;
+$border-glass-hover-light: #818cf8;
+$text-primary-light: #0f172a;
+$text-secondary-light: #334155;
+$text-muted-light: #64748b;
+$text-dim-light: #94a3b8;
 
-// --- 3. UNIFIED SLATE CATEGORY BADGES (Zero Visual Overload) ---
-$cat-base-bg: rgba(255, 255, 255, 0.04);
-$cat-base-color: #cbd5e1;
-
-$cat-collector-color: #fde68a;
-$cat-collector-bg: rgba(245, 158, 11, 0.08);
-$cat-collector-border: rgba(245, 158, 11, 0.25);
-
-$cat-play-box-color: #bae6fd;
-$cat-play-box-bg: rgba(56, 189, 248, 0.08);
-$cat-play-box-border: rgba(56, 189, 248, 0.25);
-
-$cat-prerelease-color: #a7f3d0;
-$cat-prerelease-bg: rgba(16, 185, 129, 0.08);
-$cat-prerelease-border: rgba(16, 185, 129, 0.25);
-
-$cat-bundle-color: #e9d5ff;
-$cat-bundle-bg: rgba(168, 85, 247, 0.08);
-$cat-bundle-border: rgba(168, 85, 247, 0.25);
-
-$cat-draft-night-color: #fbcfe8;
-$cat-draft-night-bg: rgba(236, 72, 153, 0.08);
-$cat-draft-night-border: rgba(236, 72, 153, 0.25);
-
-$cat-scene-box-color: #c7d2fe;
-$cat-scene-box-bg: rgba(99, 102, 241, 0.08);
-$cat-scene-box-border: rgba(99, 102, 241, 0.25);
-
-$cat-commander-color: #99f6e4;
-$cat-commander-bg: rgba(20, 184, 166, 0.08);
-$cat-commander-border: rgba(20, 184, 166, 0.25);
-
-$cat-old-school-color: #fef08a;
-$cat-old-school-bg: linear-gradient(135deg, rgba(35, 26, 12, 0.9), rgba(20, 15, 8, 0.9));
-$cat-old-school-border: rgba(217, 119, 6, 0.35);
-
-// --- 4. TYPOGRAPHY & TEXT TOKENS ---
-$text-primary: #f8fafc;
-$text-secondary: #94a3b8;
-$text-muted: #64748b;
-$text-dim: #475569;
+// Fallback SCSS variables (Dark default)
+$bg-body: $bg-body-dark;
+$bg-header: rgba(19, 27, 46, 0.95);
+$bg-surface-dark: $bg-card-dark;
+$bg-surface-glass: $bg-surface-glass-dark;
+$bg-surface-medium: #19233c;
+$bg-surface-subtle: #131b2e;
+$bg-surface-input: $bg-surface-input-dark;
+$border-glass: $border-glass-dark;
+$border-glass-hover: $border-glass-hover-dark;
+$border-medium: rgba(255, 255, 255, 0.2);
+$border-subtle: rgba(255, 255, 255, 0.10);
+$text-primary: $text-primary-dark;
+$text-secondary: $text-secondary-dark;
+$text-muted: $text-muted-dark;
+$text-dim: $text-dim-dark;
 $text-contrast: #ffffff;
 
-// --- 5. REUSABLE MODERN MIXINS ---
-@mixin glass-panel($bg: $bg-surface-subtle, $border: $border-glass, $radius: 12px) {
-  background: $bg;
-  border: 1px solid $border;
+// --- 5. UNIFIED NEUTRAL CATEGORY TOKENS ---
+$cat-base-bg: rgba(255, 255, 255, 0.08);
+$cat-base-border: rgba(255, 255, 255, 0.16);
+$cat-base-color: #f1f5f9;
+
+$cat-collector-color: $cat-base-color;
+$cat-collector-bg: $cat-base-bg;
+$cat-collector-border: $cat-base-border;
+
+$cat-play-box-color: $cat-base-color;
+$cat-play-box-bg: $cat-base-bg;
+$cat-play-box-border: $cat-base-border;
+
+$cat-prerelease-color: $cat-base-color;
+$cat-prerelease-bg: $cat-base-bg;
+$cat-prerelease-border: $cat-base-border;
+
+$cat-bundle-color: $cat-base-color;
+$cat-bundle-bg: $cat-base-bg;
+$cat-bundle-border: $cat-base-border;
+
+$cat-draft-night-color: $cat-base-color;
+$cat-draft-night-bg: $cat-base-bg;
+$cat-draft-night-border: $cat-base-border;
+
+$cat-scene-box-color: $cat-base-color;
+$cat-scene-box-bg: $cat-base-bg;
+$cat-scene-box-border: $cat-base-border;
+
+$cat-commander-color: $cat-base-color;
+$cat-commander-bg: $cat-base-bg;
+$cat-commander-border: $cat-base-border;
+
+$cat-old-school-color: #fbbf24;
+$cat-old-school-bg: rgba(245, 158, 11, 0.12);
+$cat-old-school-border: rgba(245, 158, 11, 0.35);
+
+// --- 6. REUSABLE CLEAN MIXINS ---
+@mixin glass-panel($radius: 12px) {
+  background: var(--bg-surface-glass);
+  border: 1px solid var(--border-glass);
   border-radius: $radius;
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-@mixin glass-card($bg: linear-gradient(180deg, rgba(20, 26, 38, 0.65) 0%, rgba(11, 15, 23, 0.80) 100%), $border: $border-glass, $radius: 16px) {
-  background: $bg;
-  border: 1px solid $border;
+@mixin glass-card($radius: 14px) {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
   border-radius: $radius;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), inset 0 1px 0 0 rgba(255, 255, 255, 0.05);
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
 
   &:hover {
-    border-color: $border-glass-hover;
-    box-shadow: 0 16px 36px -10px rgba(139, 92, 246, 0.18), inset 0 1px 0 0 rgba(255, 255, 255, 0.08);
+    border-color: var(--border-glass-hover);
+    box-shadow: var(--card-shadow-hover);
   }
 }
 
-@mixin badge-pill($bg, $border, $color) {
-  background: $bg;
-  border: 1px solid $border;
-  color: $color;
-  font-weight: 600;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  border-radius: 6px;
-  padding: 3px 8px;
+// --- 7. DYNAMIC THEME CSS CUSTOM PROPERTIES ---
+:root, [data-theme="dark"] {
+  --bg-body: #0a0e1a;
+  --bg-card: #131b2e;
+  --bg-card-hover: #19233c;
+  --bg-surface-glass: rgba(19, 27, 46, 0.95);
+  --bg-surface-input: #0e1424;
+  --border-glass: rgba(255, 255, 255, 0.16);
+  --border-glass-hover: rgba(129, 140, 248, 0.6);
+  --border-subtle: rgba(255, 255, 255, 0.10);
+
+  --text-primary: #ffffff;
+  --text-secondary: #f1f5f9;
+  --text-muted: #cbd5e1;
+  --text-dim: #94a3b8;
+  --text-contrast: #ffffff;
+
+  --color-primary: #818cf8;
+  --color-brand: #818cf8;
+  --color-success: #10b981;
+  --color-success-light: #34d399;
+  --color-danger: #f43f5e;
+  --color-danger-light: #fb7185;
+  --color-warning: #fbbf24;
+  --color-info: #38bdf8;
+
+  --cat-badge-bg: rgba(255, 255, 255, 0.08);
+  --cat-badge-border: rgba(255, 255, 255, 0.16);
+  --cat-badge-color: #f1f5f9;
+
+  --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --card-shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(129, 140, 248, 0.5);
+
+  --chart-primary: #818cf8;
+  --chart-cyan: #38bdf8;
+  --chart-success: #10b981;
+  --chart-pink: #f472b6;
+  --chart-axis-text: #cbd5e1;
+  --chart-axis-text-dim: #94a3b8;
+  --chart-grid: rgba(255, 255, 255, 0.08);
+  --chart-grid-border: rgba(255, 255, 255, 0.15);
+
+  --set-icon-filter: brightness(0) invert(1);
 }
 
-// --- 6. CSS CUSTOM PROPERTIES FOR DYNAMIC CANVAS / CHART CONSUMPTION ---
-:root {
-  --chart-primary: #{$color-primary-light};
-  --chart-cyan: #{$color-cyan};
-  --chart-success: #{$color-success};
-  --chart-pink: #{$color-pink};
-  --chart-axis-text: #{$text-muted};
-  --chart-axis-text-dim: #{$text-dim};
-  --chart-grid: rgba(255, 255, 255, 0.03);
-  --chart-grid-border: rgba(255, 255, 255, 0.06);
+[data-theme="light"], .light-theme {
+  --bg-body: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f8fafc;
+  --bg-surface-glass: rgba(255, 255, 255, 0.95);
+  --bg-surface-input: #ffffff;
+  --border-glass: #cbd5e1;
+  --border-glass-hover: #818cf8;
+  --border-subtle: #e2e8f0;
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-dim: #94a3b8;
+  --text-contrast: #ffffff;
+
+  --color-primary: #4f46e5;
+  --color-brand: #4f46e5;
+  --color-success: #059669;
+  --color-success-light: #10b981;
+  --color-danger: #e11d48;
+  --color-danger-light: #f43f5e;
+  --color-warning: #d97706;
+  --color-info: #0284c7;
+
+  --cat-badge-bg: #f1f5f9;
+  --cat-badge-border: #cbd5e1;
+  --cat-badge-color: #334155;
+
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --card-shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(79, 70, 229, 0.2);
+
+  --chart-primary: #4f46e5;
+  --chart-cyan: #0284c7;
+  --chart-success: #059669;
+  --chart-pink: #db2777;
+  --chart-axis-text: #475569;
+  --chart-axis-text-dim: #94a3b8;
+  --chart-grid: rgba(0, 0, 0, 0.06);
+  --chart-grid-border: rgba(0, 0, 0, 0.12);
+
+  --set-icon-filter: none;
 }

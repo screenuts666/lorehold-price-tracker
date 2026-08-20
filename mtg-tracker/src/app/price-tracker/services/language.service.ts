@@ -112,6 +112,21 @@ export interface Translations {
   PRODUCT_PLURAL: string;
   DATE_NA: string;
   EMPTY_NO_PRODUCTS: string;
+  SECRET_LAIR_TAB: string;
+  SECRET_LAIR_HERO_TITLE: string;
+  SECRET_LAIR_HERO_DESC: string;
+  SL_CHIP_ALL: string;
+  SL_CHIP_COMMANDER: string;
+  SL_CHIP_BUNDLES: string;
+  SL_CHIP_ARTIST: string;
+  SL_CHIP_UNIVERSES: string;
+  SL_CHIP_LANDS: string;
+  SL_CHIP_PREORDERS: string;
+  SL_CHIP_BARGAINS: string;
+  SL_FOIL_ALL: string;
+  SL_FOIL_ONLY: string;
+  SL_NONFOIL_ONLY: string;
+  SL_SEARCH_PLACEHOLDER: string;
 }
 
 const dictionary: Record<SupportedLanguage, Translations> = {
@@ -219,7 +234,22 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     PRODUCT_SINGULAR: 'prodotto',
     PRODUCT_PLURAL: 'prodotti',
     DATE_NA: 'Data N/D',
-    EMPTY_NO_PRODUCTS: 'Nessun prodotto trovato'
+    EMPTY_NO_PRODUCTS: 'Nessun prodotto trovato',
+    SECRET_LAIR_TAB: 'SECRET LAIR',
+    SECRET_LAIR_HERO_TITLE: 'Archivio & Radar Secret Lair Drops',
+    SECRET_LAIR_HERO_DESC: 'Monitoraggio in tempo reale di tutti i drop sigillati, superdrop bundle e commander decks Secret Lair.',
+    SL_CHIP_ALL: '✨ Tutti i Drops',
+    SL_CHIP_COMMANDER: '👑 Commander Decks & Kits',
+    SL_CHIP_BUNDLES: '📦 Superdrops & Bundle',
+    SL_CHIP_ARTIST: '🎨 Artist Series',
+    SL_CHIP_UNIVERSES: '🎮 Universes Beyond',
+    SL_CHIP_LANDS: '🌄 Land Drops',
+    SL_CHIP_PREORDERS: '🔥 Preordini Attivi',
+    SL_CHIP_BARGAINS: '🎯 Prezzo Equo / Occasioni',
+    SL_FOIL_ALL: 'Tutte le Finiture',
+    SL_FOIL_ONLY: '✨ Solo Foil',
+    SL_NONFOIL_ONLY: '📄 Solo Non-Foil',
+    SL_SEARCH_PLACEHOLDER: '🔍 Cerca drop, mazzo o artista Secret Lair...'
   },
   en: {
     HUB_TAB: 'EXPANSIONS HUB',
@@ -325,7 +355,22 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     PRODUCT_SINGULAR: 'product',
     PRODUCT_PLURAL: 'products',
     DATE_NA: 'Date N/A',
-    EMPTY_NO_PRODUCTS: 'No products found'
+    EMPTY_NO_PRODUCTS: 'No products found',
+    SECRET_LAIR_TAB: 'SECRET LAIR',
+    SECRET_LAIR_HERO_TITLE: 'Secret Lair Drops Archive & Radar',
+    SECRET_LAIR_HERO_DESC: 'Real-time tracking of all sealed Secret Lair drops, superdrop bundles, and commander decks with MSRP pricing benchmark.',
+    SL_CHIP_ALL: '✨ All Drops',
+    SL_CHIP_COMMANDER: '👑 Commander Decks & Kits',
+    SL_CHIP_BUNDLES: '📦 Superdrops & Bundles',
+    SL_CHIP_ARTIST: '🎨 Artist Series',
+    SL_CHIP_UNIVERSES: '🎮 Universes Beyond',
+    SL_CHIP_LANDS: '🌄 Land Drops',
+    SL_CHIP_PREORDERS: '🔥 Active Pre-orders',
+    SL_CHIP_BARGAINS: '🎯 Fair Price / Deals',
+    SL_FOIL_ALL: 'All Finishes',
+    SL_FOIL_ONLY: '✨ Foil Only',
+    SL_NONFOIL_ONLY: '📄 Non-Foil Only',
+    SL_SEARCH_PLACEHOLDER: '🔍 Search Secret Lair drop, deck or artist...'
   }
 };
 

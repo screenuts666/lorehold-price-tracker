@@ -258,12 +258,24 @@ export class ExpansionsHubComponent implements OnInit {
     // 2. Aggiungi le espansioni presenti nel DB che non sono già state incluse
     Object.keys(expProductsCount).forEach(expName => {
       if (!addedNames.has(expName.toLowerCase())) {
-        const expLower = expName.toLowerCase();
-        let scryfallSet = this.scryfallSetsCache.find(s => s.name.toLowerCase() === expLower);
+        const expLower = expName.toLowerCase().trim();
+        const normExp = expLower.replace(/[^a-z0-9]/g, '');
+
+        // 1. Match esatto
+        let scryfallSet = this.scryfallSetsCache.find(s => s.name.toLowerCase() === expLower || s.name.toLowerCase().replace(/[^a-z0-9]/g, '') === normExp);
+
+        // 2. Fallback intelligente: se non trovato esatto, cerca corrispondenze che NON siano edizioni future non correlate
         if (!scryfallSet) {
-          scryfallSet = this.scryfallSetsCache.find(s => 
-            s.name.length > 3 && (expLower.includes(s.name.toLowerCase()) || s.name.toLowerCase().includes(expLower))
-          );
+          const matchingSets = this.scryfallSetsCache.filter(s => {
+            const sLower = s.name.toLowerCase();
+            return sLower.includes(expLower) || expLower.includes(sLower);
+          });
+
+          if (matchingSets.length > 0) {
+            // Se l'espansione nel DB non contiene "commander edition" o anni futuri, preferisci la versione già rilasciata
+            const releasedMatch = matchingSets.find(s => s.released_at && s.released_at < todayStr);
+            scryfallSet = releasedMatch || matchingSets[0];
+          }
         }
 
         const relDate = scryfallSet?.released_at || null;
@@ -346,5 +358,10 @@ export class ExpansionsHubComponent implements OnInit {
   updateStatusFilter(val: string) {
     this.statusFilter.set(val);
     localStorage.setItem('mtg_tracker_hub_status', val);
+  }
+
+  formatExpDate(exp: ExpansionItem): string {
+    if (!exp.released_at) return this.t().DATE_NA;
+    return formatLocalizedDate(exp.released_at, this.langService.currentLang());
   }
 }

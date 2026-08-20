@@ -5,163 +5,174 @@
 
 // --- HEADER & TOOLBAR ---
 .main-header {
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--card-shadow);
   z-index: 1000;
 }
 
 .header-toolbar {
-  --background: #{$bg-header};
-  border-bottom: 1px solid $border-subtle;
+  --background: var(--bg-surface-glass);
+  border-bottom: 1px solid var(--border-glass);
   --padding-top: 8px;
   --padding-bottom: 8px;
 }
 
 .header-brand {
   .app-logo {
-    height: 24px;
-    width: 24px;
+    height: 26px;
+    width: 26px;
     border-radius: 6px;
-    box-shadow: 0 0 12px $color-primary-glow;
+  }
+
+  .header-app-title {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.3px;
   }
 }
 
 // --- DESKTOP NAV SEGMENT PILLS ---
 .desktop-nav-wrap {
   min-width: 320px;
-  max-width: 620px;
+  max-width: 660px;
 }
 
 .nav-pills-bar {
-  @include glass-panel($bg-surface-subtle, $border-glass, 20px);
-  padding: 3px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: 12px;
+  padding: 4px;
+  box-shadow: var(--card-shadow);
 }
 
 .nav-pill-btn {
   flex: 1;
   padding: 8px 12px;
-  border-radius: 16px;
+  border-radius: 9px;
   border: 1px solid transparent;
-  color: $text-secondary;
+  color: var(--text-secondary);
   font-weight: 700;
   font-size: 0.78rem;
   cursor: pointer;
   background: transparent;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
   outline: none;
 
   ion-icon {
-    font-size: 15px;
-    color: $text-dim;
-    transition: color 0.25s ease;
+    font-size: 16px;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
   }
 
   span {
-    color: $text-muted;
-    transition: color 0.25s ease;
+    color: var(--text-secondary);
+    transition: color 0.2s ease;
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--border-subtle);
+    color: var(--text-primary);
+
+    ion-icon, span {
+      color: var(--text-primary);
+    }
   }
 
-  &.active-hub {
-    background: linear-gradient(135deg, rgba(139, 92, 246, 0.22), rgba(99, 102, 241, 0.22));
-    border-color: rgba(139, 92, 246, 0.35);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  &.active-hub,
+  &.active-sealed,
+  &.active-bargains,
+  &.active-secret-lair,
+  &.active-search {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 
-    ion-icon { color: $color-primary-light; }
-    span { color: $text-primary; }
-  }
-
-  &.active-sealed {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(14, 165, 233, 0.22));
-    border-color: rgba(56, 189, 248, 0.35);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
-
-    ion-icon { color: $color-cyan; }
-    span { color: $text-primary; }
+    ion-icon { color: #ffffff !important; }
+    span { color: #ffffff !important; font-weight: 800; }
   }
 
   &.active-bargains {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.25));
-    border-color: rgba(16, 185, 129, 0.4);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
-
-    span { color: $color-emerald; }
-  }
-
-  &.active-search {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(37, 99, 235, 0.22));
-    border-color: rgba(59, 130, 246, 0.35);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
-
-    ion-icon { color: #60a5fa; }
-    span { color: $text-primary; }
+    background: var(--color-success);
+    border-color: var(--color-success);
+    ion-icon { color: #ffffff !important; }
+    span { color: #ffffff !important; }
   }
 }
 
 // --- HEADER ACTIONS GROUP ---
 .action-btn-base {
-  font-weight: 800;
-  font-size: 0.72rem;
-  padding: 5px 8px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  padding: 6px 12px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.theme-toggle-btn {
+  @extend .action-btn-base;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
+
+  ion-icon {
+    font-size: 15px;
+    color: var(--color-warning);
+  }
+
+  &:hover {
+    border-color: var(--border-glass-hover);
+    background: var(--bg-card-hover);
+  }
 }
 
 .lang-toggle-btn {
   @extend .action-btn-base;
-  background: $bg-surface-medium;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: $text-primary;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  color: var(--text-primary);
 
   &:hover {
-    background: rgba(51, 65, 85, 0.9);
-    border-color: rgba(255, 255, 255, 0.3);
+    border-color: var(--border-glass-hover);
+    background: var(--bg-card-hover);
   }
 }
 
 .telegram-btn {
   @extend .action-btn-base;
-  background: linear-gradient(135deg, rgba(0, 136, 204, 0.25), rgba(41, 182, 246, 0.25));
-  border: 1px solid rgba(0, 136, 204, 0.5);
-  color: $text-primary;
-  box-shadow: 0 4px 14px rgba(0, 136, 204, 0.25);
+  background: rgba(56, 189, 248, 0.16);
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  color: #38bdf8;
 
   &:hover {
-    background: linear-gradient(135deg, rgba(0, 136, 204, 0.4), rgba(41, 182, 246, 0.4));
-    transform: translateY(-1px);
-  }
-
-  svg {
-    flex-shrink: 0;
+    background: rgba(56, 189, 248, 0.28);
+    border-color: #38bdf8;
   }
 }
 
 .cloud-scan-btn {
   @extend .action-btn-base;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(147, 51, 234, 0.3));
-  border: 1px solid rgba(168, 85, 247, 0.5);
-  color: $text-primary;
-  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+  background: rgba(129, 140, 248, 0.16);
+  border: 1px solid rgba(129, 140, 248, 0.5);
+  color: #a5b4fc;
 
   &:hover {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.45), rgba(147, 51, 234, 0.45));
-    transform: translateY(-1px);
+    background: rgba(129, 140, 248, 0.28);
+    border-color: #818cf8;
   }
 
   ion-icon {
-    color: $color-primary-light;
-    font-size: 14px;
-    flex-shrink: 0;
+    font-size: 15px;
   }
 }
 
 .view-mode-toggle {
-  @include glass-panel($bg-surface-subtle, $border-glass, 10px);
+  @include glass-panel(10px);
   padding: 2px;
 
   .view-mode-btn {
@@ -221,8 +232,8 @@
   flex-direction: column;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(11, 15, 25, 0.95);
-  border-bottom: 1px solid $border-glass;
+  background: var(--bg-surface-glass);
+  border-bottom: 1px solid var(--border-glass);
 
   @media (max-width: 900px) {
     display: none;
@@ -254,52 +265,57 @@
   max-width: 240px;
 
   .search-input {
-    background: $bg-surface-medium;
-    border: 1px solid $border-medium;
+    background: var(--bg-card);
+    border: 1px solid var(--border-glass);
     border-radius: 10px;
-    color: $text-primary;
+    color: var(--text-primary);
     font-size: 0.82rem;
     padding: 6px 10px;
     font-weight: 500;
     transition: all 0.2s ease;
 
+    &::placeholder {
+      color: var(--text-muted);
+    }
+
     &:focus {
-      border-color: $color-cyan;
-      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+      border-color: var(--color-primary);
+      box-shadow: 0 0 8px rgba(99, 102, 241, 0.2);
     }
   }
 }
 
 .price-filter-group {
   flex: 0 0 auto;
-  background: $bg-surface-medium;
-  border: 1px solid $border-medium;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
   border-radius: 10px;
   padding: 4px 8px;
 
   .price-label {
     font-size: 0.75rem;
-    color: $text-secondary;
+    color: var(--text-secondary);
   }
 
   .price-input {
     width: 55px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: var(--bg-surface-input);
+    border: 1px solid var(--border-glass);
     border-radius: 6px;
-    color: $color-cyan;
+    color: var(--text-primary);
     font-size: 0.78rem;
     font-weight: 700;
     text-align: center;
     padding: 3px 4px;
 
     &:focus {
-      border-color: $color-cyan;
+      border-color: var(--color-primary);
+      outline: none;
     }
   }
 
   .price-separator {
-    color: $text-dim;
+    color: var(--text-muted);
     font-size: 0.75rem;
   }
 }
@@ -309,10 +325,10 @@
   width: auto !important;
   flex: 0 1 auto !important;
   max-width: 200px;
-  background: $bg-surface-medium !important;
-  border: 1px solid $border-medium !important;
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border-glass) !important;
   border-radius: 10px !important;
-  color: $text-primary !important;
+  color: var(--text-primary) !important;
   font-size: 0.8rem !important;
   padding: 6px 28px 6px 10px !important;
   font-weight: 600;
@@ -323,7 +339,8 @@
   }
 
   &:focus {
-    border-color: $color-primary !important;
+    border-color: var(--color-primary) !important;
+    outline: none;
   }
 }
 
@@ -338,19 +355,19 @@
 }
 
 .filter-row-2 {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--border-subtle);
   padding-top: 8px;
 }
 
 .category-visibility-bar {
-  background: rgba(14, 18, 29, 0.75);
+  background: var(--bg-card);
   padding: 5px 12px;
   border-radius: 10px;
-  border: 1px solid $border-glass;
+  border: 1px solid var(--border-glass);
 
   .bar-title {
     font-size: 0.72rem;
-    color: $text-muted;
+    color: var(--text-muted);
     font-weight: 600;
   }
 
@@ -364,7 +381,7 @@
     white-space: nowrap;
 
     &.btn-all {
-      color: $color-success-light;
+      color: var(--color-success);
       background: rgba(16, 185, 129, 0.10);
       border: 1px solid rgba(16, 185, 129, 0.3);
 
@@ -374,7 +391,7 @@
     }
 
     &.btn-none {
-      color: $color-danger-light;
+      color: var(--color-danger);
       background: rgba(244, 63, 94, 0.10);
       border: 1px solid rgba(244, 63, 94, 0.3);
 
@@ -387,78 +404,77 @@
   .category-checkbox-item {
     font-size: 0.72rem;
     font-weight: 600;
-    color: $text-secondary;
+    color: var(--text-secondary);
     cursor: pointer;
     user-select: none;
     transition: color 0.2s ease;
 
     input[type="checkbox"] {
       cursor: pointer;
-      accent-color: $color-primary;
+      accent-color: var(--color-primary);
     }
 
     &:hover {
-      color: $text-primary;
+      color: var(--text-primary);
     }
 
-    &.collector input { accent-color: $color-warning; }
-    &.play-box input { accent-color: $color-info; }
-    &.prerelease input { accent-color: $color-success; }
-    &.bundle input { accent-color: $color-primary; }
+    &.collector input { accent-color: var(--color-warning); }
+    &.play-box input { accent-color: var(--color-info); }
+    &.prerelease input { accent-color: var(--color-success); }
+    &.bundle input { accent-color: var(--color-primary); }
 
     &.hide-na-badge {
-      color: $color-danger-light;
+      color: var(--color-danger);
       background: rgba(244, 63, 94, 0.08);
       border: 1px solid rgba(244, 63, 94, 0.25);
       border-radius: 6px;
       padding: 2px 6px;
 
-      input { accent-color: $color-danger; }
+      input { accent-color: var(--color-danger); }
     }
 
     &.old-school-toggle {
-      color: $cat-old-school-color;
-      background: $cat-old-school-bg;
-      border: 1px solid $cat-old-school-border;
+      color: #d97706;
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.25);
       border-radius: 6px;
       padding: 2px 8px;
-      box-shadow: 0 0 10px rgba(245, 158, 11, 0.12);
       font-weight: 700;
 
-      input { accent-color: $color-warning; }
+      input { accent-color: var(--color-warning); }
     }
   }
 
   .bar-divider {
-    color: rgba(255, 255, 255, 0.15);
+    color: var(--border-glass);
   }
 }
 
 // --- SMART THRESHOLDS CONTROL PANEL ---
 .smart-thresholds-panel {
-  background: rgba(16, 185, 129, 0.06);
-  border: 1px solid rgba(16, 185, 129, 0.22);
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
   border-radius: 10px;
   padding: 4px 12px;
 
   .thresholds-title {
     font-size: 0.75rem;
     font-weight: 700;
-    color: $color-success-light;
+    color: var(--color-success);
   }
 
   .threshold-field-group {
     .threshold-name {
       font-size: 0.72rem;
       font-weight: 600;
-      color: $text-secondary;
+      color: var(--text-secondary);
     }
 
     .threshold-input-control {
-      background: rgba(7, 9, 14, 0.75);
-      border: 1px solid $border-glass;
+      background: var(--bg-surface-input);
+      border: 1px solid var(--border-glass);
       border-radius: 6px;
-      color: $text-primary;
+      color: var(--text-primary);
       font-size: 0.75rem;
       font-weight: 700;
       text-align: center;
@@ -466,7 +482,7 @@
       transition: border-color 0.2s ease;
 
       &:focus {
-        border-color: $color-success;
+        border-color: var(--color-success);
         outline: none;
       }
 
@@ -478,7 +494,7 @@
     .threshold-unit {
       font-size: 0.72rem;
       font-weight: 700;
-      color: $text-muted;
+      color: var(--text-muted);
     }
   }
 }
@@ -486,81 +502,88 @@
 // --- GLOBAL SPINNER LOADER ---
 .global-loading-container {
   height: 350px;
-  color: $text-muted;
+  color: var(--text-muted);
 
   .loading-sparkle-icon {
     font-size: 48px;
     margin-bottom: 14px;
-    color: $color-primary-light;
+    color: var(--color-primary);
     animation: pulse 1.8s infinite;
   }
 
   .loading-title {
-    color: $text-primary;
+    color: var(--text-primary);
   }
 }
 
 // --- EXPANSION DETAIL VIEW ---
 .expansion-detail-header-card {
   padding: 16px 20px;
-  @include glass-panel(rgba(30, 41, 59, 0.6), rgba(255, 255, 255, 0.1), 12px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  @include glass-panel(12px);
+  box-shadow: var(--card-shadow);
 
   .header-left {
     .back-btn {
-      background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(99, 102, 241, 0.3));
-      border: 1px solid rgba(139, 92, 246, 0.5);
-      color: #ffffff;
-      font-weight: 800;
-      font-size: 0.9rem;
-      padding: 10px 18px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glass);
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 8px 16px;
       border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+      box-shadow: var(--card-shadow);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
 
       &:hover {
-        background: linear-gradient(135deg, rgba(139, 92, 246, 0.45), rgba(99, 102, 241, 0.45));
-        transform: translateY(-2px);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        transform: translateY(-1px);
       }
     }
 
     .expansion-title {
-      color: $text-primary;
-      font-size: 1.6rem;
+      color: var(--text-primary);
+      font-size: 1.5rem;
+      font-weight: 800;
     }
   }
 
   .header-right-badges {
     .release-date-badge {
       font-size: 0.78rem;
-      color: $color-gold;
-      font-weight: 800;
-      background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.25));
-      padding: 6px 14px;
+      color: #d97706;
+      font-weight: 700;
+      background: rgba(245, 158, 11, 0.1);
+      padding: 6px 12px;
       border-radius: 8px;
-      border: 1px solid rgba(245, 158, 11, 0.4);
+      border: 1px solid rgba(245, 158, 11, 0.25);
     }
 
     .products-count-badge {
       font-size: 0.78rem;
-      color: $color-cyan;
-      font-weight: 800;
-      background: rgba(56, 189, 248, 0.15);
+      color: var(--color-primary);
+      font-weight: 700;
+      background: rgba(99, 102, 241, 0.1);
       padding: 6px 12px;
       border-radius: 8px;
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      border: 1px solid rgba(99, 102, 241, 0.25);
     }
 
     .repull-btn {
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid rgba(16, 185, 129, 0.5);
-      color: $color-emerald;
-      font-weight: 800;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--color-success);
+      font-weight: 700;
       font-size: 0.8rem;
-      padding: 8px 14px;
+      padding: 6px 12px;
       border-radius: 8px;
+      transition: all 0.2s ease;
 
       &:hover {
-        background: rgba(16, 185, 129, 0.35);
+        background: rgba(16, 185, 129, 0.2);
       }
     }
   }

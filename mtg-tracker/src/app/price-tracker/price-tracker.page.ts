@@ -6,7 +6,8 @@ import { addIcons } from 'ionicons';
 import { 
   refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline, 
   searchOutline, closeOutline, settingsOutline, optionsOutline, funnelOutline, 
-  sparklesOutline, arrowBackOutline, chevronDownOutline, chevronUpOutline
+  sparklesOutline, arrowBackOutline, chevronDownOutline, chevronUpOutline,
+  sunnyOutline, moonOutline
 } from 'ionicons/icons';
 import {
   IonHeader,
@@ -19,11 +20,13 @@ import {
 import { BuyingSectionComponent } from './components/buying-section/buying-section.component';
 import { SearchSectionComponent } from './components/search-section/search-section.component';
 import { ExpansionsHubComponent } from './components/expansions-hub/expansions-hub.component';
+import { SecretLairSectionComponent } from './components/secret-lair-section/secret-lair-section.component';
 import { FilterModalComponent, OldSchoolBannerComponent } from '../shared';
 import { Firestore, collection, collectionData, doc, setDoc, deleteDoc } from '@angular/fire/firestore';
 import { MtgCategoryService } from './services/mtg-category.service';
 import { StorageFilterService } from './services/storage-filter.service';
 import { LanguageService } from './services/language.service';
+import { ThemeService } from './services/theme.service';
 import { environment } from 'src/environments/environment';
 import {
   MtgProduct,
@@ -59,7 +62,8 @@ import { formatItalianDate } from '../utils/date.utils';
     SearchSectionComponent,
     FilterModalComponent,
     OldSchoolBannerComponent,
-    ExpansionsHubComponent
+    ExpansionsHubComponent,
+    SecretLairSectionComponent
   ],
 })
 export class PriceTrackerPage implements OnInit {
@@ -105,10 +109,10 @@ export class PriceTrackerPage implements OnInit {
   // Cached options for selects — populated from localStorage immediately, updated from Firestore
   private _cachedExpansions = signal<string[]>([]);
   private _cachedTypes = signal<string[]>([]);
-
   public categoryService = inject(MtgCategoryService);
   public storageService = inject(StorageFilterService);
   public langService = inject(LanguageService);
+  public themeService = inject(ThemeService);
   private http = inject(HttpClient);
   private firestore = inject(Firestore);
   private toastController = inject(ToastController);
@@ -157,73 +161,62 @@ export class PriceTrackerPage implements OnInit {
     switch (this.sortMode()) {
       case 'name':
         return list.sort((a, b) => (a.nome || '').localeCompare(b.nome || ''));
-      case 'release-date':
-        return list.sort((a, b) => {
-          const dateA = a.releaseDate ? new Date(a.releaseDate).getTime() : Infinity;
-          const dateB = b.releaseDate ? new Date(b.releaseDate).getTime() : Infinity;
-          return dateA - dateB;
-        });
-      case 'price-ascending':
-        return list.sort((a, b) => (a.prezzoAttuale || 0) - (b.prezzoAttuale || 0));
-      case 'price-descending':
+      case 'price-asc':
+        return list.sort((a, b) => (a.prezzoAttuale || 999999) - (b.prezzoAttuale || 999999));
+      case 'price-desc':
         return list.sort((a, b) => (b.prezzoAttuale || 0) - (a.prezzoAttuale || 0));
       case 'variation-best':
-        return list.sort((a, b) => this.calculateValueVariation(b) - this.calculateValueVariation(a));
-      case 'variation-worst':
         return list.sort((a, b) => this.calculateValueVariation(a) - this.calculateValueVariation(b));
+      case 'variation-worst':
+        return list.sort((a, b) => this.calculateValueVariation(b) - this.calculateValueVariation(a));
       case 'recent':
       default:
-        return list.reverse();
+        return list.sort((a, b) => {
+          const tA = a.dataInserimento ? new Date(a.dataInserimento).getTime() : 0;
+          const tB = b.dataInserimento ? new Date(b.dataInserimento).getTime() : 0;
+          return tB - tA;
+        });
     }
   });
 
   allSealedProducts = computed(() => {
-    let list = [...this.productsSorted()].filter(p => this.categoryService.isSealedProduct(p.nome));
-    const q = (this.searchSealedQuery() || '').toLowerCase().trim();
-
-    if (!this.includeCollectorBoxes()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'collector-box');
-    }
-    if (!this.includePlayBoxes()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'play-box');
-    }
-    if (!this.includePrereleasePacks()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'prerelease');
-    }
-    if (!this.includeBundles()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'bundle');
-    }
-    if (!this.includeDraftNight()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'draft-night');
-    }
-    if (!this.includeSceneBoxes()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'scene-box');
-    }
-    if (!this.includeCommanderDecks()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'commander-deck');
-    }
-    if (!this.includeStarterDecks()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'starter-deck');
-    }
-    if (!this.includeOther()) {
-      list = list.filter(p => this.detectMtgType(p.nome).key !== 'other');
-    }
-
-    if (this.onlyOldSchool()) {
-      list = list.filter(p => this.categoryService.isOldSchool(p));
-    }
-
-    if (q) {
-      list = list.filter(p => (p.nome || '').toLowerCase().includes(q) || (p.expansion || '').toLowerCase().includes(q));
-    }
+    const sorted = this.productsSorted();
+    const q = this.searchSealedQuery().toLowerCase().trim();
     const minP = this.minPriceFilter();
-    if (minP !== null && !isNaN(minP) && minP > 0) {
-      list = list.filter(p => (p.prezzoAttuale || 0) >= minP);
-    }
     const maxP = this.maxPriceFilter();
-    if (maxP !== null && !isNaN(maxP) && maxP > 0) {
-      list = list.filter(p => (p.prezzoAttuale || 0) <= maxP);
-    }
+
+    let list = sorted.filter(p => {
+      const typeInfo = this.detectMtgType(p.nome);
+      const k = typeInfo.key;
+
+      if (k === MtgProductCategoryKey.COLLECTOR_BOX && !this.includeCollectorBoxes()) return false;
+      if (k === MtgProductCategoryKey.PLAY_BOX && !this.includePlayBoxes()) return false;
+      if (k === MtgProductCategoryKey.PRERELEASE && !this.includePrereleasePacks()) return false;
+      if (k === MtgProductCategoryKey.BUNDLE && !this.includeBundles()) return false;
+      if (k === MtgProductCategoryKey.DRAFT_NIGHT && !this.includeDraftNight()) return false;
+      if (k === MtgProductCategoryKey.SCENE_BOX && !this.includeSceneBoxes()) return false;
+      if (k === MtgProductCategoryKey.COMMANDER_DECK && !this.includeCommanderDecks()) return false;
+      if (k === MtgProductCategoryKey.STARTER_DECK && !this.includeStarterDecks()) return false;
+      if (k === MtgProductCategoryKey.OTHER && !this.includeOther()) return false;
+
+      // Old School Only Filter
+      if (this.onlyOldSchool() && !p.isOldSchool) return false;
+
+      // Search Query Filter
+      if (q) {
+        const matchName = (p.nome || '').toLowerCase().includes(q);
+        const matchExp = (p.expansion || '').toLowerCase().includes(q);
+        if (!matchName && !matchExp) return false;
+      }
+
+      // Min/Max Price Filter
+      const price = p.prezzoAttuale || 0;
+      if (minP !== null && minP > 0 && price < minP) return false;
+      if (maxP !== null && maxP > 0 && price > maxP) return false;
+
+      return true;
+    });
+
     const expFilter = this.selectedExpansionFilter();
     if (expFilter !== 'all') {
       list = list.filter(p => p.expansion === expFilter);
@@ -274,7 +267,7 @@ export class PriceTrackerPage implements OnInit {
     const exp = this.selectedExpansionForDetail();
     if (!exp) return [];
     const normTarget = exp.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return this.productsSorted().filter(p => {
+    return this.allSealedProducts().filter(p => {
       if (!p.expansion) return false;
       const normExp = p.expansion.toLowerCase().replace(/[^a-z0-9]/g, '');
       return p.expansion.toLowerCase() === exp.toLowerCase() || normExp === normTarget;
@@ -285,7 +278,8 @@ export class PriceTrackerPage implements OnInit {
     addIcons({ 
       refresh, appsOutline, listOutline, cartOutline, cashOutline, gridOutline, 
       searchOutline, closeOutline, settingsOutline, optionsOutline, funnelOutline, 
-      sparklesOutline, arrowBackOutline, chevronDownOutline, chevronUpOutline 
+      sparklesOutline, arrowBackOutline, chevronDownOutline, chevronUpOutline,
+      sunnyOutline, moonOutline
     });
 
     const s = this.storageService.loadFilterState();

@@ -147,28 +147,19 @@
               </div>
             }
 
-            <!-- Background Overlay / Artwork -->
-            <div 
-              class="card-bg-layer position-absolute top-0 start-0 w-100 h-100"
-              [style.backgroundImage]="exp.coverImage ? 'url(' + exp.coverImage + ')' : 'radial-gradient(circle at center, rgba(56, 189, 248, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%)'"
-            ></div>
-            <div class="card-gradient-overlay position-absolute top-0 start-0 w-100 h-100"></div>
-
             <!-- Content Container -->
             <div class="card-content-wrap position-relative p-3 d-flex flex-column h-100 justify-content-between">
               <!-- SET ICON (SVG) -->
               @if (exp.icon_svg_uri) {
-                <div
-                  class="set-icon"
-                  [style.mask-image]="'url(' + exp.icon_svg_uri + ')'"
-                  [style.-webkit-mask-image]="'url(' + exp.icon_svg_uri + ')'"
-                ></div>
+                <div class="set-icon-wrap">
+                  <img [src]="exp.icon_svg_uri" [alt]="exp.name" class="set-icon-svg" />
+                </div>
               } @else {
                 <div class="fs-2 mb-2">✨</div>
               }
 
               <!-- SET NAME -->
-              <h3 class="set-title fw-bold text-light fs-5 m-0 mb-2">
+              <h3 class="set-title fw-bold fs-5 m-0 mb-2">
                 {{ exp.name }}
               </h3>
 
