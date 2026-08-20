@@ -1,3 +1,8 @@
+// ============================================================================
+// LANGUAGE & LOCALIZATION SERVICE
+// Multi-language support (Italian & English)
+// ============================================================================
+
 import { Injectable, signal, computed } from '@angular/core';
 
 export type SupportedLanguage = 'it' | 'en';
@@ -10,14 +15,34 @@ export interface Translations {
   CLOUD_SCAN: string;
   SEARCH_EXP: string;
   SEARCH_SEALED: string;
+  PRICE_LABEL: string;
   MIN_PRICE: string;
   MAX_PRICE: string;
   ALL_EXPANSIONS: string;
   ALL_TYPES: string;
   ALL_VERDICTS: string;
-  SHOW_SCENE_BOXES: string;
-  SHOW_COMMANDER_DECKS: string;
-  SHOW_STARTER_DECKS: string;
+  VERDICT_BUY: string;
+  VERDICT_WAIT: string;
+  VERDICT_OVERPRICED: string;
+  SORT_RECENT: string;
+  SORT_PRICE_ASC: string;
+  SORT_PRICE_DESC: string;
+  SORT_VAR_BEST: string;
+  SORT_VAR_WORST: string;
+  VISIBILITY_TITLE: string;
+  BTN_ALL: string;
+  BTN_NONE: string;
+  CAT_COLLECTOR: string;
+  CAT_PLAY: string;
+  CAT_PRERELEASE: string;
+  CAT_BUNDLE: string;
+  CAT_DRAFT: string;
+  CAT_SCENE: string;
+  CAT_COMMANDER: string;
+  CAT_STARTER: string;
+  CAT_OTHER: string;
+  HIDE_NA: string;
+  ONLY_OLD_SCHOOL: string;
   BARGAIN_THRESHOLDS: string;
   PRERELEASE_THRESHOLD: string;
   PLAYBOX_THRESHOLD: string;
@@ -48,6 +73,28 @@ export interface Translations {
   AVG_TOP5: string;
   UNITS: string;
   PRIVATE_SELLER: string;
+  DEAL_PREFIX: string;
+  DEAL_SUFFIX: string;
+  OLD_SCHOOL_BANNER_TITLE: string;
+  OLD_SCHOOL_BANNER_DESC: string;
+  OLD_SCHOOL_BARGAINS_TITLE: string;
+  OLD_SCHOOL_BARGAINS_DESC: string;
+  OLD_SCHOOL_DISMISS: string;
+  BARGAINS_HERO_TITLE: string;
+  BARGAINS_HERO_DESC: string;
+  BARGAINS_FOUND: string;
+  FILTER_DRAWER_TITLE: string;
+  ACTIVE_FILTERS: string;
+  SHOW: string;
+  HIDE: string;
+  PASTE_URL_BUYING: string;
+  PASTE_URL_SELLING: string;
+  ADD_BUTTON: string;
+  SELLING_DASHBOARD_TITLE: string;
+  TOTAL_CARDS_MONITORED: string;
+  CURRENT_PORTFOLIO_VALUE: string;
+  TOTAL_YIELD_RETURN: string;
+  OVERALL_TIMELINE: string;
 }
 
 const dictionary: Record<SupportedLanguage, Translations> = {
@@ -58,15 +105,35 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     SEARCH_TAB: 'RICERCA',
     CLOUD_SCAN: 'Scansione IA Cloud',
     SEARCH_EXP: '🔍 Cerca espansione...',
-    SEARCH_SEALED: '🔍 Cerca sigillato per nome...',
+    SEARCH_SEALED: '🔍 Cerca prodotto o set...',
+    PRICE_LABEL: 'Prezzo:',
     MIN_PRICE: 'Min €',
     MAX_PRICE: 'Max €',
     ALL_EXPANSIONS: 'Tutte le Espansioni',
-    ALL_TYPES: 'Tutte le Tipologie',
+    ALL_TYPES: 'Tutti i Tipi Sigillato',
     ALL_VERDICTS: 'Tutti i Verdetti IA',
-    SHOW_SCENE_BOXES: 'Mostra Scene Box',
-    SHOW_COMMANDER_DECKS: 'Mostra Commander Decks',
-    SHOW_STARTER_DECKS: 'Mostra Starter Decks',
+    VERDICT_BUY: '🟢 COMPRA SUBITO',
+    VERDICT_WAIT: '🟡 ASPETTA',
+    VERDICT_OVERPRICED: '🔴 SOVRAPPREZZO / NON CONVENIENTE',
+    SORT_RECENT: 'Più Recenti',
+    SORT_PRICE_ASC: 'Prezzo: Crescente',
+    SORT_PRICE_DESC: 'Prezzo: Decrescente',
+    SORT_VAR_BEST: 'Variazione: Migliore (Ribasso)',
+    SORT_VAR_WORST: 'Variazione: Peggiore (Rialzo)',
+    VISIBILITY_TITLE: 'Visibilità Tipologie:',
+    BTN_ALL: '✓ Tutti',
+    BTN_NONE: '✕ Nessuno',
+    CAT_COLLECTOR: '👑 Collector Box',
+    CAT_PLAY: '⚡ Play Box',
+    CAT_PRERELEASE: '🎁 Prerelease Pack',
+    CAT_BUNDLE: '💜 Bundle',
+    CAT_DRAFT: '🌸 Draft Night',
+    CAT_SCENE: '🎬 Scene Box',
+    CAT_COMMANDER: '🃏 Commander',
+    CAT_STARTER: '🔰 Starter Decks',
+    CAT_OTHER: '📦 Altro Sigillato',
+    HIDE_NA: '🚫 Nascondi N/A',
+    ONLY_OLD_SCHOOL: '🏛️ Solo Old School',
     BARGAIN_THRESHOLDS: '🎯 Soglie Occasioni:',
     PRERELEASE_THRESHOLD: 'Prerelease:',
     PLAYBOX_THRESHOLD: 'Play Box:',
@@ -86,8 +153,8 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     SORT_NAME_ASC: 'Nome (A-Z)',
     BACK_HUB: "Torna all'Hub Espansioni",
     SEALED_PRODUCTS: 'Prodotti Sigillati',
-    RESCAN_EXP: 'Riscansiona Espansione (Re-pull)',
-    OFFICIAL_RELEASE: "Data Uscita Ufficiale:",
+    RESCAN_EXP: 'Riscansiona Espansione',
+    OFFICIAL_RELEASE: 'Data Uscita Ufficiale:',
     INITIAL_PRICE: 'Iniziale:',
     CHECKED: 'Ultimo Controllo:',
     NEVER: 'Mai',
@@ -96,7 +163,29 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     SELLER_LOCATION: 'Paese Venditore:',
     AVG_TOP5: 'Media Top 5 Offerte:',
     UNITS: 'unità',
-    PRIVATE_SELLER: 'privato'
+    PRIVATE_SELLER: 'privato',
+    DEAL_PREFIX: 'Occasione',
+    DEAL_SUFFIX: '',
+    OLD_SCHOOL_BANNER_TITLE: 'Archivio Sigillati Old School Attivo (1993 - 2003)',
+    OLD_SCHOOL_BANNER_DESC: 'Stai visualizzando esclusivamente i prodotti sigillati delle storiche espansioni col bordo classico pre-8th Edition.',
+    OLD_SCHOOL_BARGAINS_TITLE: 'Affari Old School Attivo (1993 - 2003)',
+    OLD_SCHOOL_BARGAINS_DESC: 'Stai visualizzando le migliori occasioni e affari limitati alle espansioni vintage Old School.',
+    OLD_SCHOOL_DISMISS: 'Disattiva Filtro Old School ✕',
+    BARGAINS_HERO_TITLE: 'Radar Occasioni & Affari Da Comprare',
+    BARGAINS_HERO_DESC: "Mostra tutti i prodotti sigillati raccomandati dall'IA con verdetto COMPRA o con prezzo inferiore alle tue soglie smart.",
+    BARGAINS_FOUND: 'Affari Trovati',
+    FILTER_DRAWER_TITLE: 'Filtri & Opzioni Sezione',
+    ACTIVE_FILTERS: 'attivi',
+    SHOW: 'Mostra',
+    HIDE: 'Nascondi',
+    PASTE_URL_BUYING: 'Incolla URL CardTrader da monitorare...',
+    PASTE_URL_SELLING: 'Incolla URL CardTrader della carta da vendere...',
+    ADD_BUTTON: 'Aggiungi',
+    SELLING_DASHBOARD_TITLE: 'Dashboard Portafoglio Carte in Vendita',
+    TOTAL_CARDS_MONITORED: 'Totale Carte Monitorate',
+    CURRENT_PORTFOLIO_VALUE: 'Valore Attuale Portafoglio',
+    TOTAL_YIELD_RETURN: 'Rendimento Totale',
+    OVERALL_TIMELINE: 'Andamento Valore Totale Portafoglio nel Tempo'
   },
   en: {
     HUB_TAB: 'EXPANSIONS HUB',
@@ -105,15 +194,35 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     SEARCH_TAB: 'SEARCH',
     CLOUD_SCAN: 'Cloud AI Scan',
     SEARCH_EXP: '🔍 Search expansion...',
-    SEARCH_SEALED: '🔍 Search sealed product...',
+    SEARCH_SEALED: '🔍 Search product or set...',
+    PRICE_LABEL: 'Price:',
     MIN_PRICE: 'Min €',
     MAX_PRICE: 'Max €',
     ALL_EXPANSIONS: 'All Expansions',
     ALL_TYPES: 'All Categories',
     ALL_VERDICTS: 'All AI Verdicts',
-    SHOW_SCENE_BOXES: 'Show Scene Boxes',
-    SHOW_COMMANDER_DECKS: 'Show Commander Decks',
-    SHOW_STARTER_DECKS: 'Show Starter Decks',
+    VERDICT_BUY: '🟢 BUY NOW',
+    VERDICT_WAIT: '🟡 WAIT',
+    VERDICT_OVERPRICED: '🔴 OVERPRICED / AVOID',
+    SORT_RECENT: 'Most Recent',
+    SORT_PRICE_ASC: 'Price: Low to High',
+    SORT_PRICE_DESC: 'Price: High to Low',
+    SORT_VAR_BEST: 'Variation: Best (Discount)',
+    SORT_VAR_WORST: 'Variation: Worst (Increase)',
+    VISIBILITY_TITLE: 'Category Visibility:',
+    BTN_ALL: '✓ All',
+    BTN_NONE: '✕ None',
+    CAT_COLLECTOR: '👑 Collector Box',
+    CAT_PLAY: '⚡ Play Box',
+    CAT_PRERELEASE: '🎁 Prerelease Pack',
+    CAT_BUNDLE: '💜 Bundle',
+    CAT_DRAFT: '🌸 Draft Night',
+    CAT_SCENE: '🎬 Scene Box',
+    CAT_COMMANDER: '🃏 Commander',
+    CAT_STARTER: '🔰 Starter Decks',
+    CAT_OTHER: '📦 Other Sealed',
+    HIDE_NA: '🚫 Hide N/A',
+    ONLY_OLD_SCHOOL: '🏛️ Old School Only',
     BARGAIN_THRESHOLDS: '🎯 Deal Thresholds:',
     PRERELEASE_THRESHOLD: 'Prerelease:',
     PLAYBOX_THRESHOLD: 'Play Box:',
@@ -133,7 +242,7 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     SORT_NAME_ASC: 'Name (A-Z)',
     BACK_HUB: 'Back to Expansions Hub',
     SEALED_PRODUCTS: 'Sealed Products',
-    RESCAN_EXP: 'Rescan Expansion (Re-pull)',
+    RESCAN_EXP: 'Rescan Expansion',
     OFFICIAL_RELEASE: 'Official Release Date:',
     INITIAL_PRICE: 'Initial:',
     CHECKED: 'Last Checked:',
@@ -143,7 +252,29 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     SELLER_LOCATION: 'Seller Country:',
     AVG_TOP5: 'Avg Top 5 Offers:',
     UNITS: 'units',
-    PRIVATE_SELLER: 'private'
+    PRIVATE_SELLER: 'private',
+    DEAL_PREFIX: '',
+    DEAL_SUFFIX: 'Deal',
+    OLD_SCHOOL_BANNER_TITLE: 'Old School Archive Active (1993 - 2003)',
+    OLD_SCHOOL_BANNER_DESC: 'You are viewing exclusively sealed products from classic vintage pre-8th Edition sets.',
+    OLD_SCHOOL_BARGAINS_TITLE: 'Old School Deals Active (1993 - 2003)',
+    OLD_SCHOOL_BARGAINS_DESC: 'You are viewing top bargains and deals limited to vintage Old School expansions.',
+    OLD_SCHOOL_DISMISS: 'Disable Old School Filter ✕',
+    BARGAINS_HERO_TITLE: 'Bargains & Deals Radar',
+    BARGAINS_HERO_DESC: 'Displays all sealed products recommended by AI as BUY or with prices below your smart thresholds.',
+    BARGAINS_FOUND: 'Deals Found',
+    FILTER_DRAWER_TITLE: 'Filters & Section Options',
+    ACTIVE_FILTERS: 'active',
+    SHOW: 'Show',
+    HIDE: 'Hide',
+    PASTE_URL_BUYING: 'Paste CardTrader URL to monitor...',
+    PASTE_URL_SELLING: 'Paste CardTrader URL of card to sell...',
+    ADD_BUTTON: 'Add',
+    SELLING_DASHBOARD_TITLE: 'Selling Portfolio Dashboard',
+    TOTAL_CARDS_MONITORED: 'Total Cards Monitored',
+    CURRENT_PORTFOLIO_VALUE: 'Current Portfolio Value',
+    TOTAL_YIELD_RETURN: 'Total Yield / Return',
+    OVERALL_TIMELINE: 'Overall Selling Portfolio Value Timeline'
   }
 };
 
@@ -152,9 +283,9 @@ const dictionary: Record<SupportedLanguage, Translations> = {
 })
 export class LanguageService {
   private readonly STORAGE_KEY = 'mtg_tracker_lang';
-  
+
   public currentLang = signal<SupportedLanguage>('it');
-  
+
   public t = computed(() => dictionary[this.currentLang()]);
 
   constructor() {
