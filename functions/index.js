@@ -567,7 +567,7 @@ async function setGlobalScanLock(data) {
 }
 
 // --- MANUAL AI ADVISOR TRIGGER ENDPOINT ---
-app.post("/run-ai-advisor", async (req, res) => {
+const handleAiAdvisorTrigger = async (req, res) => {
   try {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) return res.status(500).json({ error: "Manca GEMINI_API_KEY!" });
@@ -639,10 +639,12 @@ Ecco i dati del prodotto:
     })();
 
   } catch (err) {
-    console.error("Errore /run-ai-advisor:", err);
+    console.error("Errore trigger-ai / run-ai-advisor:", err);
     res.status(500).json({ error: err.message });
   }
-});
+};
+app.all("/run-ai-advisor", handleAiAdvisorTrigger);
+app.all("/trigger-ai", handleAiAdvisorTrigger);
 
 // --- TELEGRAM BOT AI WEBHOOK ENDPOINT ---
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;

@@ -1,0 +1,46 @@
+@use 'theme/palette' as *;
+
+.old-school-vintage-banner {
+  margin: 12px 16px 16px 16px;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: $cat-old-school-bg;
+  border: 1px solid $cat-old-school-border;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+
+  &.in-bargains {
+    margin: 0 0 16px 0;
+  }
+
+  .banner-left {
+    .banner-icon {
+      font-size: 1.4rem;
+    }
+
+    .banner-title {
+      color: $color-amber;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+    }
+
+    .banner-desc {
+      color: $color-gold-vintage;
+      font-size: 0.75rem;
+    }
+  }
+
+  .banner-dismiss-btn {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.4);
+    color: $color-amber;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    font-weight: 700;
+
+    &:hover {
+      background: rgba(245, 158, 11, 0.28);
+    }
+  }
+}

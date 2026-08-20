@@ -1,0 +1,106 @@
+// ============================================================================
+// MARKET ADVICE BADGE SCSS - MODULAR BEM MODIFIERS & GLOW EFFECTS
+// ============================================================================
+@use 'theme/palette' as *;
+
+.recommendation-badge {
+  border-radius: 8px;
+  border: 1px solid;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: help;
+  letter-spacing: 0.3px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(15, 23, 42, 0.35);
+
+  ion-icon {
+    font-size: 15px;
+  }
+
+  &.compact {
+    padding: 3px 8px;
+    font-size: 0.72rem;
+    border-radius: 6px;
+
+    ion-icon {
+      font-size: 12px;
+    }
+  }
+
+  // --- SEVERITY MODIFIERS ---
+  &.advice-strong-buy {
+    color: $color-emerald;
+    border-color: $color-emerald;
+    background: rgba(16, 185, 129, 0.18);
+    box-shadow: 0 0 16px $color-success-glow;
+  }
+
+  &.advice-buy {
+    color: $color-success;
+    border-color: $color-success;
+    background: rgba(16, 185, 129, 0.12);
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+  }
+
+  &.advice-wait {
+    color: $color-amber;
+    border-color: $color-amber;
+    background: rgba(245, 158, 11, 0.12);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+  }
+
+  &.advice-neutral {
+    color: $color-info;
+    border-color: $color-info;
+    background: rgba(56, 189, 248, 0.12);
+    box-shadow: 0 0 10px $color-cyan-glow;
+  }
+
+  &.advice-warning {
+    color: $color-amber;
+    border-color: $color-amber;
+    background: rgba(245, 158, 11, 0.15);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+  }
+
+  &.advice-avoid {
+    color: $color-red-light;
+    border-color: $color-red-light;
+    background: rgba(239, 68, 68, 0.15);
+    box-shadow: 0 0 12px $color-danger-glow;
+  }
+
+  // --- GEMINI AI CUSTOM VERDICTS ---
+  &.advice-ai-buy {
+    color: #4ade80;
+    border-color: #22c55e;
+    background: rgba(15, 23, 42, 0.65);
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.35);
+  }
+
+  &.advice-ai-wait {
+    color: #fde047;
+    border-color: #eab308;
+    background: rgba(15, 23, 42, 0.65);
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.35);
+  }
+
+  &.advice-ai-avoid {
+    color: #f87171;
+    border-color: #ef4444;
+    background: rgba(15, 23, 42, 0.65);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.35);
+  }
+
+  &.advice-ai-custom {
+    color: $color-primary-light;
+    border-color: $color-primary;
+    background: rgba(15, 23, 42, 0.65);
+    box-shadow: 0 0 15px $color-primary-glow;
+  }
+}
+
+.recommendation-desc {
+  line-height: 1.45;
+}

@@ -1,0 +1,18 @@
+@use 'theme/palette' as *;
+
+.empty-state-card {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  margin: 16px 12px;
+
+  .empty-state-title {
+    color: $text-primary;
+  }
+
+  .empty-state-desc {
+    color: $text-muted;
+    font-size: 0.85rem;
+    max-width: 440px;
+  }
+}

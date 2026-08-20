@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
-import { MtgProductCategoryKey, MtgSmartCategoryInfo } from '../models/mtg-product.model';
+import { MtgProductCategoryKey, MtgSmartCategoryInfo, MtgProduct } from '../../models';
+import { isOldSchoolDate } from '../../utils/date.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,7 @@ export class MtgCategoryService {
     [MtgProductCategoryKey.SCENE_BOX]: 35,
     [MtgProductCategoryKey.COMMANDER_DECK]: 35,
     [MtgProductCategoryKey.STARTER_DECK]: 25,
+    [MtgProductCategoryKey.SINGLE_CARD]: 15,
     [MtgProductCategoryKey.OTHER]: 50
   };
 
@@ -38,6 +40,30 @@ export class MtgCategoryService {
       this.categoryThresholds[key] = val;
       localStorage.setItem('mtg_tracker_threshold_' + key, val.toString());
     }
+  }
+
+  public readonly OLD_SCHOOL_CUTOFF = '2003-07-28';
+
+  private readonly OLD_SCHOOL_SETS = [
+    'alpha', 'beta', 'unlimited', 'arabian nights', 'antiquities', 'legends', 'the dark', 'fallen empires',
+    'fourth edition', '4th edition', 'ice age', 'chronicles', 'homelands', 'alliances', 'mirage', 'visions',
+    'fifth edition', '5th edition', 'weatherlight', 'tempest', 'stronghold', 'exodus',
+    "urza's saga", 'urzas saga', "urza's legacy", 'urzas legacy', 'classic sixth edition', 'sixth edition', '6th edition',
+    "urza's destiny", 'urzas destiny', 'mercadian masques', 'nemesis', 'prophecy', 'invasion', 'planeshift',
+    'seventh edition', '7th edition', 'apocalypse', 'odyssey', 'torment', 'judgment', 'onslaught', 'legions', 'scourge',
+    'starter 1999', 'starter 2000', 'portal', 'portal second age', 'portal three kingdoms', 'unglued', 'anthologies',
+    'battle royale', 'beatdown'
+  ];
+
+  public isOldSchool(p: MtgProduct | Partial<MtgProduct>): boolean {
+    if (!p) return false;
+    if (p.releaseDate && isOldSchoolDate(p.releaseDate, this.OLD_SCHOOL_CUTOFF)) return true;
+    const exp = (p.expansion || '').toLowerCase().trim();
+    const name = (p.nome || '').toLowerCase().trim();
+    for (const s of this.OLD_SCHOOL_SETS) {
+      if (exp === s || exp.includes(s) || name.includes(s)) return true;
+    }
+    return false;
   }
 
   public isSealedProduct(name: string): boolean {
@@ -98,11 +124,19 @@ export class MtgCategoryService {
         defaultThreshold: this.categoryThresholds[MtgProductCategoryKey.COMMANDER_DECK]
       };
     }
-    if (n.includes('starter') || n.includes('challenger') || n.includes('pioneer') || n.includes('intro pack') || n.includes('deck')) {
+    if (n.includes('starter') || n.includes('challenger') || n.includes('pioneer') || n.includes('intro pack') || n.includes('tournament pack') || n.includes('tournament deck') || n.includes('duel deck') || n.includes('clash pack') || n.includes('theme deck') || n.includes('theme booster') || n.includes('deck')) {
       return {
         key: MtgProductCategoryKey.STARTER_DECK,
-        nameType: 'Starter / Other Deck',
+        nameType: 'Starter / Tournament Deck',
         defaultThreshold: this.categoryThresholds[MtgProductCategoryKey.STARTER_DECK]
+      };
+    }
+
+    if (!this.isSealedProduct(name)) {
+      return {
+        key: MtgProductCategoryKey.SINGLE_CARD,
+        nameType: 'Carta Singola',
+        defaultThreshold: this.categoryThresholds[MtgProductCategoryKey.SINGLE_CARD]
       };
     }
 
