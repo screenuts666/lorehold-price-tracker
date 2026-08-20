@@ -1,13 +1,18 @@
-import { Component, input, output, inject, AfterViewInit, OnChanges, SimpleChanges, OnDestroy, signal } from '@angular/core';
+import { Component, input, output, inject, OnChanges, OnDestroy, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { trash, image, openOutline, cartOutline, trendingDownOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline, star, calendarOutline, funnelOutline } from 'ionicons/icons';
-import { Chart } from 'chart.js/auto';
-import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard } from '@ionic/angular/standalone';
-import { MarketAnalyzerService, ProductType, Product, InsightSeverity } from '../../services/market-analyzer.service';
+import { Chart, ChartDataset } from 'chart.js/auto';
+import { IonIcon, IonInput, IonButton } from '@ionic/angular/standalone';
+import { MarketAnalyzerService } from '../../services/market-analyzer.service';
 import { MtgCategoryService } from '../../services/mtg-category.service';
 import { LanguageService } from '../../services/language.service';
+import { EmptyStateComponent, MarketAdviceBadgeComponent } from '../../../shared';
+import { MtgProduct, MarketAdviceSuggestion, ViewModeType, ProductType, Product, InsightSeverity } from '../../../models';
+import { parseItalianDate } from '../../../utils/date.utils';
+import { calculatePercentageVariation } from '../../../utils/format.utils';
+import { CHART_THEME, createThemeGradient, getThemeAlphaColor } from '../../../utils/chart-theme.utils';
 
 @Component({
   selector: 'app-buying-section',
@@ -18,24 +23,22 @@ import { LanguageService } from '../../services/language.service';
     IonIcon,
     IonInput,
     IonButton,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonCard
+    EmptyStateComponent,
+    MarketAdviceBadgeComponent
   ],
   templateUrl: './buying-section.component.html',
   styleUrls: ['./buying-section.component.scss']
 })
-export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestroy {
-  products = input<any[]>([]);
-  viewMode = input<'grid' | 'table'>('grid');
+export class BuyingSectionComponent implements OnChanges, OnDestroy {
+  products = input<MtgProduct[]>([]);
+  viewMode = input<ViewModeType>('grid');
   gridColumns = input<number>(4);
   isDetailView = input<boolean>(false);
   
-  onAdd = output<{url: string, releaseDate: string}>();
-  onRemove = output<string>();
-  onUpdate = output<any>();
-  onEditFilters = output<any>();
+  productAdded = output<{url: string, releaseDate: string}>();
+  productRemoved = output<string>();
+  productUpdated = output<MtgProduct>();
+  filtersEdited = output<MtgProduct>();
 
   expandedCardId = signal<string | null>(null);
 
@@ -52,35 +55,65 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
   
   private marketAnalyzer = inject(MarketAnalyzerService);
   public langService = inject(LanguageService);
+  public categoryService = inject(MtgCategoryService);
 
   // Cache to avoid recalculating suggestion on every change detection cycle
-  private suggestionCache: Map<string, { label: string; color: string; explanation: string; icon: string; severity?: InsightSeverity }> = new Map();
+  private suggestionCache: Map<string, MarketAdviceSuggestion> = new Map();
+  private renderTimeout: ReturnType<typeof setTimeout> | null = null;
+  private currentRenderBatch = 0;
 
-  constructor(public categoryService: MtgCategoryService) {
+  constructor() {
     addIcons({ 
       trash, image, openOutline, cartOutline, trendingDownOutline, 
       checkmarkCircleOutline, alertCircleOutline, timeOutline, star, calendarOutline, funnelOutline
     });
-  }
 
-  ngAfterViewInit() {
-    setTimeout(() => this.renderCharts(), 150);
-  }
+    effect(() => {
+      this.products();
+      this.viewMode();
+      this.gridColumns();
+      this.scheduleChartRender();
+    });
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['products'] || changes['viewMode'] || changes['gridColumns']) {
+    effect(() => {
+      // Invalidate suggestion cache when language changes
+      this.langService.currentLang();
       this.suggestionCache.clear();
-      setTimeout(() => this.renderCharts(), 150);
-    }
+    });
+  }
+
+  ngOnChanges() {
+    this.suggestionCache.clear();
   }
 
   ngOnDestroy() {
+    this.cancelScheduledRender();
     Object.values(this.chartInstances).forEach(chart => chart.destroy());
+    this.chartInstances = {};
+  }
+
+  private cancelScheduledRender() {
+    if (this.renderTimeout) {
+      clearTimeout(this.renderTimeout);
+      this.renderTimeout = null;
+    }
+    this.currentRenderBatch++;
+  }
+
+  private scheduleChartRender() {
+    this.cancelScheduledRender();
+    this.renderTimeout = setTimeout(() => {
+      this.renderChartsChunked();
+    }, 50);
+  }
+
+  onUrlInput(event: CustomEvent) {
+    this.urlInput.set(event.detail.value || '');
   }
 
   add() {
     if (this.urlInput().trim()) {
-      this.onAdd.emit({
+      this.productAdded.emit({
         url: this.urlInput().trim(),
         releaseDate: this.releaseDateInput()
       });
@@ -90,16 +123,16 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
   }
 
   remove(id: string) {
-    this.onRemove.emit(id);
+    this.productRemoved.emit(id);
   }
 
-  editFilters(item: any) {
-    this.onEditFilters.emit(item);
+  editFilters(item: MtgProduct) {
+    this.filtersEdited.emit(item);
   }
 
-  updateReleaseDate(item: any, date: string) {
+  updateReleaseDate(item: MtgProduct, date: string) {
     item.releaseDate = date || undefined;
-    this.onUpdate.emit(item);
+    this.productUpdated.emit(item);
     this.suggestionCache.delete(item.id);
   }
 
@@ -107,7 +140,15 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
     return this.categoryService.detectCategory(name);
   }
 
-  getSuggestion(item: any): { label: string; color: string; explanation: string; icon: string; severity?: InsightSeverity } {
+  getBargainBannerText(item: MtgProduct): string {
+    const info = this.detectMtgType(item.nome);
+    if (this.langService.currentLang() === 'en') {
+      return `${info.nameType} Deal (≤ €${info.defaultThreshold})!`;
+    }
+    return `Occasione ${info.nameType} (≤ ${info.defaultThreshold}€)!`;
+  }
+
+  getSuggestion(item: MtgProduct): MarketAdviceSuggestion {
     if (this.suggestionCache.has(item.id)) {
       return this.suggestionCache.get(item.id)!;
     }
@@ -115,13 +156,19 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
     if (item.ai_verdict && item.ai_reason) {
       let severity = InsightSeverity.NEUTRAL;
       const verdictUpper = item.ai_verdict.toUpperCase();
-      if (verdictUpper.includes('COMPRA')) severity = InsightSeverity.BUY;
-      else if (verdictUpper.includes('ASPETTA')) severity = InsightSeverity.WAIT;
-      else if (verdictUpper.includes('SOVRAPPREZZO')) severity = InsightSeverity.AVOID;
+      if (verdictUpper.includes('COMPRA') || verdictUpper.includes('BUY')) severity = InsightSeverity.BUY;
+      else if (verdictUpper.includes('ASPETTA') || verdictUpper.includes('WAIT')) severity = InsightSeverity.WAIT;
+      else if (verdictUpper.includes('SOVRAPPREZZO') || verdictUpper.includes('OVERPRICED') || verdictUpper.includes('EXPENSIVE')) severity = InsightSeverity.AVOID;
 
-      const suggestion = {
-        label: `✨ AI: ${item.ai_verdict}`,
-        color: this.severityToHex(severity),
+      let displayVerdict = item.ai_verdict;
+      if (this.langService.currentLang() === 'en') {
+        if (verdictUpper.includes('COMPRA')) displayVerdict = 'BUY NOW';
+        else if (verdictUpper.includes('ASPETTA')) displayVerdict = 'WAIT';
+        else if (verdictUpper.includes('SOVRAPPREZZO')) displayVerdict = 'OVERPRICED';
+      }
+
+      const suggestion: MarketAdviceSuggestion = {
+        label: `✨ AI: ${displayVerdict}`,
         explanation: item.ai_reason,
         icon: severity === InsightSeverity.BUY ? 'star' : (severity === InsightSeverity.AVOID ? 'alert-circle-outline' : 'time-outline'),
         severity: severity
@@ -131,8 +178,8 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
     }
 
     try {
-      const historicalPrices = (item.storico || []).map((h: any) => ({
-        date: this.parseDate(h.data),
+      const historicalPrices = (item.storico || []).map(h => ({
+        date: parseItalianDate(h.data),
         price: h.prezzo
       }));
 
@@ -169,14 +216,12 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
 
       if (usePreorder) {
         const preorderInsight = this.marketAnalyzer.analyzePreorderPhase(product);
-        const color = this.severityToHex(preorderInsight.severity);
         const icon = preorderInsight.severity === InsightSeverity.STRONG_BUY
           ? 'star'
           : (preorderInsight.severity === InsightSeverity.AVOID ? 'alert-circle-outline' : 'time-outline');
 
-        const suggestion = {
+        const suggestion: MarketAdviceSuggestion = {
           label: preorderInsight.badgeText,
-          color: color,
           explanation: preorderInsight.message,
           icon: icon,
           severity: preorderInsight.severity
@@ -189,14 +234,12 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
           ? InsightSeverity.BUY 
           : (recommendation.state === 'AVOID' ? InsightSeverity.AVOID : InsightSeverity.NEUTRAL);
           
-        const color = this.severityToHex(stateSeverity);
         const icon = recommendation.state === 'BUY' 
           ? 'checkmark-circle-outline' 
           : (recommendation.state === 'AVOID' ? 'alert-circle-outline' : 'time-outline');
 
-        const suggestion = {
+        const suggestion: MarketAdviceSuggestion = {
           label: recommendation.badgeText,
-          color: color,
           explanation: recommendation.message,
           icon: icon,
           severity: stateSeverity
@@ -206,246 +249,171 @@ export class BuyingSectionComponent implements AfterViewInit, OnChanges, OnDestr
       }
     } catch (e) {
       console.error(e);
-      return { label: 'ERROR', color: '#64748b', explanation: 'Error analyzing card details.', icon: 'alert-circle-outline' };
+      return { label: 'ERROR', explanation: 'Error analyzing card details.', icon: 'alert-circle-outline', severity: InsightSeverity.WARNING };
     }
   }
 
-  private parseDate(dateStr: string): Date {
-    if (!dateStr) return new Date();
-    const parts = dateStr.split('/');
-    if (parts.length === 3) {
-      return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-    }
-    return new Date(dateStr);
+  calculateVariationText(item: MtgProduct): string {
+    const initialPrice = item.storico && item.storico.length > 0 ? item.storico[0].prezzo : null;
+    return calculatePercentageVariation(initialPrice, item.prezzoAttuale, 'buy').text;
   }
 
-  calculateVariationText(item: any): string {
-    if (!item.storico || item.storico.length < 2) return '0.0%';
-    const initialPrice = item.storico[0].prezzo;
-    const currentPrice = item.prezzoAttuale;
-    if (!initialPrice || !currentPrice) return '0.0%';
-    
-    const diff = currentPrice - initialPrice;
-    const pct = (diff / initialPrice) * 100;
-    return (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
+  getVariationClass(item: MtgProduct): string {
+    const initialPrice = item.storico && item.storico.length > 0 ? item.storico[0].prezzo : null;
+    return calculatePercentageVariation(initialPrice, item.prezzoAttuale, 'buy').cssClass;
   }
 
-  calculateVariationColor(item: any): string {
-    if (!item.storico || item.storico.length < 2) return '#64748b';
-    const initialPrice = item.storico[0].prezzo;
-    const currentPrice = item.prezzoAttuale;
-    if (!initialPrice || !currentPrice) return '#64748b';
-    return (currentPrice - initialPrice) < 0 ? '#10b981' : '#ef4444'; // Green is good for buy (decline)
-  }
-
-  hasPriceVariation(item: any): boolean {
+  hasPriceVariation(item: MtgProduct): boolean {
     if (item.ctHistory && item.ctHistory.length > 1) {
       const firstP = item.ctHistory[0].p;
-      return item.ctHistory.some((h: any) => h.p !== firstP);
+      return item.ctHistory.some(h => h.p !== firstP);
     }
     if (item.storico && item.storico.length > 1) {
       const firstP = item.storico[0].prezzo;
-      return item.storico.some((h: any) => h.prezzo !== firstP);
+      return item.storico.some(h => h.prezzo !== firstP);
     }
     return false;
-  }
-
-  severityToHex(severity: InsightSeverity): string {
-    switch (severity) {
-      case InsightSeverity.STRONG_BUY: return '#8b5cf6'; // Violet glow
-      case InsightSeverity.BUY: return '#10b981'; // Green
-      case InsightSeverity.NEUTRAL: return '#3b82f6'; // Blue
-      case InsightSeverity.WAIT: return '#f59e0b'; // Amber
-      case InsightSeverity.WARNING: return '#f97316'; // Orange
-      case InsightSeverity.AVOID: return '#ef4444'; // Red
-      default: return '#64748b';
-    }
-  }
-
-  severityToGlow(severity?: InsightSeverity): string {
-    if (severity === InsightSeverity.STRONG_BUY) {
-      return '0 0 10px rgba(139, 92, 246, 0.4)';
-    }
-    return '';
-  }
-
-  private renderCharts() {
+  }  private renderChartsChunked() {
     if (this.viewMode() !== 'grid') return;
-    
-    this.products().forEach(item => {
-      const canvasId = 'chart-acquisto-' + item.id;
-      const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    const batchId = ++this.currentRenderBatch;
+    const list = this.products();
+    if (!list || list.length === 0) return;
+
+    let index = 0;
+    const CHUNK_SIZE = 6;
+
+    const renderNextChunk = () => {
+      if (batchId !== this.currentRenderBatch) return; // Batch superseded
+      const end = Math.min(index + CHUNK_SIZE, list.length);
       
-      if (!canvas) return;
-
-      if (this.chartInstances[item.id]) {
-        this.chartInstances[item.id].destroy();
+      for (let i = index; i < end; i++) {
+        this.renderSingleProductChart(list[i]);
       }
-
-      const history = item.storico || [];
-      if (history.length === 0 && (!item.ctHistory || item.ctHistory.length === 0)) return;
-
-      let labels: string[] = [];
-      const datasets: any[] = [];
-      const ctx = canvas.getContext('2d');
-      let gradient = null;
-      let gradientBlue = null;
-
-      if (ctx) {
-        gradient = ctx.createLinearGradient(0, 0, 0, 90);
-        gradient.addColorStop(0, 'rgba(139, 92, 246, 0.15)');
-        gradient.addColorStop(1, 'rgba(139, 92, 246, 0.00)');
-        
-        gradientBlue = ctx.createLinearGradient(0, 0, 0, 90);
-        gradientBlue.addColorStop(0, 'rgba(56, 189, 248, 0.15)');
-        gradientBlue.addColorStop(1, 'rgba(56, 189, 248, 0.00)');
+      
+      index = end;
+      if (index < list.length) {
+        requestAnimationFrame(renderNextChunk);
       }
+    };
 
-      // If we have CardTrader full history, use that as the primary X-axis and dataset
+    requestAnimationFrame(renderNextChunk);
+  }
+
+  private renderSingleProductChart(item: MtgProduct) {
+    const canvasId = 'chart-acquisto-' + item.id;
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    if (!canvas) return;
+
+    if (this.chartInstances[item.id]) {
+      this.chartInstances[item.id].destroy();
+      delete this.chartInstances[item.id];
+    }
+
+    const history = item.storico || [];
+    if (history.length === 0 && (!item.ctHistory || item.ctHistory.length === 0)) return;
+
+    let labels: string[] = [];
+    const datasets: ChartDataset<'line'>[] = [];
+    const ctx = canvas.getContext('2d');
+    let gradient: CanvasGradient | null = null;
+    let gradientBlue: CanvasGradient | null = null;
+    if (ctx) {
+      gradient = createThemeGradient(ctx, '--chart-primary', 0.35, 0.00, 75);
+      gradientBlue = createThemeGradient(ctx, '--chart-cyan', 0.25, 0.00, 75);
+    }
+
+    // If we have CardTrader full history, use that as the primary X-axis and dataset
+    if (item.ctHistory && item.ctHistory.length > 0) {
+      labels = item.ctHistory.map(h => {
+        const d = new Date(h.d);
+        return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
+      });
+      
+      datasets.push({
+        label: 'CT Market',
+        data: item.ctHistory.map(h => h.p),
+        borderColor: CHART_THEME.colors.primaryCyan,
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 4,
+        fill: true,
+        backgroundColor: gradientBlue || getThemeAlphaColor('--chart-cyan', 0.1),
+        tension: 0.3
+      });
+    } else {
+      labels = history.map(h => h.data);
+    }
+
+    // Always show our own "Selected Price" history if it has data
+    if (history.length > 0) {
+      let data: (number | null)[] = history.map(h => h.prezzo);
       if (item.ctHistory && item.ctHistory.length > 0) {
-        labels = item.ctHistory.map((h: any) => {
-          const d = new Date(h.t);
-          return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`;
-        });
-        
-        datasets.push({
-          label: 'CT Market',
-          data: item.ctHistory.map((h: any) => h.p),
-          borderColor: '#38bdf8',
-          borderWidth: 2,
-          pointRadius: 0,
-          pointHoverRadius: 4,
-          fill: true,
-          backgroundColor: gradientBlue || 'rgba(56, 189, 248, 0.1)',
-          tension: 0.3
-        });
-      } else {
-        // Fallback to our limited cron history
-        labels = history.map((h: any) => h.data);
-      }
-
-      // Always show our own "Selected Price" history if it has data
-      if (history.length > 0) {
-        // If CT history is present, we need to align the data points to the end of the array
-        let data = history.map((h: any) => h.prezzo);
-        if (item.ctHistory && item.ctHistory.length > 0) {
-           const paddedData = new Array(labels.length).fill(null);
-           // Put our data at the very end (assuming our history is the most recent)
-           for (let i = 0; i < data.length; i++) {
-             if (labels.length - data.length + i >= 0) {
-               paddedData[labels.length - data.length + i] = data[i];
-             }
+         const paddedData: (number | null)[] = new Array(labels.length).fill(null);
+         for (let i = 0; i < data.length; i++) {
+           if (labels.length - data.length + i >= 0) {
+             paddedData[labels.length - data.length + i] = data[i];
            }
-           data = paddedData;
-        }
-
-        datasets.push({
-          label: 'Selected Price',
-          data: data,
-          borderColor: '#a78bfa',
-          borderWidth: 2.5,
-          pointRadius: history.length === 1 ? 3 : 0,
-          pointHoverRadius: 5,
-          fill: !item.ctHistory || item.ctHistory.length === 0,
-          backgroundColor: gradient || 'rgba(139, 92, 246, 0.1)',
-          tension: 0.3
-        });
+         }
+         data = paddedData;
       }
 
-      // English history comparisons
-      let enData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.en : null);
-      if (enData.some((v: any) => v !== null && v !== undefined)) {
-        if (item.ctHistory && item.ctHistory.length > 0) {
-           const paddedData = new Array(labels.length).fill(null);
-           for (let i = 0; i < enData.length; i++) {
-             if (labels.length - enData.length + i >= 0) {
-               paddedData[labels.length - enData.length + i] = enData[i];
-             }
-           }
-           enData = paddedData;
-        }
-        datasets.push({
-          label: 'EN Price',
-          data: enData,
-          borderColor: '#60a5fa',
-          borderWidth: 1.5,
-          borderDash: [3, 3],
-          pointRadius: enData.filter((v: any) => v !== null).length === 1 ? 3 : 0,
-          pointHoverRadius: 5,
-          fill: false,
-          tension: 0.3
-        });
-      }
+      datasets.push({
+        label: 'Selected Price',
+        data: data as number[],
+        borderColor: CHART_THEME.colors.primary,
+        borderWidth: 2.5,
+        pointRadius: history.length === 1 ? 3 : 0,
+        pointHoverRadius: 5,
+        fill: !item.ctHistory || item.ctHistory.length === 0,
+        backgroundColor: gradient || getThemeAlphaColor('--chart-primary', 0.1),
+        tension: 0.3
+      });
+    }
 
-      // Italian history comparisons
-      let itData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.it : null);
-      if (itData.some((v: any) => v !== null && v !== undefined)) {
-        if (item.ctHistory && item.ctHistory.length > 0) {
-           const paddedData = new Array(labels.length).fill(null);
-           for (let i = 0; i < itData.length; i++) {
-             if (labels.length - itData.length + i >= 0) {
-               paddedData[labels.length - itData.length + i] = itData[i];
-             }
-           }
-           itData = paddedData;
-        }
-        datasets.push({
-          label: 'IT Price',
-          data: itData,
-          borderColor: '#f59e0b',
-          borderWidth: 1.5,
-          borderDash: [3, 3],
-          pointRadius: itData.filter((v: any) => v !== null).length === 1 ? 3 : 0,
-          pointHoverRadius: 5,
-          fill: false,
-          tension: 0.3
-        });
-      }
-
-      this.chartInstances[item.id] = new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: datasets
+    this.chartInstances[item.id] = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 0 }, // Instant render without animation lag
+        plugins: { 
+          legend: { 
+            display: datasets.length > 1,
+            position: 'top',
+            labels: {
+              color: CHART_THEME.colors.axisText,
+              boxWidth: 8,
+              padding: 6,
+              font: { size: CHART_THEME.typography.fontSize, weight: 'bold' }
+            }
+          } 
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { 
-            legend: { 
-              display: datasets.length > 1,
-              position: 'top',
-              labels: {
-                color: '#94a3b8',
-                boxWidth: 8,
-                padding: 6,
-                font: { size: 9, weight: 'bold' }
-              }
-            } 
+        scales: {
+          x: { 
+            display: true,
+            grid: { color: CHART_THEME.colors.grid },
+            ticks: {
+              color: CHART_THEME.colors.axisTextDim,
+              font: { size: CHART_THEME.typography.fontSize },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 6
+            }
           },
-          scales: {
-            x: { 
-              display: true,
-              grid: { color: 'rgba(255, 255, 255, 0.03)' },
-              ticks: {
-                color: '#64748b',
-                font: { size: 9 },
-                maxRotation: 0,
-                autoSkip: true,
-                maxTicksLimit: 6
-              }
-            },
-            y: {
-              grid: { color: 'rgba(255, 255, 255, 0.03)' },
-              ticks: {
-                color: '#64748b',
-                font: { size: 9, weight: 'bold' },
-                callback: (value) => '€' + Number(value).toFixed(0)
-              }
+          y: { 
+            grid: { color: CHART_THEME.colors.grid },
+            ticks: {
+              color: CHART_THEME.colors.axisTextDim,
+              font: { size: CHART_THEME.typography.fontSize, weight: 'bold' },
+              callback: (value) => '€' + Number(value).toFixed(0)
             }
           }
         }
-      });
+      }
     });
   }
 }

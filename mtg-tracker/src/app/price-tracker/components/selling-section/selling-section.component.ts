@@ -1,321 +1,419 @@
-import { Component, Input, Output, EventEmitter, AfterViewInit, OnChanges, SimpleChanges, OnDestroy } from '@angular/core';
+import {
+  Component,
+  input,
+  output,
+  OnDestroy,
+  signal,
+  computed,
+  effect,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { addIcons } from 'ionicons';
-import { trash, image, openOutline, cashOutline, trendingUpOutline, checkmarkCircleOutline, alertCircleOutline, timeOutline, funnelOutline } from 'ionicons/icons';
-import { Chart } from 'chart.js/auto';
-import { IonIcon, IonInput, IonButton, IonGrid, IonRow, IonCol, IonCard } from '@ionic/angular/standalone';
+import {
+  trash,
+  image,
+  openOutline,
+  cashOutline,
+  trendingUpOutline,
+  checkmarkCircleOutline,
+  alertCircleOutline,
+  timeOutline,
+  funnelOutline,
+} from 'ionicons/icons';
+import { Chart, ChartDataset } from 'chart.js/auto';
+import {
+  IonIcon,
+  IonInput,
+  IonButton,
+  IonGrid,
+  IonRow,
+  IonCol,
+  IonCard,
+} from '@ionic/angular/standalone';
+import { MarketAdviceBadgeComponent } from '../../../shared';
+import {
+  MtgProduct,
+  MarketAdviceSuggestion,
+  ViewModeType,
+  InsightSeverity,
+} from '../../../models';
+import { parseItalianDate } from '../../../utils/date.utils';
+import { calculatePercentageVariation } from '../../../utils/format.utils';
+import { MtgCategoryService } from '../../services/mtg-category.service';
+import { LanguageService } from '../../services/language.service';
+import {
+  CHART_THEME,
+  createThemeGradient,
+  getThemeAlphaColor,
+} from '../../../utils/chart-theme.utils';
 
 @Component({
   selector: 'app-selling-section',
   standalone: true,
   imports: [
+    IonCard,
+    IonCol,
+    IonRow,
+    IonGrid,
     CommonModule,
-    FormsModule,
+    IonButton,
     IonIcon,
     IonInput,
-    IonButton,
-    IonGrid,
-    IonRow,
-    IonCol,
-    IonCard
+    MarketAdviceBadgeComponent,
   ],
   templateUrl: './selling-section.component.html',
-  styleUrls: []
+  styleUrls: ['./selling-section.component.scss'],
 })
-export class SellingSectionComponent implements AfterViewInit, OnChanges, OnDestroy {
-  @Input() products: any[] = [];
-  @Input() viewMode: 'grid' | 'table' = 'grid';
-  @Input() gridColumns: number = 4;
-  
-  @Output() onAdd = new EventEmitter<string>();
-  @Output() onRemove = new EventEmitter<string>();
-  @Output() onEditFilters = new EventEmitter<any>();
+export class SellingSectionComponent implements OnDestroy {
+  products = input<MtgProduct[]>([]);
+  viewMode = input<ViewModeType>('grid');
+  gridColumns = input<number>(4);
 
-  expandedCardId: string | null = null;
+  productAdded = output<string>();
+  productRemoved = output<string>();
+  filtersEdited = output<MtgProduct>();
+
+  expandedCardId = signal<string | null>(null);
 
   toggleExpand(id: string, event: Event) {
     if (window.innerWidth < 576) {
-      this.expandedCardId = this.expandedCardId === id ? null : id;
+      this.expandedCardId.set(this.expandedCardId() === id ? null : id);
     }
   }
 
-  urlInput: string = '';
-  totalCards: number = 0;
-  totalInitialValue: number = 0;
-  totalCurrentValue: number = 0;
-  totalYield: number = 0;
-  totalReturnPercentage: number = 0;
+  urlInput = signal<string>('');
+
+  totalCards = computed(() => this.products().length);
+
+  totalInitialValue = computed(() => {
+    let sum = 0;
+    this.products().forEach((p) => {
+      const initialPrice =
+        p.storico && p.storico.length > 0
+          ? p.storico[0].prezzo
+          : p.prezzoAttuale || 0;
+      sum += initialPrice;
+    });
+    return sum;
+  });
+
+  totalCurrentValue = computed(() => {
+    let sum = 0;
+    this.products().forEach((p) => {
+      sum += p.prezzoAttuale || 0;
+    });
+    return sum;
+  });
+
+  totalYield = computed(() => {
+    return this.totalCurrentValue() - this.totalInitialValue();
+  });
+
+  totalReturnPercentage = computed(() => {
+    const init = this.totalInitialValue();
+    if (init === 0) return 0;
+    return ((this.totalCurrentValue() - init) / init) * 100;
+  });
 
   private chartInstances: { [key: string]: Chart } = {};
   private totalChartInstance: Chart | null = null;
+  private renderTimeout: ReturnType<typeof setTimeout> | null = null;
+  private currentRenderBatch = 0;
 
   constructor() {
-    addIcons({ 
-      trash, image, openOutline, cashOutline, trendingUpOutline, 
-      checkmarkCircleOutline, alertCircleOutline, timeOutline, funnelOutline
+    addIcons({
+      trash,
+      image,
+      openOutline,
+      cashOutline,
+      trendingUpOutline,
+      checkmarkCircleOutline,
+      alertCircleOutline,
+      timeOutline,
+      funnelOutline,
+    });
+    effect(() => {
+      this.products();
+      this.viewMode();
+      this.gridColumns();
+      this.scheduleChartRender();
     });
   }
 
-  ngAfterViewInit() {
-    setTimeout(() => {
-      this.calculateTotalStats();
-      this.renderCharts();
-      this.renderTotalChart();
-    }, 150);
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['products'] || changes['viewMode'] || changes['gridColumns']) {
-      setTimeout(() => {
-        this.calculateTotalStats();
-        this.renderCharts();
-        this.renderTotalChart();
-      }, 150);
-    }
-  }
-
   ngOnDestroy() {
-    Object.values(this.chartInstances).forEach(chart => chart.destroy());
+    this.cancelScheduledRender();
+    Object.values(this.chartInstances).forEach((chart) => chart.destroy());
+    this.chartInstances = {};
     if (this.totalChartInstance) {
       this.totalChartInstance.destroy();
+      this.totalChartInstance = null;
     }
+  }
+
+  private cancelScheduledRender() {
+    if (this.renderTimeout) {
+      clearTimeout(this.renderTimeout);
+      this.renderTimeout = null;
+    }
+    this.currentRenderBatch++;
+  }
+
+  private scheduleChartRender() {
+    this.cancelScheduledRender();
+    this.renderTimeout = setTimeout(() => {
+      this.renderChartsChunked();
+      this.renderTotalChart();
+    }, 50);
+  }
+
+  onUrlInput(event: CustomEvent) {
+    this.urlInput.set(event.detail.value || '');
   }
 
   add() {
-    if (this.urlInput.trim()) {
-      this.onAdd.emit(this.urlInput.trim());
-      this.urlInput = '';
+    const u = this.urlInput().trim();
+    if (u) {
+      this.productAdded.emit(u);
+      this.urlInput.set('');
     }
   }
 
   remove(id: string) {
-    this.onRemove.emit(id);
+    this.productRemoved.emit(id);
   }
 
-  editFilters(item: any) {
-    this.onEditFilters.emit(item);
+  editFilters(item: MtgProduct) {
+    this.filtersEdited.emit(item);
   }
 
-  detectMtgType(name: string): { nameType: string } {
-    const n = (name || '').toLowerCase();
-    if (n.includes('play booster box') || n.includes('play box')) {
-      return { nameType: 'Play Box' };
-    }
-    if (n.includes('collector booster box') || n.includes('collector box')) {
-      return { nameType: 'Collector Box' };
-    }
-    if (n.includes('prerelease pack') || n.includes('prerelease')) {
-      return { nameType: 'Prerelease Pack' };
-    }
-    if (n.includes('fat pack') || n.includes('bundle') || n.includes('gift edition')) {
-      return { nameType: 'Bundle' };
-    }
-    if (n.includes('commander') && n.includes('deck')) {
-      return { nameType: 'Commander Deck' };
-    }
-    if (n.includes('draft night')) {
-      return { nameType: 'Draft Night Kit' };
-    }
-    if (n.includes('collector booster') || n.includes('booster pack') || n.includes('pack')) {
-      return { nameType: 'Single Pack' };
-    }
-    return { nameType: 'Generico' };
+  public categoryService = inject(MtgCategoryService);
+  public langService = inject(LanguageService);
+
+  detectMtgType(name: string) {
+    return this.categoryService.detectCategory(name);
   }
 
-  getSuggestion(item: any): { label: string; color: string; explanation: string; icon: string } {
-    if (!item.storico || item.storico.length < 2) {
-      return { label: 'HOLD', color: '#3b82f6', explanation: 'Gathering price data to evaluate selling windows.', icon: 'time-outline' };
-    }
-    
-    const initialPrice = item.storico[0].prezzo;
-    const currentPrice = item.prezzoAttuale || 0;
-    
-    if (initialPrice <= 0) {
-      return { label: 'HOLD', color: '#3b82f6', explanation: 'Gathering price data to evaluate selling windows.', icon: 'time-outline' };
-    }
+  getSuggestion(item: MtgProduct): MarketAdviceSuggestion {
+    const isEn = this.langService.currentLang() === 'en';
 
-    const pct = ((currentPrice - initialPrice) / initialPrice) * 100;
+    if (item.ai_verdict && item.ai_reason) {
+      let severity = InsightSeverity.NEUTRAL;
+      const verdictUpper = item.ai_verdict.toUpperCase();
+      if (verdictUpper.includes('COMPRA') || verdictUpper.includes('BUY'))
+        severity = InsightSeverity.BUY;
+      else if (
+        verdictUpper.includes('ASPETTA') ||
+        verdictUpper.includes('WAIT')
+      )
+        severity = InsightSeverity.WAIT;
+      else if (
+        verdictUpper.includes('SOVRAPPREZZO') ||
+        verdictUpper.includes('OVERPRICED') ||
+        verdictUpper.includes('EXPENSIVE')
+      )
+        severity = InsightSeverity.AVOID;
 
-    if (pct >= 30) {
-      return { 
-        label: 'SELL NOW', 
-        color: '#10b981', 
-        explanation: `Target met! Card is up ${pct.toFixed(0)}% from purchase price. Excellent profit lock-in window.`, 
-        icon: 'checkmark-circle-outline' 
-      };
-    }
-    
-    if (pct <= -15) {
-      return { 
-        label: 'AVOID SELLING', 
-        color: '#ef4444', 
-        explanation: `Decline warning. Currently down ${Math.abs(pct).toFixed(0)}%. Avoid selling at a loss unless necessary.`, 
-        icon: 'alert-circle-outline' 
+      let displayVerdict = item.ai_verdict;
+      if (isEn) {
+        if (verdictUpper.includes('COMPRA')) displayVerdict = 'BUY NOW';
+        else if (verdictUpper.includes('ASPETTA')) displayVerdict = 'WAIT';
+        else if (verdictUpper.includes('SOVRAPPREZZO'))
+          displayVerdict = 'OVERPRICED';
+      }
+
+      return {
+        label: `✨ AI: ${displayVerdict}`,
+        explanation: item.ai_reason,
+        icon:
+          severity === InsightSeverity.BUY
+            ? 'trending-up-outline'
+            : severity === InsightSeverity.AVOID
+              ? 'alert-circle-outline'
+              : 'time-outline',
+        severity: severity,
       };
     }
 
-    if (pct > 0) {
-      return { 
-        label: 'GOOD GROWTH', 
-        color: '#3b82f6', 
-        explanation: `Positive trend (+${pct.toFixed(0)}%). Monitor for the +30% profit target.`, 
-        icon: 'trending-up-outline' 
+    const initial =
+      item.storico && item.storico.length > 0
+        ? item.storico[0].prezzo
+        : item.prezzoAttuale || 0;
+    const current = item.prezzoAttuale || initial;
+
+    if (initial === 0) {
+      return {
+        label: isEn ? 'PENDING' : 'IN ATTESA',
+        explanation: isEn
+          ? 'Initial price not yet recorded to determine market trend.'
+          : 'Prezzo iniziale non ancora registrato per determinare il trend.',
+        icon: 'time-outline',
+        severity: InsightSeverity.NEUTRAL,
       };
     }
 
-    return { 
-      label: 'STABLE HOLD', 
-      color: '#64748b', 
-      explanation: `Slight devaluation (${pct.toFixed(0)}%). Hold for rebound.`, 
-      icon: 'time-outline' 
+    const pct = ((current - initial) / initial) * 100;
+    if (pct >= 20) {
+      return {
+        label: isEn ? 'GREAT PROFIT' : 'OTTIMO PROFITTO',
+        explanation: isEn
+          ? `Product gained ${pct.toFixed(1)}%. Prime window to capitalize and take profits!`
+          : `Il prodotto ha guadagnato il ${pct.toFixed(1)}%. Ottima finestra per capitalizzare!`,
+        icon: 'checkmark-circle-outline',
+        severity: InsightSeverity.STRONG_BUY,
+      };
+    } else if (pct >= 5) {
+      return {
+        label: isEn ? 'GROWING' : 'IN CRESCITA',
+        explanation: isEn
+          ? `Moderate gain (+${pct.toFixed(1)}%). Positive upward trend.`
+          : `Guadagno moderato (+${pct.toFixed(1)}%). Trend positivo.`,
+        icon: 'trending-up-outline',
+        severity: InsightSeverity.BUY,
+      };
+    } else if (pct > -5) {
+      return {
+        label: isEn ? 'STABLE' : 'STABILE',
+        explanation: isEn
+          ? 'Price is currently aligned with initial acquisition value.'
+          : 'Il prezzo è in linea con il valore di carico iniziale.',
+        icon: 'time-outline',
+        severity: InsightSeverity.NEUTRAL,
+      };
+    } else {
+      return {
+        label: isEn ? 'AT A LOSS' : 'IN PERDITA',
+        explanation: isEn
+          ? `Product is down -${Math.abs(pct).toFixed(1)}%. Better to wait for a rebound before selling.`
+          : `Il prodotto segna un -${Math.abs(pct).toFixed(1)}%. Conviene attendere un rimbalzo prima di vendere.`,
+        icon: 'alert-circle-outline',
+        severity: InsightSeverity.AVOID,
+      };
+    }
+  }
+
+  calculateVariationText(item: MtgProduct): string {
+    const initialPrice =
+      item.storico && item.storico.length > 0 ? item.storico[0].prezzo : null;
+    return calculatePercentageVariation(
+      initialPrice,
+      item.prezzoAttuale,
+      'sell',
+    ).text;
+  }
+
+  getVariationClass(item: MtgProduct): string {
+    const initialPrice =
+      item.storico && item.storico.length > 0 ? item.storico[0].prezzo : null;
+    return calculatePercentageVariation(
+      initialPrice,
+      item.prezzoAttuale,
+      'sell',
+    ).cssClass;
+  }
+
+  private renderChartsChunked() {
+    if (this.viewMode() !== 'grid') return;
+    const batchId = ++this.currentRenderBatch;
+    const list = this.products();
+    if (!list || list.length === 0) return;
+
+    let index = 0;
+    const CHUNK_SIZE = 6;
+
+    const renderNextChunk = () => {
+      if (batchId !== this.currentRenderBatch) return;
+      const end = Math.min(index + CHUNK_SIZE, list.length);
+
+      for (let i = index; i < end; i++) {
+        this.renderSingleProductChart(list[i]);
+      }
+
+      index = end;
+      if (index < list.length) {
+        requestAnimationFrame(renderNextChunk);
+      }
     };
+
+    requestAnimationFrame(renderNextChunk);
   }
 
-  calculateVariationText(item: any): string {
-    if (!item.storico || item.storico.length < 2) return '0.0%';
-    const initialPrice = item.storico[0].prezzo;
-    const currentPrice = item.prezzoAttuale;
-    if (!initialPrice || !currentPrice) return '0.0%';
-    
-    const diff = currentPrice - initialPrice;
-    const pct = (diff / initialPrice) * 100;
-    return (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%';
-  }
+  private renderSingleProductChart(item: MtgProduct) {
+    const canvasId = 'chart-vendita-' + item.id;
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    if (!canvas) return;
 
-  calculateVariationColor(item: any): string {
-    if (!item.storico || item.storico.length < 2) return '#64748b';
-    const initialPrice = item.storico[0].prezzo;
-    const currentPrice = item.prezzoAttuale;
-    if (!initialPrice || !currentPrice) return '#64748b';
-    return (currentPrice - initialPrice) >= 0 ? '#10b981' : '#ef4444'; // Green is good for selling (gain)
-  }
+    if (this.chartInstances[item.id]) {
+      this.chartInstances[item.id].destroy();
+      delete this.chartInstances[item.id];
+    }
 
-  calculateTotalStats() {
-    this.totalCards = this.products.length;
-    this.totalInitialValue = 0;
-    this.totalCurrentValue = 0;
+    const history = item.storico || [];
+    if (history.length === 0) return;
 
-    this.products.forEach(p => {
-      const initialPrice = p.storico && p.storico.length > 0 ? p.storico[0].prezzo : p.prezzoAttuale || 0;
-      this.totalInitialValue += initialPrice;
-      this.totalCurrentValue += p.prezzoAttuale || initialPrice;
-    });
+    const labels = history.map((h) => h.data);
+    const data = history.map((h) => h.prezzo);
 
-    this.totalYield = this.totalCurrentValue - this.totalInitialValue;
-    this.totalReturnPercentage = this.totalInitialValue > 0 
-      ? (this.totalYield / this.totalInitialValue) * 100 
-      : 0;
-  }
+    const ctx = canvas.getContext('2d');
+    let gradient: CanvasGradient | null = null;
+    if (ctx) {
+      gradient = createThemeGradient(ctx, '--chart-pink', 0.25, 0.0, 75);
+    }
 
-  private renderCharts() {
-    if (this.viewMode !== 'grid') return;
-    
-    this.products.forEach(item => {
-      const canvasId = 'chart-vendita-' + item.id;
-      const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
-      
-      if (!canvas) return;
-
-      if (this.chartInstances[item.id]) {
-        this.chartInstances[item.id].destroy();
-      }
-
-      const history = item.storico || [];
-      if (history.length === 0) return;
-
-      const labels = history.map((h: any) => h.data);
-      const data = history.map((h: any) => h.prezzo);
-
-      const ctx = canvas.getContext('2d');
-      let gradient = null;
-      if (ctx) {
-        gradient = ctx.createLinearGradient(0, 0, 0, 90);
-        gradient.addColorStop(0, 'rgba(244, 114, 182, 0.15)');
-        gradient.addColorStop(1, 'rgba(244, 114, 182, 0.00)');
-      }
-
-      const datasets: any[] = [{
+    const datasets: ChartDataset<'line'>[] = [
+      {
         label: 'Selected Price',
         data: data,
-        borderColor: '#f472b6',
+        borderColor: CHART_THEME.colors.pink,
         borderWidth: 2.5,
         pointRadius: data.length === 1 ? 3 : 0,
         pointHoverRadius: 5,
         fill: true,
-        backgroundColor: gradient || 'rgba(244, 114, 182, 0.1)',
-        tension: 0.3
-      }];
+        backgroundColor: gradient || getThemeAlphaColor('--chart-pink', 0.1),
+        tension: 0.3,
+      },
+    ];
 
-      // English history comparisons
-      const enData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.en : null);
-      if (enData.some((v: any) => v !== null && v !== undefined)) {
-        datasets.push({
-          label: 'EN Price',
-          data: enData,
-          borderColor: '#60a5fa',
-          borderWidth: 1.5,
-          borderDash: [3, 3],
-          pointRadius: 0,
-          fill: false,
-          tension: 0.3
-        });
-      }
-
-      // Italian history comparisons
-      const itData = history.map((h: any) => h.pricesByLanguage ? h.pricesByLanguage.it : null);
-      if (itData.some((v: any) => v !== null && v !== undefined)) {
-        datasets.push({
-          label: 'IT Price',
-          data: itData,
-          borderColor: '#f59e0b',
-          borderWidth: 1.5,
-          borderDash: [3, 3],
-          pointRadius: 0,
-          fill: false,
-          tension: 0.3
-        });
-      }
-
-      this.chartInstances[item.id] = new Chart(canvas, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: datasets
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: { 
-            legend: { 
-              display: datasets.length > 1,
-              position: 'top',
-              labels: {
-                color: '#94a3b8',
-                boxWidth: 8,
-                padding: 6,
-                font: { size: 9, weight: 'bold' }
-              }
-            } 
+    this.chartInstances[item.id] = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: datasets,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 0 },
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            display: true,
+            grid: { color: CHART_THEME.colors.grid },
+            ticks: {
+              color: CHART_THEME.colors.axisTextDim,
+              font: { size: CHART_THEME.typography.fontSize },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 6,
+            },
           },
-          scales: {
-            x: { display: false },
-            y: {
-              grid: { color: 'rgba(255, 255, 255, 0.03)' },
-              ticks: {
-                color: '#64748b',
-                font: { size: 9, weight: 'bold' },
-                callback: (value) => '€' + Number(value).toFixed(0)
-              }
-            }
-          }
-        }
-      });
+          y: {
+            grid: { color: CHART_THEME.colors.grid },
+            ticks: {
+              color: CHART_THEME.colors.axisTextDim,
+              font: { size: CHART_THEME.typography.fontSize, weight: 'bold' },
+              callback: (value) => '€' + Number(value).toFixed(0),
+            },
+          },
+        },
+      },
     });
   }
 
   private renderTotalChart() {
-    const canvas = document.getElementById('chart-vendite-totale') as HTMLCanvasElement;
+    const canvas = document.getElementById(
+      'chart-vendite-totale',
+    ) as HTMLCanvasElement;
     if (!canvas) return;
 
     if (this.totalChartInstance) {
@@ -323,43 +421,40 @@ export class SellingSectionComponent implements AfterViewInit, OnChanges, OnDest
       this.totalChartInstance = null;
     }
 
-    if (this.products.length === 0) return;
+    if (this.products().length === 0) return;
 
     const dateSet = new Set<string>();
-    this.products.forEach(p => {
-      (p.storico || []).forEach((h: any) => {
+    this.products().forEach((p) => {
+      (p.storico || []).forEach((h) => {
         if (h.data) dateSet.add(h.data);
       });
     });
 
-    const parseDate = (dStr: string) => {
-      const parts = dStr.split('/');
-      if (parts.length === 3) {
-        return new Date(parseInt(parts[2], 10), parseInt(parts[1], 10) - 1, parseInt(parts[0], 10));
-      }
-      return new Date(dStr);
-    };
-
-    const sortedDates = Array.from(dateSet).sort((a, b) => parseDate(a).getTime() - parseDate(b).getTime());
+    const sortedDates = Array.from(dateSet).sort(
+      (a, b) => parseItalianDate(a).getTime() - parseItalianDate(b).getTime(),
+    );
 
     if (sortedDates.length === 0) return;
 
-    const totalValues = sortedDates.map(date => {
+    const totalValues = sortedDates.map((date) => {
       let dailySum = 0;
-      this.products.forEach(p => {
+      this.products().forEach((p) => {
         const history = p.storico || [];
-        const targetTime = parseDate(date).getTime();
-        
+        const targetTime = parseItalianDate(date).getTime();
+
         let matchingPoint = null;
         for (const point of history) {
-          const pointTime = parseDate(point.data).getTime();
+          const pointTime = parseItalianDate(point.data).getTime();
           if (pointTime <= targetTime) {
-            if (!matchingPoint || pointTime > parseDate(matchingPoint.data).getTime()) {
+            if (
+              !matchingPoint ||
+              pointTime > parseItalianDate(matchingPoint.data).getTime()
+            ) {
               matchingPoint = point;
             }
           }
         }
-        
+
         if (matchingPoint) {
           dailySum += matchingPoint.prezzo;
         } else if (history.length > 0) {
@@ -372,28 +467,29 @@ export class SellingSectionComponent implements AfterViewInit, OnChanges, OnDest
     });
 
     const ctx = canvas.getContext('2d');
-    let gradient = null;
+    let gradient: CanvasGradient | null = null;
     if (ctx) {
-      gradient = ctx.createLinearGradient(0, 0, 0, 160);
-      gradient.addColorStop(0, 'rgba(16, 185, 129, 0.2)');
-      gradient.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+      gradient = createThemeGradient(ctx, '--chart-success', 0.25, 0.0, 160);
     }
 
     this.totalChartInstance = new Chart(canvas, {
       type: 'line',
       data: {
         labels: sortedDates,
-        datasets: [{
-          label: 'Total Value',
-          data: totalValues,
-          borderColor: '#10b981',
-          borderWidth: 2,
-          pointRadius: totalValues.length === 1 ? 4 : 0,
-          pointHoverRadius: 5,
-          fill: true,
-          backgroundColor: gradient || 'rgba(16, 185, 129, 0.1)',
-          tension: 0.3
-        }]
+        datasets: [
+          {
+            label: 'Total Value',
+            data: totalValues,
+            borderColor: CHART_THEME.colors.success,
+            borderWidth: 3,
+            pointRadius: totalValues.length === 1 ? 4 : 0,
+            pointHoverRadius: 6,
+            fill: true,
+            backgroundColor:
+              gradient || getThemeAlphaColor('--chart-success', 0.1),
+            tension: 0.3,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -401,28 +497,34 @@ export class SellingSectionComponent implements AfterViewInit, OnChanges, OnDest
         plugins: {
           legend: { display: false },
           tooltip: {
-            mode: 'index',
-            intersect: false,
             callbacks: {
-              label: (context) => `Total Portfolio: €${Number(context.raw).toFixed(2)}`
-            }
-          }
+              label: (context) =>
+                ' Valore Totale: €' + Number(context.raw).toFixed(2),
+            },
+          },
         },
         scales: {
           x: {
-            grid: { color: 'rgba(255, 255, 255, 0.03)' },
-            ticks: { color: '#64748b', font: { size: 10, weight: 'bold' } }
+            display: true,
+            grid: { color: CHART_THEME.colors.gridBorder },
+            ticks: {
+              color: CHART_THEME.colors.axisText,
+              font: { size: 10 },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 8,
+            },
           },
           y: {
-            grid: { color: 'rgba(255, 255, 255, 0.03)' },
+            grid: { color: CHART_THEME.colors.gridBorder },
             ticks: {
-              color: '#64748b',
+              color: CHART_THEME.colors.success,
               font: { size: 10, weight: 'bold' },
-              callback: (value) => '€' + Number(value).toFixed(2)
-            }
-          }
-        }
-      }
+              callback: (value) => '€' + Number(value).toFixed(0),
+            },
+          },
+        },
+      },
     });
   }
 }
