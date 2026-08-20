@@ -85,27 +85,31 @@
 
 .info-container {
   .product-id-tag {
-    font-size: 0.78rem;
-    color: $color-primary-light;
+    font-size: 0.72rem;
+    color: $text-muted;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid $border-subtle;
+    padding: 2px 7px;
+    border-radius: 4px;
     letter-spacing: 0.5px;
-    opacity: 0.9;
   }
 
   .set-name-badge {
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     color: $text-secondary;
-    font-weight: 700;
-    background: rgba(255, 255, 255, 0.08);
-    padding: 3px 9px;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.04);
+    padding: 3px 8px;
     border-radius: 6px;
-    border: 1px solid $border-medium;
+    border: 1px solid $border-glass;
     text-transform: uppercase;
     letter-spacing: 0.3px;
     max-width: 180px;
   }
 
   .product-title {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
+    font-weight: 700;
     color: $text-contrast;
     line-height: 1.35;
     min-height: 2.3em;
@@ -113,72 +117,75 @@
 
   .filter-tags-row {
     .badge-foil {
-      font-size: 0.72rem;
-      font-weight: 800;
+      font-size: 0.68rem;
+      font-weight: 700;
       color: #fff;
-      background: linear-gradient(135deg, #ec4899, #8b5cf6);
-      padding: 3px 8px;
-      border-radius: 6px;
+      background: linear-gradient(135deg, rgba(236, 72, 153, 0.6), rgba(139, 92, 246, 0.6));
+      border: 1px solid rgba(236, 72, 153, 0.4);
+      padding: 2px 7px;
+      border-radius: 4px;
       text-transform: uppercase;
     }
 
     .badge-normal {
-      font-size: 0.72rem;
-      font-weight: 700;
-      color: $text-secondary;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid $border-medium;
-      padding: 3px 8px;
-      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: $text-muted;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid $border-subtle;
+      padding: 2px 7px;
+      border-radius: 4px;
       text-transform: uppercase;
     }
 
     .badge-lang {
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: $color-blue;
-      background: rgba(59, 130, 246, 0.15);
-      border: 1px solid rgba(59, 130, 246, 0.3);
-      padding: 3px 8px;
-      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: $color-info;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      padding: 2px 7px;
+      border-radius: 4px;
       text-transform: uppercase;
     }
 
     .badge-cond {
-      font-size: 0.72rem;
-      font-weight: 800;
-      color: $color-success;
-      background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 3px 8px;
-      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: $color-success-light;
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 2px 7px;
+      border-radius: 4px;
       text-transform: uppercase;
     }
   }
 
   .price-row {
     .current-price {
-      font-size: 1.65rem;
-      color: $color-success;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: $text-contrast;
       letter-spacing: -0.5px;
     }
 
     .variation-pill {
-      font-size: 0.85rem;
-      background: rgba(255, 255, 255, 0.08);
-      padding: 3px 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 7px;
       border-radius: 6px;
 
       &.variation-down {
-        color: $color-emerald;
-        background: rgba(16, 185, 129, 0.15);
-        border: 1px solid rgba(16, 185, 129, 0.3);
+        color: $color-success-light;
+        background: rgba(16, 185, 129, 0.10);
+        border: 1px solid rgba(16, 185, 129, 0.25);
       }
 
       &.variation-up {
-        color: $color-red-light;
-        background: rgba(239, 68, 68, 0.12);
-        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: $color-danger-light;
+        background: rgba(244, 63, 94, 0.10);
+        border: 1px solid rgba(244, 63, 94, 0.25);
       }
 
       &.variation-neutral {
@@ -190,12 +197,12 @@
 
 // --- CATEGORY BADGES ---
 .category-badge {
-  font-size: 0.78rem;
-  font-weight: 800;
-  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
   border-radius: 6px;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -243,27 +250,28 @@
   }
 
   &.cat-other {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid $border-medium;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid $border-glass;
     color: $text-muted;
   }
 }
 
 // --- BARGAIN BANNER ---
 .bargain-banner {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.25));
-  border: 1px solid rgba(16, 185, 129, 0.5);
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: 8px;
-  padding: 8px 12px;
-  animation: pulseGlow 2.5s infinite ease-in-out;
+  padding: 6px 10px;
+  animation: pulseGlow 3s infinite ease-in-out;
 
   .banner-icon {
-    font-size: 1.05rem;
+    font-size: 0.95rem;
   }
 
   .banner-text {
-    font-size: 0.85rem;
-    color: $color-emerald;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: $color-success-light;
     text-transform: uppercase;
     letter-spacing: 0.3px;
   }
@@ -271,7 +279,7 @@
 
 @keyframes pulseGlow {
   0% { box-shadow: 0 0 0 0 $color-success-glow; }
-  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
   100% { box-shadow: 0 0 0 0 $color-success-glow; }
 }
 

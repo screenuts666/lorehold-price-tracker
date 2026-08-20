@@ -1,5 +1,5 @@
 // ============================================================================
-// MARKET ADVICE BADGE SCSS - MODULAR BEM MODIFIERS & GLOW EFFECTS
+// MARKET ADVICE BADGE SCSS - FINANCIAL SAAS ACCENT & GLOW
 // ============================================================================
 @use 'theme/palette' as *;
 
@@ -7,100 +7,102 @@
   border-radius: 8px;
   border: 1px solid;
   text-transform: uppercase;
-  padding: 6px 12px;
-  font-size: 0.85rem;
+  padding: 5px 11px;
+  font-size: 0.8rem;
+  font-weight: 700;
   cursor: help;
   letter-spacing: 0.3px;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  background: rgba(15, 23, 42, 0.35);
+  background: rgba(14, 18, 29, 0.5);
 
   ion-icon {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   &.compact {
-    padding: 3px 8px;
-    font-size: 0.72rem;
-    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 0.7rem;
+    border-radius: 5px;
 
     ion-icon {
-      font-size: 12px;
+      font-size: 11px;
     }
   }
 
   // --- SEVERITY MODIFIERS ---
   &.advice-strong-buy {
-    color: $color-emerald;
-    border-color: $color-emerald;
-    background: rgba(16, 185, 129, 0.18);
-    box-shadow: 0 0 16px $color-success-glow;
+    color: $color-success-light;
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(16, 185, 129, 0.12);
+    box-shadow: 0 0 12px $color-success-glow;
   }
 
   &.advice-buy {
-    color: $color-success;
-    border-color: $color-success;
-    background: rgba(16, 185, 129, 0.12);
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+    color: $color-success-light;
+    border-color: rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.08);
+    box-shadow: 0 0 8px $color-success-glow;
   }
 
   &.advice-wait {
-    color: $color-amber;
-    border-color: $color-amber;
-    background: rgba(245, 158, 11, 0.12);
-    box-shadow: 0 0 10px rgba(245, 158, 11, 0.25);
+    color: $color-warning-light;
+    border-color: rgba(245, 158, 11, 0.3);
+    background: rgba(245, 158, 11, 0.08);
+    box-shadow: 0 0 8px $color-warning-glow;
   }
 
   &.advice-neutral {
     color: $color-info;
-    border-color: $color-info;
-    background: rgba(56, 189, 248, 0.12);
-    box-shadow: 0 0 10px $color-cyan-glow;
+    border-color: rgba(56, 189, 248, 0.3);
+    background: rgba(56, 189, 248, 0.08);
   }
 
   &.advice-warning {
-    color: $color-amber;
-    border-color: $color-amber;
-    background: rgba(245, 158, 11, 0.15);
-    box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);
+    color: $color-warning-light;
+    border-color: rgba(245, 158, 11, 0.35);
+    background: rgba(245, 158, 11, 0.10);
+    box-shadow: 0 0 8px $color-warning-glow;
   }
 
   &.advice-avoid {
-    color: $color-red-light;
-    border-color: $color-red-light;
-    background: rgba(239, 68, 68, 0.15);
-    box-shadow: 0 0 12px $color-danger-glow;
+    color: $color-danger-light;
+    border-color: rgba(244, 63, 94, 0.35);
+    background: rgba(244, 63, 94, 0.10);
+    box-shadow: 0 0 10px $color-danger-glow;
   }
 
   // --- GEMINI AI CUSTOM VERDICTS ---
   &.advice-ai-buy {
-    color: #4ade80;
-    border-color: #22c55e;
-    background: rgba(15, 23, 42, 0.65);
-    box-shadow: 0 0 15px rgba(34, 197, 94, 0.35);
+    color: $color-success-light;
+    border-color: rgba(16, 185, 129, 0.4);
+    background: rgba(11, 15, 23, 0.75);
+    box-shadow: 0 0 12px $color-success-glow;
   }
 
   &.advice-ai-wait {
-    color: #fde047;
-    border-color: #eab308;
-    background: rgba(15, 23, 42, 0.65);
-    box-shadow: 0 0 15px rgba(234, 179, 8, 0.35);
+    color: $color-warning-light;
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(11, 15, 23, 0.75);
+    box-shadow: 0 0 12px $color-warning-glow;
   }
 
   &.advice-ai-avoid {
-    color: #f87171;
-    border-color: #ef4444;
-    background: rgba(15, 23, 42, 0.65);
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.35);
+    color: $color-danger-light;
+    border-color: rgba(244, 63, 94, 0.4);
+    background: rgba(11, 15, 23, 0.75);
+    box-shadow: 0 0 12px $color-danger-glow;
   }
 
   &.advice-ai-custom {
     color: $color-primary-light;
-    border-color: $color-primary;
-    background: rgba(15, 23, 42, 0.65);
-    box-shadow: 0 0 15px $color-primary-glow;
+    border-color: rgba(139, 92, 246, 0.4);
+    background: rgba(11, 15, 23, 0.75);
+    box-shadow: 0 0 12px $color-primary-glow;
   }
 }
 
 .recommendation-desc {
+  font-size: 0.82rem;
+  color: $text-secondary;
   line-height: 1.45;
 }
