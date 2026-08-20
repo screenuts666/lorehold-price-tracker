@@ -1,0 +1,118 @@
+// ============================================================================
+// SEARCH SECTION COMPONENT SCSS
+// ============================================================================
+@use 'theme/palette' as *;
+
+.search-bar-wrap {
+  .search-input-box {
+    background: rgba(30, 41, 59, 0.35);
+    border: 1px solid $border-glass;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &:focus-within {
+      border-color: rgba(167, 139, 250, 0.4);
+      box-shadow: 0 0 12px rgba(167, 139, 250, 0.15);
+    }
+
+    .search-icon {
+      color: $color-primary-light;
+    }
+
+    .native-search-input {
+      font-size: 0.85rem;
+
+      &::placeholder {
+        color: $text-dim;
+      }
+    }
+
+    .search-action-btn {
+      height: 32px;
+    }
+  }
+}
+
+.search-results-panel {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(30, 41, 59, 0.35);
+  min-height: 250px;
+
+  .panel-header-title {
+    .header-icon {
+      color: $color-primary-light;
+    }
+
+    .header-heading {
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .loading-state-wrap {
+    height: 200px;
+
+    .loading-desc {
+      color: $text-muted;
+      font-size: 0.85rem;
+    }
+  }
+
+  .empty-state-wrap {
+    height: 200px;
+    color: $text-dim;
+    font-size: 0.85rem;
+  }
+
+  .results-list-container {
+    .search-card-item {
+      background: rgba(30, 41, 59, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      cursor: pointer;
+      transition: all 0.25s ease;
+
+      &:hover {
+        background: rgba(30, 41, 59, 0.6);
+        border-color: rgba(167, 139, 250, 0.3);
+        transform: translateX(4px);
+      }
+
+      .card-img-thumb {
+        width: 44px;
+        height: 60px;
+        object-fit: contain;
+        border-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+      }
+
+      .card-img-placeholder {
+        width: 44px;
+        height: 60px;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 4px;
+        border: 1px dashed $border-glass;
+
+        ion-icon {
+          color: #475569;
+        }
+      }
+
+      .card-details-info {
+        .card-main-name {
+          font-size: 0.95rem;
+          color: $text-primary;
+        }
+
+        .card-set-info {
+          font-size: 0.72rem;
+          color: $color-primary-light;
+        }
+
+        .card-en-name {
+          font-size: 0.7rem;
+          color: $text-dim;
+        }
+      }
+    }
+  }
+}

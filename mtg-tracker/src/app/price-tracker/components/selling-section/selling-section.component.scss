@@ -1,0 +1,361 @@
+// ============================================================================
+// SELLING SECTION COMPONENT SCSS
+// ============================================================================
+@use 'theme/palette' as *;
+
+.selling-input-container {
+  .selling-input-bar {
+    background: rgba(30, 41, 59, 0.35);
+    border: 1px solid $border-glass;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &:focus-within {
+      border-color: rgba(244, 114, 182, 0.4);
+      box-shadow: 0 0 12px rgba(244, 114, 182, 0.15);
+    }
+
+    .selling-icon {
+      color: $color-pink;
+    }
+
+    .selling-native-input {
+      font-size: 0.85rem;
+      color: $text-primary;
+    }
+  }
+}
+
+// --- PORTFOLIO DASHBOARD ---
+.selling-dashboard-panel {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: rgba(30, 41, 59, 0.35);
+
+  .dashboard-header {
+    .header-icon {
+      color: $color-success;
+    }
+
+    .header-title {
+      color: $text-primary;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .metrics-grid {
+    .metric-card {
+      background: rgba(15, 23, 42, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+
+      .metric-label {
+        color: $text-muted;
+        letter-spacing: 0.5px;
+      }
+
+      .metric-value-huge {
+        color: $text-primary;
+
+        &.purple {
+          color: $color-primary-light;
+        }
+      }
+
+      .yield-display-row {
+        .yield-val {
+          &.positive { color: $color-success; }
+          &.negative { color: $color-danger; }
+        }
+
+        .yield-pct {
+          &.positive { color: $color-emerald; }
+          &.negative { color: $color-red-light; }
+        }
+      }
+    }
+  }
+
+  .timeline-chart-section {
+    .timeline-title {
+      color: $text-secondary;
+    }
+  }
+}
+
+// --- GRID PRODUCT CARDS ---
+.selling-grid-card {
+  @include glass-card;
+
+  .card-top-flex {
+    .card-thumbnail-wrap {
+      width: 90px;
+      height: 112px;
+      position: relative;
+
+      .card-img-single {
+        width: 80px;
+        height: 112px;
+        object-fit: contain;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        transition: transform 0.3s ease;
+      }
+
+      .card-img-sealed-box {
+        width: 90px;
+        height: 90px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+        img {
+          max-width: 90%;
+          max-height: 90%;
+          object-fit: contain;
+          mix-blend-mode: multiply;
+        }
+      }
+
+      .card-img-empty {
+        width: 80px;
+        height: 112px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 8px;
+        border: 1px dashed $border-glass;
+      }
+    }
+
+    .card-info-wrap {
+      .card-actions-bar {
+        .item-id-text {
+          font-size: 0.65rem;
+          color: $color-primary-light;
+          letter-spacing: 0.5px;
+        }
+
+        .action-btns-group {
+          .micro-action-btn {
+            margin: 0;
+            --padding-start: 0;
+            --padding-end: 0;
+            height: 18px;
+            width: 18px;
+          }
+        }
+      }
+
+      .badges-tag-row {
+        .set-tag {
+          font-size: 0.65rem;
+          color: $text-muted;
+          font-weight: 700;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 2px 6px;
+          border-radius: 4px;
+          border: 1px solid $border-subtle;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          max-width: 130px;
+        }
+
+        .type-tag {
+          font-size: 0.65rem;
+          color: $color-cyan;
+          background: rgba(59, 130, 246, 0.1);
+          padding: 2px 6px;
+          border-radius: 4px;
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+        }
+      }
+
+      .card-item-title {
+        color: $text-primary;
+        line-height: 1.25;
+        min-height: 2.5em;
+      }
+
+      .filter-badges-row {
+        .badge-foil {
+          font-size: 0.6rem;
+          font-weight: 700;
+          color: #fff;
+          background: linear-gradient(135deg, #ec4899, #8b5cf6);
+          padding: 2px 6px;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+
+        .badge-normal {
+          font-size: 0.6rem;
+          font-weight: 700;
+          color: $text-muted;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid $border-glass;
+          padding: 1px 5px;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+
+        .badge-lang {
+          font-size: 0.6rem;
+          font-weight: 700;
+          color: $color-blue;
+          background: rgba(59, 130, 246, 0.1);
+          border: 1px solid rgba(59, 130, 246, 0.2);
+          padding: 1px 5px;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+
+        .badge-cond {
+          font-size: 0.6rem;
+          font-weight: 700;
+          color: $color-success;
+          background: rgba(16, 185, 129, 0.1);
+          border: 1px solid rgba(16, 185, 129, 0.2);
+          padding: 1px 5px;
+          border-radius: 4px;
+          text-transform: uppercase;
+        }
+      }
+
+      .card-price-row {
+        .price-text {
+          font-size: 1.35rem;
+          color: var(--ion-color-success);
+        }
+
+        .variation-text {
+          font-size: 0.75rem;
+
+          &.variation-up {
+            color: $color-emerald;
+          }
+
+          &.variation-down {
+            color: $color-red-light;
+          }
+
+          &.variation-neutral {
+            color: $text-dim;
+          }
+        }
+      }
+    }
+  }
+
+  .details-drawer-section {
+    .dates-meta-row {
+      .date-meta-item {
+        font-size: 0.65rem;
+        color: $text-muted;
+
+        strong {
+          color: $text-secondary;
+        }
+      }
+    }
+
+    .sparkline-chart-container {
+      position: relative;
+      height: 90px;
+      width: 100%;
+
+      .empty-sparkline {
+        height: 100%;
+        background: rgba(255, 255, 255, 0.01);
+        border-radius: 6px;
+        border: 1px dashed $border-subtle;
+      }
+    }
+
+    .recommendation-insights-wrap {
+      .suggestion-pill {
+        border-radius: 6px;
+        border: 1px solid;
+        background: rgba(15, 23, 42, 0.25);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        padding: 3px 8px;
+
+        ion-icon {
+          font-size: 12px;
+        }
+      }
+
+      .suggestion-explanation {
+        line-height: 1.35;
+      }
+
+      .market-data-list {
+        .market-data-row {
+          font-size: 0.7rem;
+          color: $text-muted;
+
+          .data-value {
+            color: $text-secondary;
+
+            &.success {
+              color: $color-emerald;
+            }
+
+            .sub-text {
+              font-size: 0.6rem;
+              color: $text-dim;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// --- TIMELINE CANVAS CONTAINER ---
+.timeline-canvas-container {
+  position: relative;
+  height: 160px;
+  width: 100%;
+}
+
+// --- TABLE VIEW STYLES ---
+.selling-table-card {
+  .native-table {
+    thead tr th {
+      color: $color-primary-light;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr td {
+      color: $text-secondary;
+    }
+
+    .table-card-thumb-single {
+      width: 36px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+
+    .table-thumb-box-wrap {
+      width: 50px;
+      height: 50px;
+      padding: 2px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid $border-glass;
+    }
+
+    .table-thumb-empty-wrap {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid $border-glass;
+    }
+  }
+}

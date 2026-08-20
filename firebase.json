@@ -1,7 +1,14 @@
 {
-  "firestore": {
-    "rules": "firestore.rules"
-  },
+  "firestore": [
+    {
+      "database": "default",
+      "rules": "firestore.rules"
+    },
+    {
+      "database": "(default)",
+      "rules": "firestore.rules"
+    }
+  ],
   "functions": [
     {
       "source": "functions",
@@ -17,6 +24,9 @@
   ],
   "hosting": {
     "public": "mtg-tracker/www",
+    "predeploy": [
+      "npm --prefix mtg-tracker run build"
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

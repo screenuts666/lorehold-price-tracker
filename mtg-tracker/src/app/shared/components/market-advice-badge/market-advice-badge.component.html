@@ -1,0 +1,18 @@
+@if (suggestion(); as sg) {
+  <div class="market-advice-badge-wrap">
+    <div
+      [class]="'recommendation-badge d-inline-flex align-items-center gap-1 fw-bold ' + badgeClass"
+      [class.compact]="compact()"
+      [title]="sg.explanation"
+    >
+      <ion-icon [name]="sg.severity === InsightSeverity.STRONG_BUY ? 'star' : sg.icon"></ion-icon>
+      <span>{{ sg.label }}</span>
+    </div>
+
+    @if (showExplanation() && sg.explanation) {
+      <p class="m-0 mt-2 recommendation-desc small text-secondary">
+        {{ sg.explanation }}
+      </p>
+    }
+  </div>
+}

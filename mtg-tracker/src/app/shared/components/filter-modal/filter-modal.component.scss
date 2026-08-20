@@ -1,0 +1,106 @@
+// ============================================================================
+// FILTER MODAL COMPONENT SCSS
+// ============================================================================
+@use 'theme/palette' as *;
+
+.modal-backdrop-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 10001;
+}
+
+.modal-dialog-card {
+  width: 100%;
+  max-width: 420px;
+  border-radius: 16px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.modal-header-flex {
+  .modal-title-group {
+    ion-icon {
+      color: $color-pink;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      color: $text-primary;
+    }
+  }
+
+  .modal-close-btn {
+    --padding-start: 4px;
+    --padding-end: 4px;
+    height: 32px;
+    width: 32px;
+  }
+}
+
+.modal-preview-box {
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  .preview-image {
+    width: 50px;
+    height: 70px;
+    object-fit: contain;
+  }
+
+  .preview-info {
+    .product-name {
+      font-size: 0.95rem;
+      color: $text-primary;
+    }
+
+    .product-id {
+      font-size: 0.72rem;
+      color: $text-dim;
+    }
+  }
+}
+
+.modal-fields-container {
+  .field-item {
+    .field-label {
+      font-size: 0.72rem;
+      color: $text-muted;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-segment {
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 8px;
+
+      ion-segment-button {
+        &.btn-buy { --indicator-color: #{$color-primary}; }
+        &.btn-sell { --indicator-color: #{$color-pink}; }
+        &.btn-filter { --indicator-color: #{$color-cyan}; }
+      }
+
+      .segment-text {
+        font-size: 0.75rem;
+        color: $text-primary;
+      }
+    }
+
+    .modal-select {
+      background: rgba(15, 23, 42, 0.4);
+      border: 1px solid $border-glass;
+      border-radius: 8px;
+      color: $text-primary;
+      font-size: 0.85rem;
+      --padding-start: 12px;
+      --padding-end: 12px;
+      height: 38px;
+    }
+  }
+}

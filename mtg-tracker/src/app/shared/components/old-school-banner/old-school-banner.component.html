@@ -1,0 +1,15 @@
+<div
+  class="d-flex align-items-center justify-content-between flex-wrap gap-2 old-school-vintage-banner"
+  [class.in-bargains]="inBargains()"
+>
+  <div class="d-flex align-items-center gap-2 banner-left">
+    <span class="banner-icon">🏛️</span>
+    <div>
+      <h4 class="m-0 banner-title">{{ title() || (inBargains() ? langService.t().OLD_SCHOOL_BARGAINS_TITLE : langService.t().OLD_SCHOOL_BANNER_TITLE) }}</h4>
+      <p class="m-0 banner-desc">{{ description() || (inBargains() ? langService.t().OLD_SCHOOL_BARGAINS_DESC : langService.t().OLD_SCHOOL_BANNER_DESC) }}</p>
+    </div>
+  </div>
+  <button (click)="dismiss.emit()" class="btn btn-sm banner-dismiss-btn">
+    {{ langService.t().OLD_SCHOOL_DISMISS }}
+  </button>
+</div>

@@ -1,0 +1,7 @@
+<div class="empty-state-card d-flex flex-column align-items-center justify-content-center text-center p-5">
+  <span class="empty-state-icon fs-1 mb-2">{{ icon() }}</span>
+  <h3 class="empty-state-title fw-bold fs-5 m-0 mb-1">{{ title() }}</h3>
+  @if (description()) {
+    <p class="empty-state-desc text-muted m-0">{{ description() }}</p>
+  }
+</div>

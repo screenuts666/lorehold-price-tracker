@@ -1,0 +1,94 @@
+@if (isOpen()) {
+  <div class="modal-backdrop-overlay d-flex align-items-center justify-content-center p-3">
+    <div class="modal-dialog-card glass-card p-4 d-flex flex-column">
+      <!-- TITLE -->
+      <div class="d-flex align-items-center justify-content-between pb-3 mb-3 border-bottom border-white border-opacity-10 modal-header-flex">
+        <div class="d-flex align-items-center gap-2 modal-title-group">
+          <ion-icon name="options-outline" class="fs-4 text-warning"></ion-icon>
+          <h2 class="modal-title fs-5 fw-bold text-light m-0">
+            {{ product()?.isNew ? 'Add Product' : 'Edit Filters' }}
+          </h2>
+        </div>
+        <ion-button fill="clear" color="medium" (click)="close()" class="modal-close-btn m-0">
+          <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+        </ion-button>
+      </div>
+
+      <!-- CARD PREVIEW -->
+      <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-3 modal-preview-box">
+        @if (product()?.image || product()?.immagine) {
+          <img [src]="product()?.image || product()?.immagine" referrerpolicy="no-referrer" class="preview-image rounded" alt="Product preview" />
+        }
+        <div class="preview-info flex-grow-1 min-w-0">
+          <h3 class="product-name fw-bold text-light fs-6 m-0 mb-1 text-truncate">
+            {{ product()?.name || product()?.nome }}
+          </h3>
+          <span class="product-id text-muted small fw-semibold">CardTrader ID: {{ product()?.id }}</span>
+        </div>
+      </div>
+
+      <!-- FORM FIELDS -->
+      <div class="d-flex flex-column gap-3 mb-4 modal-fields-container">
+        <!-- INTENT (IF NEW) -->
+        @if (product()?.isNew) {
+          <div class="field-item d-flex flex-column gap-1">
+            <span class="field-label text-muted small fw-bold text-uppercase">Section / Intent</span>
+            <ion-segment [value]="intentFilter()" (ionChange)="onIntentChange($event)" class="modal-segment">
+              <ion-segment-button value="buy" class="btn-buy">
+                <span class="segment-text fw-bold py-1">BUYING</span>
+              </ion-segment-button>
+              <ion-segment-button value="sell" class="btn-sell">
+                <span class="segment-text fw-bold py-1">SELLING</span>
+              </ion-segment-button>
+            </ion-segment>
+          </div>
+        }
+
+        <!-- FOIL -->
+        <div class="field-item d-flex flex-column gap-1">
+          <span class="field-label text-muted small fw-bold text-uppercase">Finiture Type</span>
+          <ion-segment [value]="foilFilter()" (ionChange)="onFoilChange($event)" class="modal-segment">
+            <ion-segment-button value="any" class="btn-filter">
+              <span class="segment-text fw-bold py-1">ANY</span>
+            </ion-segment-button>
+            <ion-segment-button value="normal" class="btn-filter">
+              <span class="segment-text fw-bold py-1">NORMAL</span>
+            </ion-segment-button>
+            <ion-segment-button value="foil" class="btn-filter">
+              <span class="segment-text fw-bold py-1">FOIL</span>
+            </ion-segment-button>
+          </ion-segment>
+        </div>
+
+        <!-- LANGUAGE -->
+        <div class="field-item d-flex flex-column gap-1">
+          <span class="field-label text-muted small fw-bold text-uppercase">Card Language</span>
+          <ion-select interface="popover" [value]="langFilter()" (ionChange)="onLangChange($event)" class="modal-select fw-bold">
+            <ion-select-option value="any">Any Language</ion-select-option>
+            <ion-select-option value="it">Italian (IT)</ion-select-option>
+            <ion-select-option value="en">English (EN)</ion-select-option>
+          </ion-select>
+        </div>
+
+        <!-- CONDITION -->
+        <div class="field-item d-flex flex-column gap-1">
+          <span class="field-label text-muted small fw-bold text-uppercase">Minimum Condition</span>
+          <ion-select interface="popover" [value]="condFilter()" (ionChange)="onCondChange($event)" class="modal-select fw-bold">
+            <ion-select-option value="any">Any Condition (NM / SP / PL...)</ion-select-option>
+            <ion-select-option value="Near Mint">Near Mint (NM) or better</ion-select-option>
+          </ion-select>
+        </div>
+      </div>
+
+      <!-- FOOTER BUTTONS -->
+      <div class="d-flex align-items-center justify-content-end gap-2 modal-footer-actions">
+        <ion-button fill="clear" color="medium" (click)="close()" class="cancel-btn m-0 fw-semibold">
+          Cancel
+        </ion-button>
+        <ion-button (click)="save()" color="success" class="neon-btn save-btn m-0 fw-bold">
+          {{ product()?.isNew ? 'Add to list' : 'Save Filters' }}
+        </ion-button>
+      </div>
+    </div>
+  </div>
+}

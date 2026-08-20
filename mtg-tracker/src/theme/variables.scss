@@ -1,2 +1,27 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// ============================================================================
+// CSS CUSTOM PROPERTIES ROOT EXPORT FROM CENTRALIZED PALETTE
+// ============================================================================
+@use 'theme/palette' as *;
+
+:root {
+  --color-primary: #{$color-primary};
+  --color-primary-light: #{$color-primary-light};
+  --color-primary-dark: #{$color-primary-dark};
+
+  --color-success: #{$color-success};
+  --color-emerald: #{$color-emerald};
+  --color-warning: #{$color-warning};
+  --color-amber: #{$color-amber};
+  --color-danger: #{$color-danger};
+  --color-info: #{$color-info};
+
+  --bg-body: #{$bg-body};
+  --bg-surface-glass: #{$bg-surface-glass};
+  --bg-surface-medium: #{$bg-surface-medium};
+
+  --text-primary: #{$text-primary};
+  --text-secondary: #{$text-secondary};
+  --text-muted: #{$text-muted};
+
+  --border-glass: #{$border-glass};
+}

@@ -1,18 +1,44 @@
+// ============================================================================
+// BUYING SECTION COMPONENT SCSS
+// ============================================================================
+@use 'theme/palette' as *;
+
+// --- INPUTS CONTAINER ---
+.buying-input-container {
+  .buying-input-bar {
+    background: rgba(30, 41, 59, 0.35);
+    border: 1px solid $border-glass;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+
+    &:focus-within {
+      border-color: rgba(167, 139, 250, 0.4);
+      box-shadow: 0 0 12px rgba(167, 139, 250, 0.15);
+    }
+
+    .cart-icon {
+      color: $color-primary-light;
+    }
+
+    .buying-native-input {
+      font-size: 0.85rem;
+      color: $text-primary;
+    }
+  }
+}
+
+// --- PRODUCT GLASS CARD ---
 .product-glass-card {
-  background: linear-gradient(145deg, rgba(30, 41, 59, 0.55), rgba(15, 23, 42, 0.75));
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  @include glass-card;
   border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
 
   &:hover {
     transform: translateY(-3px);
-    border-color: rgba(167, 139, 250, 0.3);
-    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4), 0 0 25px rgba(139, 92, 246, 0.15);
+    border-color: $border-glass-hover;
+    box-shadow: 0 14px 35px rgba(0, 0, 0, 0.4), 0 0 25px $color-primary-glow;
 
     .thumbnail-overlay {
       opacity: 1 !important;
@@ -29,14 +55,13 @@
   border-radius: 12px;
   overflow: hidden;
   position: relative;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid $border-glass;
 
   .product-img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -45,24 +70,125 @@
     inset: 0;
     background: rgba(15, 23, 42, 0.7);
     backdrop-filter: blur(4px);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
     opacity: 0;
     transition: opacity 0.25s ease;
 
     span {
       font-size: 0.65rem;
       font-weight: 700;
-      color: #38bdf8;
+      color: $color-cyan;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
   }
 }
 
+.info-container {
+  .product-id-tag {
+    font-size: 0.78rem;
+    color: $color-primary-light;
+    letter-spacing: 0.5px;
+    opacity: 0.9;
+  }
+
+  .set-name-badge {
+    font-size: 0.78rem;
+    color: $text-secondary;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 3px 9px;
+    border-radius: 6px;
+    border: 1px solid $border-medium;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    max-width: 180px;
+  }
+
+  .product-title {
+    font-size: 1.15rem;
+    color: $text-contrast;
+    line-height: 1.35;
+    min-height: 2.3em;
+  }
+
+  .filter-tags-row {
+    .badge-foil {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .badge-normal {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: $text-secondary;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid $border-medium;
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .badge-lang {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: $color-blue;
+      background: rgba(59, 130, 246, 0.15);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+
+    .badge-cond {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: $color-success;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 3px 8px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+  }
+
+  .price-row {
+    .current-price {
+      font-size: 1.65rem;
+      color: $color-success;
+      letter-spacing: -0.5px;
+    }
+
+    .variation-pill {
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.08);
+      padding: 3px 8px;
+      border-radius: 6px;
+
+      &.variation-down {
+        color: $color-emerald;
+        background: rgba(16, 185, 129, 0.15);
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      &.variation-up {
+        color: $color-red-light;
+        background: rgba(239, 68, 68, 0.12);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+      }
+
+      &.variation-neutral {
+        color: $text-dim;
+      }
+    }
+  }
+}
+
+// --- CATEGORY BADGES ---
 .category-badge {
   font-size: 0.78rem;
   font-weight: 800;
@@ -75,77 +201,81 @@
   gap: 4px;
 
   &.cat-collector-box {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
-    border: 1px solid rgba(245, 158, 11, 0.4);
-    color: #fbbf24;
+    background: $cat-collector-bg;
+    border: 1px solid $cat-collector-border;
+    color: $cat-collector-color;
   }
 
   &.cat-play-box {
-    background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.2));
-    border: 1px solid rgba(56, 189, 248, 0.4);
-    color: #38bdf8;
+    background: $cat-play-box-bg;
+    border: 1px solid $cat-play-box-border;
+    color: $cat-play-box-color;
   }
 
   &.cat-prerelease {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(5, 150, 105, 0.2));
-    border: 1px solid rgba(16, 185, 129, 0.4);
-    color: #34d399;
+    background: $cat-prerelease-bg;
+    border: 1px solid $cat-prerelease-border;
+    color: $cat-prerelease-color;
   }
 
   &.cat-bundle {
-    background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(147, 51, 234, 0.2));
-    border: 1px solid rgba(168, 85, 247, 0.4);
-    color: #c084fc;
+    background: $cat-bundle-bg;
+    border: 1px solid $cat-bundle-border;
+    color: $cat-bundle-color;
   }
 
   &.cat-draft-night {
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.2), rgba(219, 39, 119, 0.2));
-    border: 1px solid rgba(236, 72, 153, 0.4);
-    color: #f472b6;
+    background: $cat-draft-night-bg;
+    border: 1px solid $cat-draft-night-border;
+    color: $cat-draft-night-color;
   }
 
   &.cat-scene-box {
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(79, 70, 229, 0.2));
-    border: 1px solid rgba(99, 102, 241, 0.4);
-    color: #818cf8;
+    background: $cat-scene-box-bg;
+    border: 1px solid $cat-scene-box-border;
+    color: $cat-scene-box-color;
   }
 
   &.cat-commander-deck, &.cat-starter-deck {
-    background: linear-gradient(135deg, rgba(20, 184, 166, 0.2), rgba(13, 148, 136, 0.2));
-    border: 1px solid rgba(20, 184, 166, 0.4);
-    color: #2dd4bf;
+    background: $cat-commander-bg;
+    border: 1px solid $cat-commander-border;
+    color: $cat-commander-color;
   }
 
   &.cat-other {
     background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #94a3b8;
+    border: 1px solid $border-medium;
+    color: $text-muted;
   }
 }
 
+// --- BARGAIN BANNER ---
 .bargain-banner {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.25));
   border: 1px solid rgba(16, 185, 129, 0.5);
   border-radius: 8px;
   padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
   animation: pulseGlow 2.5s infinite ease-in-out;
+
+  .banner-icon {
+    font-size: 1.05rem;
+  }
+
+  .banner-text {
+    font-size: 0.85rem;
+    color: $color-emerald;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
 }
 
 @keyframes pulseGlow {
-  0% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-  }
+  0% { box-shadow: 0 0 0 0 $color-success-glow; }
+  70% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 $color-success-glow; }
 }
 
+// --- ACTION BUTTONS ---
 .action-btn-icon {
   width: 30px;
   height: 30px;
@@ -154,40 +284,210 @@
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
+  border: 1px solid $border-medium;
+  color: $text-secondary;
   transition: all 0.2s ease;
   cursor: pointer;
 
   &:hover {
     background: rgba(255, 255, 255, 0.15);
-    color: #f8fafc;
+    color: $text-contrast;
     transform: scale(1.08);
   }
 
   &.btn-funnel:hover {
-    color: #a78bfa;
+    color: $color-primary-light;
     border-color: rgba(167, 139, 250, 0.4);
   }
 
   &.btn-open:hover {
-    color: #38bdf8;
-    border-color: rgba(56, 189, 248, 0.4);
+    color: $color-cyan;
+    border-color: $color-cyan-glow;
   }
 
   &.btn-trash:hover {
-    color: #f87171;
+    color: $color-red-light;
     border-color: rgba(248, 113, 113, 0.4);
   }
 }
 
+// --- MOBILE DETAILS DRAWER & CHART ---
+.mobile-details-drawer {
+  .meta-dates-row {
+    border-top: 1px solid $border-glass;
+
+    .date-meta-item {
+      font-size: 0.78rem;
+      color: $text-muted;
+
+      strong {
+        color: $text-primary;
+      }
+    }
+  }
+
+  .spark-chart-container {
+    position: relative;
+    height: 100px;
+    width: 100%;
+
+    .stable-price-placeholder {
+      height: 100%;
+      background: rgba(15, 23, 42, 0.4);
+      border-radius: 10px;
+      border: 1px dashed $border-glass;
+
+      span {
+        font-size: 0.8rem;
+        color: $text-secondary;
+      }
+    }
+  }
+
+  .recommendation-section {
+    border-top: 1px dashed $border-glass;
+
+    .recommendation-badge {
+      border-radius: 8px;
+      border: 1px solid;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+
+      ion-icon {
+        font-size: 15px;
+      }
+    }
+
+    .recommendation-desc {
+      line-height: 1.45;
+      font-size: 0.85rem;
+    }
+  }
+}
+
 .market-metric-pill {
-  background: rgba(15, 23, 42, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: $bg-surface-input;
+  border: 1px solid $border-glass;
   border-radius: 8px;
   padding: 6px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   font-size: 0.82rem;
+
+  .metric-label {
+    color: $text-secondary;
+  }
+
+  .metric-value {
+    color: $text-primary;
+
+    &.success {
+      color: $color-emerald;
+    }
+
+    .sub-info {
+      font-size: 0.72rem;
+      color: $text-muted;
+    }
+  }
+}
+
+// --- TABLE VIEW STYLES ---
+.buying-table-card {
+  .buying-table {
+    thead tr th {
+      color: $color-primary-light;
+      font-size: 0.8rem;
+      letter-spacing: 0.5px;
+    }
+
+    tbody tr td {
+      .table-thumb-single {
+        width: 36px;
+        height: 50px;
+        object-fit: contain;
+        border-radius: 4px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+      }
+
+      .table-thumb-box {
+        width: 50px;
+        height: 50px;
+        padding: 2px;
+        border-radius: 6px;
+        background: #fff;
+
+        img {
+          max-width: 90%;
+          max-height: 90%;
+          object-fit: contain;
+          mix-blend-mode: multiply;
+        }
+      }
+
+      .table-thumb-empty {
+        width: 50px;
+        height: 50px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 6px;
+        border: 1px dashed $border-glass;
+
+        ion-icon {
+          color: $text-dim;
+          font-size: 16px;
+        }
+      }
+
+      .table-product-name {
+        color: $text-primary;
+        font-size: 0.95rem;
+      }
+
+      .table-meta-text {
+        font-size: 0.7rem;
+        color: $text-dim;
+
+        .table-expansion-tag {
+          color: $color-primary-light;
+        }
+      }
+
+      .table-price-val {
+        color: var(--ion-color-success);
+        font-size: 1.05rem;
+      }
+
+      .table-variation-val {
+        font-size: 0.9rem;
+        font-weight: 700;
+
+        &.variation-down {
+          color: $color-emerald;
+        }
+
+        &.variation-up {
+          color: $color-red-light;
+        }
+
+        &.variation-neutral {
+          color: $text-dim;
+        }
+      }
+    }
+  }
+}
+
+// --- EMPTY STATE ---
+.empty-products-state {
+  background: rgba(15, 23, 42, 0.4);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+
+  .empty-title {
+    color: $text-primary;
+  }
+
+  .empty-desc {
+    color: $text-muted;
+    max-width: 420px;
+  }
 }
