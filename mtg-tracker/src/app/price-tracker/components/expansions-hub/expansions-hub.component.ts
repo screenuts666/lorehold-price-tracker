@@ -13,7 +13,7 @@ import {
 import {
   getIsoDateDaysAgo,
   getTodayIsoString,
-  formatItalianDate,
+  formatLocalizedDate,
   isOldSchoolDate,
   OLD_SCHOOL_CUTOFF_DATE
 } from '../../../utils/date.utils';
@@ -122,6 +122,7 @@ export class ExpansionsHubComponent implements OnInit {
   constructor() {
     effect(() => {
       const currentProducts = this.products();
+      const lang = this.langService.currentLang();
       if (this.scryfallSetsCache.length > 0 || !this.loadingSets()) {
         this.processExpansions(currentProducts);
       }
@@ -246,7 +247,7 @@ export class ExpansionsHubComponent implements OnInit {
           count: info.count,
           icon_svg_uri: s.icon_svg_uri || null,
           released_at: s.released_at,
-          formattedDate: formatItalianDate(s.released_at),
+          formattedDate: formatLocalizedDate(s.released_at, this.langService.currentLang()),
           isPreorder: isPreorder,
           isOldSchool: isOldSchool,
           coverImage: cover
@@ -287,7 +288,7 @@ export class ExpansionsHubComponent implements OnInit {
           count: expProductsCount[expName],
           icon_svg_uri: scryfallSet?.icon_svg_uri || null,
           released_at: relDate,
-          formattedDate: relDate ? formatItalianDate(relDate) : 'Data N/D',
+          formattedDate: relDate ? formatLocalizedDate(relDate, this.langService.currentLang()) : this.t().DATE_NA,
           isPreorder: isPreorder,
           isOldSchool: isOldSchoolDate(relDate),
           coverImage: cover

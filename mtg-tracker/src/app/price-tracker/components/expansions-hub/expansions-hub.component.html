@@ -2,11 +2,11 @@
   <!-- TOP BANNER: BURIED DEALS & BARGAINS QUICK ACCESS -->
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 deals-quick-banner" (click)="jumpToBargains.emit()">
     <div class="d-flex align-items-center gap-2 banner-left">
-      <span class="badge badge-fire">🎯 TOP AFFARI</span>
-      <span class="banner-text fw-bold">Scopri i prodotti sigillati in offerta ed occasioni IA</span>
+      <span class="badge badge-fire">{{ t().EXP_TOP_DEALS_BANNER }}</span>
+      <span class="banner-text fw-bold">{{ t().EXP_DEALS_BANNER_SUB }}</span>
     </div>
     <div class="banner-btn fw-bold">
-      <span>Vedi Affari ➔</span>
+      <span>{{ t().EXP_SEE_DEALS_BTN }}</span>
     </div>
   </div>
 
@@ -40,49 +40,49 @@
           [class.active]="quickChip() === 'preorder'"
           (click)="selectQuickChip('preorder')"
         >
-          <span>🔥 Solo Prevendite</span>
+          <span>{{ t().CHIP_PREORDER }}</span>
         </button>
         <button
           class="chip-item"
           [class.active]="quickChip() === '3months'"
           (click)="selectQuickChip('3months')"
         >
-          <span>📅 Prossimi 3 Mesi</span>
+          <span>{{ t().CHIP_3MONTHS }}</span>
         </button>
         <button
           class="chip-item"
           [class.active]="quickChip() === 'has-products'"
           (click)="selectQuickChip('has-products')"
         >
-          <span>📦 Con Prodotti</span>
+          <span>{{ t().CHIP_WITH_PRODUCTS }}</span>
         </button>
         <button
           class="chip-item"
           [class.active]="quickChip() === '6months'"
           (click)="selectQuickChip('6months')"
         >
-          <span>📅 6 Mesi</span>
+          <span>{{ t().CHIP_6MONTHS }}</span>
         </button>
         <button
           class="chip-item"
           [class.active]="quickChip() === 'released'"
           (click)="selectQuickChip('released')"
         >
-          <span>✨ Rilasciate</span>
+          <span>{{ t().CHIP_RELEASED }}</span>
         </button>
         <button
           class="chip-item"
           [class.active]="quickChip() === 'all'"
           (click)="selectQuickChip('all')"
         >
-          <span>🌐 Tutti i Set</span>
+          <span>{{ t().CHIP_ALL_SETS }}</span>
         </button>
         <button
           class="chip-item chip-old-school"
           [class.active]="quickChip() === 'old-school'"
           (click)="selectQuickChip('old-school')"
         >
-          <span>🏛️ Old School</span>
+          <span>{{ t().CHIP_OLD_SCHOOL }}</span>
         </button>
       </div>
     </div>
@@ -95,8 +95,8 @@
         <div class="d-flex align-items-center justify-content-between gap-3 text-center old-school-title-row">
           <span class="old-school-crest fs-4">⚜️</span>
           <div>
-            <h3 class="old-school-title fs-4 fw-bolder m-0">Archivio Old School</h3>
-            <p class="old-school-sub m-0 mt-1 small">Espansioni con il <strong>bordo classico</strong> — dal 1993 all'estate 2003, prima dell'introduzione del nuovo frame con la <strong>8th Edition</strong></p>
+            <h3 class="old-school-title fs-4 fw-bolder m-0">{{ t().OLD_SCHOOL_ARCHIVE_TITLE }}</h3>
+            <p class="old-school-sub m-0 mt-1 small">{{ t().OLD_SCHOOL_ARCHIVE_SUB }}</p>
           </div>
           <span class="old-school-crest fs-4">⚜️</span>
         </div>
@@ -136,7 +136,7 @@
           >
             <!-- OLD SCHOOL BADGE -->
             @if (exp.isOldSchool && quickChip() === 'old-school') {
-              <div class="badge-banner old-school">🏛️ Old School</div>
+              <div class="badge-banner old-school">{{ t().CHIP_OLD_SCHOOL }}</div>
             } @else if (exp.isPreorder) {
               <div class="badge-banner preorder">
                 {{ t().STATUS_PREORDER }}
@@ -175,7 +175,7 @@
               <!-- FOOTER DETAILS -->
               <div class="d-flex align-items-center flex-wrap gap-2 card-footer-info">
                 <span class="badge rounded-pill count-pill">
-                  📦 {{ exp.count }} {{ exp.count === 1 ? 'prodotto' : 'prodotti' }}
+                  📦 {{ exp.count }} {{ exp.count === 1 ? t().PRODUCT_SINGULAR : t().PRODUCT_PLURAL }}
                 </span>
 
                 @if (exp.formattedDate) {
@@ -187,7 +187,7 @@
 
               <!-- TAP INVITATION PILL -->
               <div class="explore-action-pill mt-2">
-                <span>Esplora prodotti ➔</span>
+                <span>{{ t().EXPLORE_PRODUCTS_BTN }}</span>
               </div>
             </div>
           </div>

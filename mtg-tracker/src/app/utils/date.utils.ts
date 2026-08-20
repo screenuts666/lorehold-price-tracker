@@ -34,14 +34,30 @@ export function parseItalianDate(dateStr: string): Date {
  * Formats an ISO date string (YYYY-MM-DD) into full Italian text (e.g., '15 Gennaio 2024').
  */
 export function formatItalianDate(dateStr: string): string {
+  return formatLocalizedDate(dateStr, 'it');
+}
+
+/**
+ * Formats an ISO date string (YYYY-MM-DD) into localized text based on language (e.g. '13 November 2026' or '13 Novembre 2026').
+ */
+export function formatLocalizedDate(dateStr: string, lang: 'it' | 'en' = 'it'): string {
   if (!dateStr) return '';
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  const mesi = [
+
+  if (lang === 'en') {
+    const monthsEn = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    return `${d.getDate()} ${monthsEn[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  const monthsIt = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
     'Luglio', 'Agosto', 'Settembre', 'Ottobre', 'Novembre', 'Dicembre'
   ];
-  return `${d.getDate()} ${mesi[d.getMonth()]} ${d.getFullYear()}`;
+  return `${d.getDate()} ${monthsIt[d.getMonth()]} ${d.getFullYear()}`;
 }
 
 /**

@@ -95,6 +95,23 @@ export interface Translations {
   CURRENT_PORTFOLIO_VALUE: string;
   TOTAL_YIELD_RETURN: string;
   OVERALL_TIMELINE: string;
+  EXP_TOP_DEALS_BANNER: string;
+  EXP_DEALS_BANNER_SUB: string;
+  EXP_SEE_DEALS_BTN: string;
+  CHIP_PREORDER: string;
+  CHIP_3MONTHS: string;
+  CHIP_WITH_PRODUCTS: string;
+  CHIP_6MONTHS: string;
+  CHIP_RELEASED: string;
+  CHIP_ALL_SETS: string;
+  CHIP_OLD_SCHOOL: string;
+  OLD_SCHOOL_ARCHIVE_TITLE: string;
+  OLD_SCHOOL_ARCHIVE_SUB: string;
+  EXPLORE_PRODUCTS_BTN: string;
+  PRODUCT_SINGULAR: string;
+  PRODUCT_PLURAL: string;
+  DATE_NA: string;
+  EMPTY_NO_PRODUCTS: string;
 }
 
 const dictionary: Record<SupportedLanguage, Translations> = {
@@ -185,7 +202,24 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     TOTAL_CARDS_MONITORED: 'Totale Carte Monitorate',
     CURRENT_PORTFOLIO_VALUE: 'Valore Attuale Portafoglio',
     TOTAL_YIELD_RETURN: 'Rendimento Totale',
-    OVERALL_TIMELINE: 'Andamento Valore Totale Portafoglio nel Tempo'
+    OVERALL_TIMELINE: 'Andamento Valore Totale Portafoglio nel Tempo',
+    EXP_TOP_DEALS_BANNER: '🎯 TOP AFFARI',
+    EXP_DEALS_BANNER_SUB: 'Scopri i prodotti sigillati in offerta ed occasioni IA',
+    EXP_SEE_DEALS_BTN: 'Vedi Affari ➔',
+    CHIP_PREORDER: '🔥 Solo Prevendite',
+    CHIP_3MONTHS: '📅 Prossimi 3 Mesi',
+    CHIP_WITH_PRODUCTS: '📦 Con Prodotti',
+    CHIP_6MONTHS: '📅 6 Mesi',
+    CHIP_RELEASED: '✨ Rilasciate',
+    CHIP_ALL_SETS: '🌐 Tutti i Set',
+    CHIP_OLD_SCHOOL: '🏛️ Old School',
+    OLD_SCHOOL_ARCHIVE_TITLE: 'Archivio Old School',
+    OLD_SCHOOL_ARCHIVE_SUB: "Espansioni con il bordo classico — dal 1993 all'estate 2003, prima dell'introduzione del nuovo frame con la 8th Edition",
+    EXPLORE_PRODUCTS_BTN: 'Esplora prodotti ➔',
+    PRODUCT_SINGULAR: 'prodotto',
+    PRODUCT_PLURAL: 'prodotti',
+    DATE_NA: 'Data N/D',
+    EMPTY_NO_PRODUCTS: 'Nessun prodotto trovato'
   },
   en: {
     HUB_TAB: 'EXPANSIONS HUB',
@@ -274,7 +308,24 @@ const dictionary: Record<SupportedLanguage, Translations> = {
     TOTAL_CARDS_MONITORED: 'Total Cards Monitored',
     CURRENT_PORTFOLIO_VALUE: 'Current Portfolio Value',
     TOTAL_YIELD_RETURN: 'Total Yield / Return',
-    OVERALL_TIMELINE: 'Overall Selling Portfolio Value Timeline'
+    OVERALL_TIMELINE: 'Overall Selling Portfolio Value Timeline',
+    EXP_TOP_DEALS_BANNER: '🎯 TOP DEALS',
+    EXP_DEALS_BANNER_SUB: 'Discover discounted sealed products and AI bargain verdicts',
+    EXP_SEE_DEALS_BTN: 'View Deals ➔',
+    CHIP_PREORDER: '🔥 Pre-orders Only',
+    CHIP_3MONTHS: '📅 Next 3 Months',
+    CHIP_WITH_PRODUCTS: '📦 With Products',
+    CHIP_6MONTHS: '📅 6 Months',
+    CHIP_RELEASED: '✨ Released Only',
+    CHIP_ALL_SETS: '🌐 All Sets',
+    CHIP_OLD_SCHOOL: '🏛️ Old School',
+    OLD_SCHOOL_ARCHIVE_TITLE: 'Old School Archive',
+    OLD_SCHOOL_ARCHIVE_SUB: 'Expansions with the classic frame — from 1993 to summer 2003, before the 8th Edition modern frame',
+    EXPLORE_PRODUCTS_BTN: 'Explore Products ➔',
+    PRODUCT_SINGULAR: 'product',
+    PRODUCT_PLURAL: 'products',
+    DATE_NA: 'Date N/A',
+    EMPTY_NO_PRODUCTS: 'No products found'
   }
 };
 

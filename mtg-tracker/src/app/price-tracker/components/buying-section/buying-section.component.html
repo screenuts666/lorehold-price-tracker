@@ -334,7 +334,7 @@
 @if (products().length === 0) {
   <app-empty-state
     icon="📦"
-    title="Nessun prodotto trovato"
-    description="Non ci sono prodotti sigillati da mostrare con le impostazioni o i filtri attuali. Prova a selezionare altre tipologie nella barra in alto."
+    [title]="langService.t().EMPTY_NO_PRODUCTS"
+    [description]="langService.currentLang() === 'it' ? 'Non ci sono prodotti sigillati da mostrare con le impostazioni o i filtri attuali. Prova a selezionare altre tipologie nella barra in alto.' : 'There are no sealed products to display with current filter settings. Try adjusting your category filters above.'"
   ></app-empty-state>
 }
