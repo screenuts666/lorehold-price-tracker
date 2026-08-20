@@ -1,74 +1,67 @@
-<ion-header [translucent]="false" style="box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4); z-index: 1000;">
-  <ion-toolbar style="--background: #090d16; border-bottom: 1px solid rgba(255, 255, 255, 0.06); --padding-top: 8px; --padding-bottom: 8px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; gap: 16px; padding: 4px 16px; flex-wrap: wrap;">
+<ion-header [translucent]="false" class="main-header">
+  <ion-toolbar class="header-toolbar">
+    <div class="d-flex align-items-center justify-content-between w-100 gap-2 px-2 py-1">
       <!-- Title & Brand -->
-      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-        <img src="assets/icon/favicon.png" style="height: 28px; width: 28px; border-radius: 6px; box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);" />
-        <span class="gradient-title" style="font-size: 1.25rem; font-weight: 800;">Lorehold Price Tracker</span>
+      <div class="d-flex align-items-center gap-2 flex-shrink-0 header-brand">
+        <img src="assets/icon/favicon.png" alt="Lorehold Logo" class="app-logo" />
+        <span class="gradient-title header-app-title fw-bolder">Lorehold Price Tracker</span>
       </div>
 
       <!-- Inline Segment Pills (Desktop Only) -->
-      <div class="hide-on-mobile" style="flex-grow: 1; display: flex; justify-content: center; min-width: 320px; max-width: 620px;">
-        <div style="display: flex; width: 100%; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 3px;">
+      <div class="d-none d-lg-flex justify-content-center flex-grow-1 desktop-nav-wrap">
+        <div class="nav-pills-bar d-flex w-100">
           <!-- HOME BUTTON (EXPANSIONS HUB) -->
           <button
-            (click)="activeSection = 'expansions-hub'; selectedExpansionForDetail = ''; onSezioneChange();"
-            [style.background]="(activeSection === 'expansions-hub' || activeSection === 'expansion-detail') ? 'linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.2))' : 'transparent'"
-            [style.border-color]="(activeSection === 'expansions-hub' || activeSection === 'expansion-detail') ? 'rgba(139, 92, 246, 0.3)' : 'transparent'"
-            [style.box-shadow]="(activeSection === 'expansions-hub' || activeSection === 'expansion-detail') ? 'inset 0 1px 1px rgba(255, 255, 255, 0.1)' : 'none'"
-            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 16px; border: 1px solid transparent; color: #cbd5e1; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.3s ease; outline: none;"
+            (click)="onSezioneChange('expansions-hub')"
+            class="nav-pill-btn d-flex align-items-center justify-content-center gap-2"
+            [class.active-hub]="activeSection() === 'expansions-hub' || activeSection() === 'expansion-detail'"
           >
-            <ion-icon name="apps-outline" [style.color]="(activeSection === 'expansions-hub' || activeSection === 'expansion-detail') ? '#a78bfa' : '#64748b'"></ion-icon>
-            <span [style.color]="(activeSection === 'expansions-hub' || activeSection === 'expansion-detail') ? '#f8fafc' : '#94a3b8'">{{ t.HUB_TAB }}</span>
+            <ion-icon name="apps-outline"></ion-icon>
+            <span>{{ t().HUB_TAB }}</span>
           </button>
 
           <!-- ALL SEALED PRODUCTS TAB -->
           <button
-            (click)="activeSection = 'all-sealed'; onSezioneChange();"
-            [style.background]="activeSection === 'all-sealed' ? 'linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.2))' : 'transparent'"
-            [style.border-color]="activeSection === 'all-sealed' ? 'rgba(56, 189, 248, 0.3)' : 'transparent'"
-            [style.box-shadow]="activeSection === 'all-sealed' ? 'inset 0 1px 1px rgba(255, 255, 255, 0.1)' : 'none'"
-            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 16px; border: 1px solid transparent; color: #cbd5e1; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.3s ease; outline: none;"
+            (click)="onSezioneChange('all-sealed')"
+            class="nav-pill-btn d-flex align-items-center justify-content-center gap-2"
+            [class.active-sealed]="activeSection() === 'all-sealed'"
           >
-            <ion-icon name="cart-outline" [style.color]="activeSection === 'all-sealed' ? '#38bdf8' : '#64748b'"></ion-icon>
-            <span [style.color]="activeSection === 'all-sealed' ? '#f8fafc' : '#94a3b8'">{{ t.SEALED_TAB }}</span>
+            <ion-icon name="cart-outline"></ion-icon>
+            <span>{{ t().SEALED_TAB }}</span>
           </button>
 
           <!-- OCCASIONI & AFFARI TAB -->
           <button
-            (click)="activeSection = 'bargains'; onSezioneChange();"
-            [style.background]="activeSection === 'bargains' ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.25))' : 'transparent'"
-            [style.border-color]="activeSection === 'bargains' ? 'rgba(16, 185, 129, 0.4)' : 'transparent'"
-            [style.box-shadow]="activeSection === 'bargains' ? 'inset 0 1px 1px rgba(255, 255, 255, 0.1)' : 'none'"
-            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 16px; border: 1px solid transparent; color: #cbd5e1; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.3s ease; outline: none;"
+            (click)="onSezioneChange('bargains')"
+            class="nav-pill-btn d-flex align-items-center justify-content-center gap-2"
+            [class.active-bargains]="activeSection() === 'bargains'"
           >
-            <span style="font-size: 0.9rem;">🎯</span>
-            <span [style.color]="activeSection === 'bargains' ? '#34d399' : '#94a3b8'">{{ t.BARGAINS_TAB }}</span>
+            <span>🎯</span>
+            <span>{{ t().BARGAINS_TAB }}</span>
           </button>
 
           <!-- SEARCH BUTTON -->
           <button
-            (click)="activeSection = 'search'; onSezioneChange();"
-            [style.background]="activeSection === 'search' ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(37, 99, 235, 0.2))' : 'transparent'"
-            [style.border-color]="activeSection === 'search' ? 'rgba(59, 130, 246, 0.3)' : 'transparent'"
-            [style.box-shadow]="activeSection === 'search' ? 'inset 0 1px 1px rgba(255, 255, 255, 0.1)' : 'none'"
-            style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 16px; border: 1px solid transparent; color: #cbd5e1; font-weight: 700; font-size: 0.78rem; cursor: pointer; transition: all 0.3s ease; outline: none;"
+            (click)="onSezioneChange('search')"
+            class="nav-pill-btn d-flex align-items-center justify-content-center gap-2"
+            [class.active-search]="activeSection() === 'search'"
           >
-            <ion-icon name="search-outline" [style.color]="activeSection === 'search' ? '#60a5fa' : '#64748b'"></ion-icon>
-            <span [style.color]="activeSection === 'search' ? '#f8fafc' : '#94a3b8'">{{ t.SEARCH_TAB }}</span>
+            <ion-icon name="search-outline"></ion-icon>
+            <span>{{ t().SEARCH_TAB }}</span>
           </button>
         </div>
       </div>
 
       <!-- Action Tools (AI Scanner & View Toggle & Language Switcher) -->
-      <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-        <!-- LANGUAGE TOGGLE SWITCH (LOCAL STORAGE ONLY) -->
+      <div class="d-flex align-items-center gap-2 flex-shrink-0 header-actions-wrap">
+        <!-- LANGUAGE TOGGLE SWITCH -->
         <button
           (click)="langService.toggleLanguage()"
-          title="Cambia Lingua / Switch Language (Local)"
-          style="display: flex; align-items: center; gap: 4px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.15); color: #f8fafc; font-weight: 800; font-size: 0.75rem; padding: 6px 10px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease;"
+          title="Cambia Lingua / Switch Language"
+          class="lang-toggle-btn d-flex align-items-center gap-1"
         >
-          <span>{{ langService.currentLang() === 'it' ? '🇮🇹 IT' : '🇬🇧 EN' }}</span>
+          <span>{{ langService.currentLang() === 'it' ? '🇮🇹' : '🇬🇧' }}</span>
+          <span class="d-none d-sm-inline fw-bold">{{ langService.currentLang() === 'it' ? 'IT' : 'EN' }}</span>
         </button>
 
         <!-- TELEGRAM BOT BUTTON -->
@@ -77,31 +70,34 @@
           target="_blank"
           rel="noopener noreferrer"
           title="Apri il Bot Telegram AI"
-          style="display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(0, 136, 204, 0.25), rgba(41, 182, 246, 0.25)); border: 1px solid rgba(0, 136, 204, 0.5); color: #f8fafc; font-weight: 800; font-size: 0.78rem; padding: 6px 12px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(0, 136, 204, 0.25); text-decoration: none;"
+          class="telegram-btn d-flex align-items-center gap-1"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#29b6f6" style="flex-shrink: 0;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="#29b6f6">
             <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
           </svg>
-          <span>Bot AI</span>
+          <span class="d-none d-sm-inline fw-bold">Bot AI</span>
+          <span class="d-inline d-sm-none fw-bold">Bot</span>
         </a>
 
-
+        <!-- CLOUD AI SCAN BUTTON -->
         <button
           (click)="triggerAiAgent()"
-          style="display: flex; align-items: center; gap: 6px; background: linear-gradient(135deg, rgba(168, 85, 247, 0.3), rgba(147, 51, 234, 0.3)); border: 1px solid rgba(168, 85, 247, 0.5); color: #f8fafc; font-weight: 800; font-size: 0.78rem; padding: 6px 14px; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);"
+          title="Scansione IA Cloud"
+          class="cloud-scan-btn d-flex align-items-center gap-1"
         >
-          <ion-icon name="sparkles-outline" style="color: #c084fc; font-size: 15px;"></ion-icon>
-          <span>{{ t.CLOUD_SCAN }}</span>
+          <ion-icon name="sparkles-outline"></ion-icon>
+          <span class="d-none d-sm-inline fw-bold">{{ t().CLOUD_SCAN }}</span>
+          <span class="d-inline d-sm-none fw-bold">IA</span>
         </button>
 
-
-        @if (activeSection === 'all-sealed' || activeSection === 'bargains' || activeSection === 'expansion-detail') {
-          <div style="display: flex; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 2px;">
-            <ion-button fill="clear" size="small" (click)="viewMode = 'grid'; onVistaChange();" [color]="viewMode === 'grid' ? 'primary' : 'medium'" style="margin: 0; --padding-start: 6px; --padding-end: 6px; height: 26px;">
-              <ion-icon name="grid-outline" slot="icon-only" style="font-size: 14px;"></ion-icon>
+        <!-- VIEW MODE TOGGLE (GRID / TABLE) -->
+        @if (activeSection() === 'all-sealed' || activeSection() === 'bargains' || activeSection() === 'expansion-detail') {
+          <div class="view-mode-toggle d-flex">
+            <ion-button fill="clear" size="small" (click)="onVistaChange('grid')" [color]="viewMode() === 'grid' ? 'primary' : 'medium'" class="view-mode-btn">
+              <ion-icon name="grid-outline" slot="icon-only"></ion-icon>
             </ion-button>
-            <ion-button fill="clear" size="small" (click)="viewMode = 'table'; onVistaChange();" [color]="viewMode === 'table' ? 'primary' : 'medium'" style="margin: 0; --padding-start: 6px; --padding-end: 6px; height: 26px;">
-              <ion-icon name="list-outline" slot="icon-only" style="font-size: 14px;"></ion-icon>
+            <ion-button fill="clear" size="small" (click)="onVistaChange('table')" [color]="viewMode() === 'table' ? 'primary' : 'medium'" class="view-mode-btn">
+              <ion-icon name="list-outline" slot="icon-only"></ion-icon>
             </ion-button>
           </div>
         }
@@ -110,67 +106,67 @@
   </ion-toolbar>
 
   <!-- ELEGANT 2-ROW GLOBAL FILTER TOOLBAR WITH MOBILE ACCORDION -->
-  @if (activeSection === 'all-sealed' || activeSection === 'bargains' || activeSection === 'expansion-detail') {
+  @if (activeSection() === 'all-sealed' || activeSection() === 'bargains' || activeSection() === 'expansion-detail') {
     <!-- MOBILE ACCORDION TOGGLE BUTTON (VISIBLE ON MOBILE ONLY) -->
-    <div class="mobile-filter-accordion-toggle" (click)="toggleMobileFilters()">
-      <div style="display: flex; align-items: center; gap: 8px;">
-        <ion-icon name="funnel-outline" style="color: #38bdf8; font-size: 16px;"></ion-icon>
-        <span>Filtri & Opzioni Sezione</span>
-        @if (activeFilterCount > 0) {
-          <span class="active-filter-badge">{{ activeFilterCount }} attivi</span>
+    <div class="d-flex d-lg-none mobile-filter-accordion-toggle" (click)="toggleMobileFilters()">
+      <div class="d-flex align-items-center gap-2 accordion-left">
+        <ion-icon name="funnel-outline"></ion-icon>
+        <span class="fw-bold">{{ t().FILTER_DRAWER_TITLE }}</span>
+        @if (activeFilterCount() > 0) {
+          <span class="badge rounded-pill active-filter-badge">{{ activeFilterCount() }} {{ t().ACTIVE_FILTERS }}</span>
         }
       </div>
-      <div style="display: flex; align-items: center; gap: 6px;">
-        <span style="font-size: 0.72rem; color: #94a3b8;">{{ showMobileFilters ? 'Nascondi' : 'Mostra' }}</span>
-        <ion-icon [name]="showMobileFilters ? 'chevron-up-outline' : 'chevron-down-outline'" style="color: #38bdf8; font-size: 16px;"></ion-icon>
+      <div class="d-flex align-items-center gap-1 accordion-right">
+        <span class="toggle-state-text">{{ showMobileFilters() ? t().HIDE : t().SHOW }}</span>
+        <ion-icon [name]="showMobileFilters() ? 'chevron-up-outline' : 'chevron-down-outline'"></ion-icon>
       </div>
     </div>
 
     <!-- FILTER CONTAINER (COLLAPSIBLE ON MOBILE) -->
-    <div class="filter-bar-container" [class.show-mobile-filters]="showMobileFilters">
+    <div class="filter-bar-container" [class.show-mobile-filters]="showMobileFilters()">
       <!-- ROW 1: SEARCH & MAIN DROPDOWNS & MIN/MAX PRICE -->
-      <div class="filter-row-1" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; width: 100%;">
-        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap; flex-grow: 1;">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100 filter-row-1">
+        <div class="d-flex align-items-center flex-wrap flex-grow-1 gap-2 filter-controls-group">
           <!-- SEARCH FIELD -->
-          <div style="position: relative; min-width: 180px; flex-grow: 1; max-width: 280px;">
+          <div class="search-field-wrap flex-grow-1">
             <input
               type="text"
-              [(ngModel)]="searchSealedQuery"
-              (ngModelChange)="onFiltroChange()"
-              placeholder="🔍 Cerca prodotto o set..."
-              style="width: 100%; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; color: #f8fafc; font-size: 0.82rem; padding: 7px 12px; outline: none; font-weight: 500; transition: all 0.2s ease;"
+              [value]="searchSealedQuery()"
+              (input)="onSearchSealedInput($event)"
+              [placeholder]="t().SEARCH_SEALED"
+              class="form-control form-control-sm search-input"
             />
           </div>
 
           <!-- MIN / MAX PRICE FILTERS -->
-          <div style="display: flex; align-items: center; gap: 6px; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; padding: 4px 10px;">
-            <span style="font-size: 0.75rem; color: #cbd5e1; font-weight: 700;">Prezzo:</span>
+          <div class="d-flex align-items-center gap-2 price-filter-group">
+            <span class="price-label fw-bold">{{ t().PRICE_LABEL }}</span>
             <input
               type="number"
-              [(ngModel)]="minPriceFilter"
-              (ngModelChange)="onFiltroChange()"
-              placeholder="Min €"
-              style="width: 60px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #38bdf8; font-size: 0.78rem; font-weight: 700; text-align: center; outline: none; padding: 3px 4px;"
+              [value]="minPriceFilter() ?? ''"
+              (input)="onMinPriceInput($event)"
+              [placeholder]="t().MIN_PRICE"
+              class="form-control form-control-sm price-input"
             />
-            <span style="color: #64748b; font-size: 0.75rem;">-</span>
+            <span class="price-separator">-</span>
             <input
               type="number"
-              [(ngModel)]="maxPriceFilter"
-              (ngModelChange)="onFiltroChange()"
-              placeholder="Max €"
-              style="width: 60px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; color: #38bdf8; font-size: 0.78rem; font-weight: 700; text-align: center; outline: none; padding: 3px 4px;"
+              [value]="maxPriceFilter() ?? ''"
+              (input)="onMaxPriceInput($event)"
+              [placeholder]="t().MAX_PRICE"
+              class="form-control form-control-sm price-input"
             />
           </div>
 
-          <!-- EXPANSION SELECTOR (HIDDEN IN EXPANSION DETAIL TO PREVENT CONFUSION) -->
-          @if (activeSection !== 'expansion-detail') {
+          <!-- EXPANSION SELECTOR -->
+          @if (activeSection() !== 'expansion-detail') {
             <select
-              [(ngModel)]="selectedExpansionFilter"
-              (ngModelChange)="onFiltroChange()"
-              style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; color: #f8fafc; font-size: 0.82rem; padding: 7px 12px; outline: none; font-weight: 600; cursor: pointer; min-width: 150px;"
+              [value]="selectedExpansionFilter()"
+              (change)="onExpansionFilterChange($event)"
+              class="form-select form-select-sm filter-select expansion-select"
             >
-              <option value="all">Tutte le Espansioni</option>
-              @for (exp of uniqueExpansions; track exp) {
+              <option value="all">{{ t().ALL_EXPANSIONS }}</option>
+              @for (exp of uniqueExpansions(); track exp) {
                 <option [value]="exp">{{ exp }}</option>
               }
             </select>
@@ -178,131 +174,160 @@
 
           <!-- TYPE SELECTOR -->
           <select
-            [(ngModel)]="selectedTypeFilter"
-            (ngModelChange)="onFiltroChange()"
-            style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; color: #f8fafc; font-size: 0.82rem; padding: 7px 12px; outline: none; font-weight: 600; cursor: pointer; min-width: 140px;"
+            [value]="selectedTypeFilter()"
+            (change)="onTypeFilterChange($event)"
+            class="form-select form-select-sm filter-select"
           >
-            <option value="all">Tutti i Tipi Sigillato</option>
-            @for (type of uniqueTypes; track type) {
+            <option value="all">{{ t().ALL_TYPES }}</option>
+            @for (type of uniqueTypes(); track type) {
               <option [value]="type">{{ type }}</option>
             }
           </select>
 
           <!-- VERDICT FILTER SELECTOR -->
           <select
-            [(ngModel)]="selectedVerdictFilter"
-            (ngModelChange)="onFiltroChange()"
-            style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; color: #f8fafc; font-size: 0.82rem; padding: 7px 12px; outline: none; font-weight: 600; cursor: pointer; min-width: 140px;"
+            [value]="selectedVerdictFilter()"
+            (change)="onVerdictFilterChange($event)"
+            class="form-select form-select-sm filter-select"
           >
-            <option value="all">Tutti i Verdetti IA</option>
-            <option value="COMPRA">🟢 COMPRA SUBITO</option>
-            <option value="ASPETTA">🟡 ASPETTA</option>
-            <option value="SOVRAPPREZZO">🔴 SOVRAPPREZZO / NON CONVENIENTE</option>
+            <option value="all">{{ t().ALL_VERDICTS }}</option>
+            <option value="COMPRA">{{ t().VERDICT_BUY }}</option>
+            <option value="ASPETTA">{{ t().VERDICT_WAIT }}</option>
+            <option value="SOVRAPPREZZO">{{ t().VERDICT_OVERPRICED }}</option>
           </select>
         </div>
 
-        <!-- SORT SELECTOR (FAR RIGHT ALIGNED) -->
-        <div style="flex-shrink: 0;">
+        <!-- SORT SELECTOR -->
+        <div class="sort-select-wrap flex-shrink-0">
           <select
-            [(ngModel)]="sortMode"
-            (change)="onOrdinamentoChange()"
-            style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 10px; color: #f8fafc; font-size: 0.82rem; padding: 7px 12px; outline: none; font-weight: 600; cursor: pointer;"
+            [value]="sortMode()"
+            (change)="onOrdinamentoSelect($event)"
+            class="form-select form-select-sm sort-select"
           >
-            <option value="recent">Più Recenti</option>
-            <option value="price-ascending">Prezzo: Crescente</option>
-            <option value="price-descending">Prezzo: Decrescente</option>
-            <option value="variation-best">Variazione: Migliore (Ribasso)</option>
-            <option value="variation-worst">Variazione: Peggiore (Rialzo)</option>
+            <option value="recent">{{ t().SORT_RECENT }}</option>
+            <option value="price-ascending">{{ t().SORT_PRICE_ASC }}</option>
+            <option value="price-descending">{{ t().SORT_PRICE_DESC }}</option>
+            <option value="variation-best">{{ t().SORT_VAR_BEST }}</option>
+            <option value="variation-worst">{{ t().SORT_VAR_WORST }}</option>
           </select>
         </div>
       </div>
 
       <!-- ROW 2: TOGGLES & SMART THRESHOLDS PANEL -->
-      <div class="filter-row-2" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; width: 100%; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 8px;">
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 w-100 filter-row-2">
         <!-- TOGGLE ALL CATEGORIES PILLS BAR -->
-        <div style="display: flex; gap: 10px; align-items: center; background: rgba(30, 41, 59, 0.5); padding: 5px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.08); flex-wrap: wrap;">
-          <span style="font-size: 0.72rem; color: #94a3b8; font-weight: 700;">Visibilità Tipologie:</span>
+        <div class="d-flex align-items-center flex-wrap gap-2 category-visibility-bar">
+          <span class="bar-title fw-bold">{{ t().VISIBILITY_TITLE }}</span>
 
-          <label style="font-size: 0.72rem; color: #fbbf24; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-            <input type="checkbox" [(ngModel)]="includeCollectorBoxes" (ngModelChange)="onFiltroChange()" style="cursor: pointer; accent-color: #fbbf24;" />
-            <span>👑 Collector Box</span>
+          <!-- ENABLE ALL / DISABLE ALL BUTTONS -->
+          <button (click)="enableAllCategories()" title="Abilita tutte le tipologie" class="btn btn-sm pill-action-btn btn-all">
+            {{ t().BTN_ALL }}
+          </button>
+          <button (click)="disableAllCategories()" title="Disabilita tutte le tipologie" class="btn btn-sm pill-action-btn btn-none">
+            {{ t().BTN_NONE }}
+          </button>
+
+          <label class="category-checkbox-item collector">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includeCollectorBoxes()" (change)="onCategoryCheckboxChange('collector', $event)" />
+            <span>{{ t().CAT_COLLECTOR }}</span>
           </label>
 
-          <label style="font-size: 0.72rem; color: #38bdf8; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-            <input type="checkbox" [(ngModel)]="includePlayBoxes" (ngModelChange)="onFiltroChange()" style="cursor: pointer; accent-color: #38bdf8;" />
-            <span>⚡ Play Box</span>
+          <label class="category-checkbox-item play-box">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includePlayBoxes()" (change)="onCategoryCheckboxChange('play', $event)" />
+            <span>{{ t().CAT_PLAY }}</span>
           </label>
 
-          <label style="font-size: 0.72rem; color: #34d399; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-            <input type="checkbox" [(ngModel)]="includePrereleasePacks" (ngModelChange)="onFiltroChange()" style="cursor: pointer; accent-color: #34d399;" />
-            <span>🎁 Prerelease Pack</span>
+          <label class="category-checkbox-item prerelease">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includePrereleasePacks()" (change)="onCategoryCheckboxChange('prerelease', $event)" />
+            <span>{{ t().CAT_PRERELEASE }}</span>
           </label>
 
-          <label style="font-size: 0.72rem; color: #c084fc; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-            <input type="checkbox" [(ngModel)]="includeBundles" (ngModelChange)="onFiltroChange()" style="cursor: pointer; accent-color: #c084fc;" />
-            <span>💜 Bundle</span>
+          <label class="category-checkbox-item bundle">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includeBundles()" (change)="onCategoryCheckboxChange('bundle', $event)" />
+            <span>{{ t().CAT_BUNDLE }}</span>
           </label>
 
-          <label style="font-size: 0.72rem; color: #f472b6; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-            <input type="checkbox" [(ngModel)]="includeDraftNight" (ngModelChange)="onFiltroChange()" style="cursor: pointer; accent-color: #f472b6;" />
-            <span>🌸 Draft Night</span>
+          <label class="category-checkbox-item draft-night">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includeDraftNight()" (change)="onCategoryCheckboxChange('draft', $event)" />
+            <span>{{ t().CAT_DRAFT }}</span>
           </label>
 
-          <span style="color: rgba(255, 255, 255, 0.2);">|</span>
+          <span class="bar-divider">|</span>
 
-          <label style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-            <input type="checkbox" [(ngModel)]="includeSceneBoxes" (ngModelChange)="onFiltroChange()" style="cursor: pointer; accent-color: #8b5cf6;" />
-            <span>🎬 Scene Box</span>
+          <label class="category-checkbox-item neutral-category">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includeSceneBoxes()" (change)="onCategoryCheckboxChange('scene', $event)" />
+            <span>{{ t().CAT_SCENE }}</span>
           </label>
 
-          <label style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-            <input type="checkbox" [(ngModel)]="includeCommanderDecks" (ngModelChange)="onFiltroChange()" style="cursor: pointer; accent-color: #8b5cf6;" />
-            <span>🃏 Commander</span>
+          <label class="category-checkbox-item neutral-category">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includeCommanderDecks()" (change)="onCategoryCheckboxChange('commander', $event)" />
+            <span>{{ t().CAT_COMMANDER }}</span>
           </label>
 
-          <label style="font-size: 0.72rem; color: #cbd5e1; font-weight: 700; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none;">
-            <input type="checkbox" [(ngModel)]="includeStarterDecks" (ngModelChange)="onFiltroChange()" style="cursor: pointer; accent-color: #8b5cf6;" />
-            <span>🔰 Starter Decks</span>
+          <label class="category-checkbox-item neutral-category">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includeStarterDecks()" (change)="onCategoryCheckboxChange('starter', $event)" />
+            <span>{{ t().CAT_STARTER }}</span>
+          </label>
+
+          <label class="category-checkbox-item neutral-category">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="includeOther()" (change)="onCategoryCheckboxChange('other', $event)" />
+            <span>{{ t().CAT_OTHER }}</span>
+          </label>
+
+          <span class="bar-divider">|</span>
+
+          <!-- HIDE N/A PRICES TOGGLE -->
+          <label class="category-checkbox-item hide-na-badge" title="Nascondi prodotti senza prezzo o non disponibili (N/A)">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="hideNAPrices()" (change)="onHideNAChange($event)" />
+            <span>{{ t().HIDE_NA }}</span>
+          </label>
+
+          <span class="bar-divider">|</span>
+
+          <!-- SOLO OLD SCHOOL FILTER TOGGLE -->
+          <label class="category-checkbox-item old-school-toggle" title="Mostra solo prodotti ed espansioni Old School">
+            <input type="checkbox" class="form-check-input mt-0" [checked]="onlyOldSchool()" (change)="onOnlyOldSchoolChange($event)" />
+            <span>{{ t().ONLY_OLD_SCHOOL }}</span>
           </label>
         </div>
 
         <!-- CATEGORY SMART THRESHOLDS CONTROL PANEL -->
-        <div style="display: flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(5, 150, 105, 0.12)); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 4px 12px; flex-wrap: wrap;">
-          <span style="font-size: 0.75rem; color: #34d399; font-weight: 800; display: flex; align-items: center; gap: 4px;">
-            <span>🎯</span> Soglie Occasioni:
+        <div class="d-flex align-items-center flex-wrap gap-2 smart-thresholds-panel">
+          <span class="thresholds-title fw-bolder">
+            {{ t().BARGAIN_THRESHOLDS }}
           </span>
           
-          <div style="display: flex; align-items: center; gap: 3px;" title="Soglia Prerelease Pack">
-            <span style="font-size: 0.72rem; color: #c084fc; font-weight: 700;">Prerelease:</span>
+          <div class="d-flex align-items-center gap-1 threshold-field-group" title="Soglia Prerelease Pack">
+            <span class="threshold-name prerelease">Prerelease:</span>
             <input
               type="number"
-              [ngModel]="categoryThresholds['prerelease']"
-              (ngModelChange)="updateCategoryThreshold('prerelease', $event)"
-              style="width: 50px; background: rgba(0,0,0,0.5); border: 1px solid rgba(168, 85, 247, 0.4); border-radius: 6px; color: #fff; font-size: 0.75rem; font-weight: 800; text-align: center; outline: none; padding: 2px 4px;"
+              [value]="categoryThresholds()['prerelease']"
+              (input)="onCategoryThresholdChange('prerelease', $event)"
+              class="form-control form-control-sm threshold-input-control prerelease"
             />
-            <span style="font-size: 0.72rem; color: #c084fc; font-weight: 800;">€</span>
+            <span class="threshold-unit prerelease">€</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 3px;" title="Soglia Play/Draft Box">
-            <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 700;">Play Box:</span>
+          <div class="d-flex align-items-center gap-1 threshold-field-group" title="Soglia Play/Draft Box">
+            <span class="threshold-name play-box">Play Box:</span>
             <input
               type="number"
-              [ngModel]="categoryThresholds['play-box']"
-              (ngModelChange)="updateCategoryThreshold('play-box', $event)"
-              style="width: 54px; background: rgba(0,0,0,0.5); border: 1px solid rgba(56, 189, 248, 0.4); border-radius: 6px; color: #fff; font-size: 0.75rem; font-weight: 800; text-align: center; outline: none; padding: 2px 4px;"
+              [value]="categoryThresholds()['play-box']"
+              (input)="onCategoryThresholdChange('play-box', $event)"
+              class="form-control form-control-sm threshold-input-control play-box"
             />
-            <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 800;">€</span>
+            <span class="threshold-unit play-box">€</span>
           </div>
 
-          <div style="display: flex; align-items: center; gap: 3px;" title="Soglia Collector Box">
-            <span style="font-size: 0.72rem; color: #f472b6; font-weight: 700;">Collector:</span>
+          <div class="d-flex align-items-center gap-1 threshold-field-group" title="Soglia Collector Box">
+            <span class="threshold-name collector">Collector:</span>
             <input
               type="number"
-              [ngModel]="categoryThresholds['collector-box']"
-              (ngModelChange)="updateCategoryThreshold('collector-box', $event)"
-              style="width: 58px; background: rgba(0,0,0,0.5); border: 1px solid rgba(244, 114, 182, 0.4); border-radius: 6px; color: #fff; font-size: 0.75rem; font-weight: 800; text-align: center; outline: none; padding: 2px 4px;"
+              [value]="categoryThresholds()['collector-box']"
+              (input)="onCategoryThresholdChange('collector-box', $event)"
+              class="form-control form-control-sm threshold-input-control collector"
             />
-            <span style="font-size: 0.72rem; color: #f472b6; font-weight: 800;">€</span>
+            <span class="threshold-unit collector">€</span>
           </div>
         </div>
       </div>
@@ -310,140 +335,150 @@
   }
 </ion-header>
 
-<ion-content [fullscreen]="true" style="--background: #090d16;">
+<ion-content [fullscreen]="true">
   <!-- GLOBAL SPINNER LOADER -->
-  @if (loading) {
-    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 350px; color: #94a3b8;">
-      <ion-icon name="sparkles-outline" style="font-size: 48px; margin-bottom: 14px; color: #a78bfa; animation: pulse 1.8s infinite;"></ion-icon>
-      <h3 style="font-weight: 700; color: #f8fafc;">Caricamento in corso...</h3>
+  @if (loading()) {
+    <div class="d-flex flex-column align-items-center justify-content-center global-loading-container">
+      <ion-icon name="sparkles-outline" class="loading-sparkle-icon"></ion-icon>
+      <h3 class="loading-title">Caricamento in corso...</h3>
     </div>
   }
 
   <!-- EXPANSIONS HUB (HOME) -->
-  @if (activeSection === 'expansions-hub' && !loading) {
+  @if (activeSection() === 'expansions-hub' && !loading()) {
     <app-expansions-hub
-      [products]="products"
-      (onSelectExpansion)="openExpansionDetail($event)"
+      [products]="products()"
+      (expansionSelected)="openExpansionDetail($event)"
+      (jumpToBargains)="onSezioneChange('bargains')"
     ></app-expansions-hub>
   }
 
   <!-- EXPANSION DETAIL (REUSES BUYING SECTION UI BUT WITHOUT INPUTS) -->
-  @if (activeSection === 'expansion-detail' && !loading) {
-    <div style="padding: 16px 24px;">
+  @if (activeSection() === 'expansion-detail' && !loading()) {
+    <div class="container-fluid px-3 py-3 expansion-detail-wrap">
       <!-- TOP NAVIGATION BAR INSIDE EXPANSION -->
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 16px 20px; background: rgba(30, 41, 59, 0.6); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 4px 20px rgba(0,0,0,0.3); flex-wrap: wrap; gap: 16px;">
-        <div style="display: flex; align-items: center; gap: 16px;">
-          <button 
-            (click)="backToHub()" 
-            style="display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(99, 102, 241, 0.3)); border: 1px solid rgba(139, 92, 246, 0.5); color: #ffffff; font-weight: 800; font-size: 0.9rem; padding: 10px 18px; border-radius: 10px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);"
-          >
-            <span style="font-size: 1.1rem;">←</span>
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 expansion-detail-header-card">
+        <div class="d-flex align-items-center gap-3 header-left">
+          <button (click)="backToHub()" class="btn btn-primary back-btn">
+            <span>←</span>
             <span>Torna all'Hub Espansioni</span>
           </button>
 
-          <h2 style="color: #f8fafc; font-weight: 800; font-size: 1.6rem; margin: 0;">
-            {{ selectedExpansionForDetail }}
+          <h2 class="m-0 expansion-title">
+            {{ selectedExpansionForDetail() }}
           </h2>
         </div>
 
-        <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-          @if (getExpansionReleaseDate(selectedExpansionForDetail)) {
-            <span style="font-size: 0.78rem; color: #f59e0b; font-weight: 800; background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.25)); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.4); display: flex; align-items: center; gap: 6px;">
-              <span>🗓️</span> Data Uscita Ufficiale: <strong>{{ getExpansionReleaseDate(selectedExpansionForDetail) }}</strong>
+        <div class="d-flex align-items-center flex-wrap gap-2 header-right-badges">
+          @if (getExpansionReleaseDate(selectedExpansionForDetail())) {
+            <span class="badge release-date-badge">
+              <span>🗓️</span> Data Uscita: <strong>{{ getExpansionReleaseDate(selectedExpansionForDetail()) }}</strong>
             </span>
           }
 
-          <span style="font-size: 0.78rem; color: #38bdf8; font-weight: 800; background: rgba(56, 189, 248, 0.15); padding: 6px 12px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3);">
-            📦 {{ productsForExpansionDetail.length }} Prodotti Sigillati
+          <span class="badge products-count-badge">
+            📦 {{ productsForExpansionDetail().length }} Prodotti Sigillati
           </span>
 
-          <button 
-            (click)="triggerRePullExpansion()"
-            style="display: flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.5); color: #34d399; font-weight: 800; font-size: 0.8rem; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;"
-          >
+          <button (click)="triggerRePullExpansion()" class="btn btn-outline-success repull-btn">
             <span>🔄</span>
-            <span>Riscansiona Espansione (Re-pull)</span>
+            <span>Riscansiona Espansione</span>
           </button>
         </div>
       </div>
       <app-buying-section
-        [products]="productsForExpansionDetail"
-        [viewMode]="viewMode"
-        [gridColumns]="gridColumns"
+        [products]="productsForExpansionDetail()"
+        [viewMode]="viewMode()"
+        [gridColumns]="gridColumns()"
         [isDetailView]="true"
-        (onRemove)="removeProduct($event)"
-        (onUpdate)="saveProduct($event)"
-        (onEditFilters)="openEditFilters($event)"
+        (productRemoved)="removeProduct($event)"
+        (productUpdated)="saveProduct($event)"
+        (filtersEdited)="openEditFilters($event)"
       ></app-buying-section>
     </div>
   }
 
   <!-- ALL SEALED PRODUCTS TAB -->
-  @if (activeSection === 'all-sealed' && !loading) {
+  @if (activeSection() === 'all-sealed' && !loading()) {
+    @if (onlyOldSchool()) {
+      <app-old-school-banner
+        [title]="t().OLD_SCHOOL_BANNER_TITLE"
+        [description]="t().OLD_SCHOOL_BANNER_DESC"
+        (dismiss)="onlyOldSchool.set(false)"
+      ></app-old-school-banner>
+    }
     <app-buying-section
-      [products]="allSealedProducts"
-      [viewMode]="viewMode"
-      [gridColumns]="gridColumns"
-      (onRemove)="removeProduct($event)"
-      (onUpdate)="saveProduct($event)"
-      (onEditFilters)="openEditFilters($event)"
+      [products]="allSealedProducts()"
+      [viewMode]="viewMode()"
+      [gridColumns]="gridColumns()"
+      (productRemoved)="removeProduct($event)"
+      (productUpdated)="saveProduct($event)"
+      (filtersEdited)="openEditFilters($event)"
     ></app-buying-section>
   }
 
   <!-- OCCASIONI & AFFARI TAB -->
-  @if (activeSection === 'bargains' && !loading) {
-    <div style="padding: 16px 24px;">
-      <div style="margin-bottom: 20px; padding: 16px 20px; background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-        <div>
-          <h2 style="color: #34d399; font-size: 1.4rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 8px;">
-            <span>🎯</span> Radar Occasioni & Affari Da Comprare
+  @if (activeSection() === 'bargains' && !loading()) {
+    <div class="container-fluid px-3 py-3 bargains-view-wrap">
+      @if (onlyOldSchool()) {
+        <app-old-school-banner
+          [title]="t().OLD_SCHOOL_BARGAINS_TITLE"
+          [description]="t().OLD_SCHOOL_BARGAINS_DESC"
+          [inBargains]="true"
+          (dismiss)="onlyOldSchool.set(false)"
+        ></app-old-school-banner>
+      }
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-4 bargains-hero-card">
+        <div class="hero-text">
+          <h2 class="m-0 hero-title">
+            <span>🎯</span> {{ t().BARGAINS_HERO_TITLE }}
           </h2>
-          <p style="color: #cbd5e1; font-size: 0.85rem; margin: 4px 0 0 0;">
-            Mostra tutti i prodotti sigillati raccomandati dall'IA Gemini con verdetto <strong>COMPRA</strong> oppure con prezzo inferiore alle tue <strong>soglie smart per categoria</strong>.
+          <p class="m-0 mt-1 hero-desc">
+            {{ t().BARGAINS_HERO_DESC }}
           </p>
         </div>
-        <span style="font-size: 0.85rem; font-weight: 800; color: #34d399; background: rgba(16, 185, 129, 0.2); padding: 6px 14px; border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.4);">
-          🔥 {{ bargainProducts.length }} Affari Trovati
+        <span class="badge rounded-pill bargains-count-badge">
+          🔥 {{ bargainProducts().length }} {{ t().BARGAINS_FOUND }}
         </span>
       </div>
 
       <app-buying-section
-        [products]="bargainProducts"
-        [viewMode]="viewMode"
-        [gridColumns]="gridColumns"
+        [products]="bargainProducts()"
+        [viewMode]="viewMode()"
+        [gridColumns]="gridColumns()"
         [isDetailView]="true"
-        (onRemove)="removeProduct($event)"
-        (onUpdate)="saveProduct($event)"
-        (onEditFilters)="openEditFilters($event)"
+        (productRemoved)="removeProduct($event)"
+        (productUpdated)="saveProduct($event)"
+        (filtersEdited)="openEditFilters($event)"
       ></app-buying-section>
     </div>
   }
 
   <!-- SEARCH SECTION -->
-  @if (activeSection === 'search' && !loading) {
+  @if (activeSection() === 'search' && !loading()) {
     <app-search-section
-      (onSelect)="handleCardSelected($event)"
+      (cardSelected)="handleCardSelected($event)"
     ></app-search-section>
   }
 
   <!-- REUSABLE CONFIGURATION FILTERS MODAL -->
   <app-filter-modal
-    [isOpen]="showFilterModal"
-    [product]="selectedProduct"
-    [foilFilter]="foilFilter"
-    [langFilter]="langFilter"
-    [condFilter]="condFilter"
-    [intentFilter]="intentFilter"
-    (onClose)="handleCloseFilters()"
-    (onSave)="handleSaveFilters($event)"
+    [isOpen]="showFilterModal()"
+    [product]="selectedProduct()"
+    [foilFilter]="foilFilter()"
+    [langFilter]="langFilter()"
+    [condFilter]="condFilter()"
+    [intentFilter]="intentFilter()"
+    (closed)="handleCloseFilters()"
+    (saved)="handleSaveFilters($event)"
   ></app-filter-modal>
 
   <!-- FIXED MOBILE BOTTOM NAVIGATION BAR -->
-  <div class="mobile-bottom-nav">
+  <div class="d-flex d-lg-none mobile-bottom-nav">
     <button
       class="nav-tab-item"
-      [class.active]="activeSection === 'expansions-hub' || activeSection === 'expansion-detail'"
-      (click)="activeSection = 'expansions-hub'; selectedExpansionForDetail = ''; onSezioneChange();"
+      [class.active]="activeSection() === 'expansions-hub' || activeSection() === 'expansion-detail'"
+      (click)="onSezioneChange('expansions-hub')"
     >
       <ion-icon name="apps-outline"></ion-icon>
       <span>Hub Set</span>
@@ -451,8 +486,8 @@
 
     <button
       class="nav-tab-item"
-      [class.active]="activeSection === 'all-sealed'"
-      (click)="activeSection = 'all-sealed'; onSezioneChange();"
+      [class.active]="activeSection() === 'all-sealed'"
+      (click)="onSezioneChange('all-sealed')"
     >
       <ion-icon name="cart-outline"></ion-icon>
       <span>Prodotti</span>
@@ -460,8 +495,8 @@
 
     <button
       class="nav-tab-item"
-      [class.active]="activeSection === 'bargains'"
-      (click)="activeSection = 'bargains'; onSezioneChange();"
+      [class.active]="activeSection() === 'bargains'"
+      (click)="onSezioneChange('bargains')"
     >
       <span class="tab-emoji">🎯</span>
       <span>Affari</span>
@@ -469,12 +504,11 @@
 
     <button
       class="nav-tab-item"
-      [class.active]="activeSection === 'search'"
-      (click)="activeSection = 'search'; onSezioneChange();"
+      [class.active]="activeSection() === 'search'"
+      (click)="onSezioneChange('search')"
     >
       <ion-icon name="search-outline"></ion-icon>
       <span>Ricerca</span>
     </button>
   </div>
 </ion-content>
-

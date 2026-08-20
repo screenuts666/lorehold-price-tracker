@@ -1,382 +1,340 @@
 <!-- BUYING INPUTS -->
 @if (!isDetailView()) {
-  <div style="margin: 10px 12px 20px 12px;">
-    <div style="display: flex; gap: 12px; align-items: center; background: rgba(30, 41, 59, 0.25); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 4px 12px;">
-      <ion-icon name="cart-outline" style="color: #a78bfa; font-size: 20px;"></ion-icon>
+  <div class="container-fluid px-3 pt-2 pb-3 buying-input-container">
+    <div class="d-flex align-items-center gap-3 px-3 py-2 buying-input-bar">
+      <ion-icon name="cart-outline" class="cart-icon fs-5"></ion-icon>
       <ion-input
-        [ngModel]="urlInput()"
-        (ngModelChange)="urlInput.set($event)"
+        [value]="urlInput()"
+        (ionInput)="onUrlInput($event)"
         placeholder="Incolla URL CardTrader da monitorare..."
-        style="font-size: 0.85rem; color: #f8fafc;"
+        class="buying-native-input flex-grow-1"
         (keyup.enter)="add()"
       ></ion-input>
-      <ion-button (click)="add()" color="success" size="small" class="neon-btn" style="margin: 0; font-weight: 700;">
+      <ion-button (click)="add()" color="success" size="small" class="neon-btn add-btn m-0 fw-bold">
         Aggiungi
       </ion-button>
     </div>
   </div>
-  }
+}
 
-  <!-- GRID VIEW -->
-  @if (viewMode() === 'grid') {
-    @if (products().length > 0) {
-      <ion-grid>
-        <ion-row>
-          @for (item of products(); track item.id) {
-            <ion-col size="12" size-sm="12" [sizeMd]="gridColumns() === 3 ? 6 : 4" [sizeLg]="gridColumns() === 3 ? 4 : 3">
-              <ion-card
-                class="product-glass-card"
-                [class.expanded]="expandedCardId() === item.id"
-                (click)="toggleExpand(item.id, $event)"
-                style="display: flex; flex-direction: column; margin: 0 0 16px 0; padding: 16px; cursor: pointer;"
+<!-- GRID VIEW -->
+@if (viewMode() === 'grid') {
+  @if (products().length > 0) {
+    <div class="container-fluid px-2 px-md-3">
+      <div class="row g-3">
+        @for (item of products(); track item.id) {
+          <div [class]="gridColumns() === 3 ? 'col-12 col-md-6 col-lg-4' : 'col-12 col-md-6 col-lg-4 col-xl-3'">
+            <div
+              class="product-glass-card h-100 d-flex flex-column"
+              [class.expanded]="expandedCardId() === item.id"
+              (click)="toggleExpand(item.id, $event)"
+            >
+              <!-- ROW 1: THUMBNAIL (LEFT) + INFO (RIGHT) -->
+              <div class="d-flex align-items-start gap-3 w-100 card-header-flex">
+                <!-- INTERACTIVE THUMBNAIL -->
+                <a
+                  [href]="item.url || 'https://www.cardtrader.com/it/cards/' + item.id"
+                  target="_blank"
+                  (click)="$event.stopPropagation();"
+                  class="thumbnail-wrapper d-flex align-items-center justify-content-center flex-shrink-0"
+                  title="Clicca per aprire su CardTrader ↗"
                 >
-                <!-- ROW 1: THUMBNAIL (LEFT) + INFO (RIGHT) -->
-                <div class="card-header-flex" style="display: flex; gap: 14px; align-items: flex-start; width: 100%;">
-                  <!-- INTERACTIVE THUMBNAIL (CLICK TO OPEN CARDTRADER LINK DIRECTLY) -->
-                  <a
-                    [href]="item.url || 'https://www.cardtrader.com/it/cards/' + item.id"
-                    target="_blank"
-                    (click)="$event.stopPropagation();"
-                    class="thumbnail-wrapper"
-                    title="Clicca per aprire su CardTrader ↗"
-                  >
-                    @if (item.immagine) {
+                  @if (item.immagine) {
+                    <img
+                      [src]="item.immagine"
+                      referrerpolicy="no-referrer"
+                      class="product-img"
+                      alt="{{ item.nome }}"
+                    />
+                  } @else {
+                    <ion-icon name="image" class="text-secondary fs-3"></ion-icon>
+                  }
+                  <div class="thumbnail-overlay d-flex flex-column align-items-center justify-content-center gap-1">
+                    <ion-icon name="open-outline" class="fs-5"></ion-icon>
+                    <span>Apri ↗</span>
+                  </div>
+                </a>
+
+                <!-- INFO & HEADER -->
+                <div class="d-flex flex-column flex-grow-1 min-w-0 justify-content-between info-container">
+                  <div class="d-flex align-items-center justify-content-between w-100 mb-1 action-buttons-row">
+                    <span class="product-id-tag fw-bold">
+                      ID: {{ item.id }}
+                    </span>
+                    <!-- ACTION BUTTONS TOOLBAR -->
+                    <div class="d-flex align-items-center gap-1 action-btns-group" (click)="$event.stopPropagation();">
+                      <button class="action-btn-icon btn-funnel" (click)="editFilters(item)" title="Filtri Specifici">
+                        <ion-icon name="funnel-outline"></ion-icon>
+                      </button>
+                      <a [href]="item.url || 'https://www.cardtrader.com/it/cards/' + item.id" target="_blank" class="action-btn-icon btn-open" title="Apri CardTrader">
+                        <ion-icon name="open-outline"></ion-icon>
+                      </a>
+                      <button class="action-btn-icon btn-trash" (click)="remove(item.id)" title="Rimuovi">
+                        <ion-icon name="trash"></ion-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- BADGES ROW: SET & DYNAMIC CATEGORY -->
+                  <div class="d-flex align-items-center flex-wrap gap-2 mb-1 badges-row">
+                    @if (item.expansion) {
+                      <span class="set-name-badge text-truncate">
+                        {{ item.expansion }}
+                      </span>
+                    }
+                    @if (detectMtgType(item.nome).key !== 'single-card') {
+                      <span class="category-badge cat-{{ detectMtgType(item.nome).key }}">
+                        📦 {{ detectMtgType(item.nome).nameType }}
+                      </span>
+                    }
+                  </div>
+
+                  <!-- TITLE -->
+                  <h3 class="product-title m-0 mb-2 fw-bold text-truncate-2" [title]="item.nome">
+                    {{ item.nome }}
+                  </h3>
+
+                  <!-- ACTIVE FILTERS BADGES -->
+                  @if (item.foil !== null || item.lingua || item.condizione) {
+                    <div class="d-flex align-items-center flex-wrap gap-1 mb-2 filter-tags-row">
+                      @if (item.foil === true) {
+                        <span class="badge-foil">Foil</span>
+                      }
+                      @if (item.foil === false) {
+                        <span class="badge-normal">Normal</span>
+                      }
+                      @if (item.lingua) {
+                        <span class="badge-lang">{{ item.lingua | uppercase }}</span>
+                      }
+                      @if (item.condizione) {
+                        <span class="badge-cond">{{ item.condizione }}</span>
+                      }
+                    </div>
+                  }
+
+                  <!-- PRICE ROW -->
+                  <div class="d-flex align-items-baseline gap-2 price-row">
+                    <span class="current-price fw-bolder">
+                      {{ item.prezzoAttuale ? ('€' + (item.prezzoAttuale | number:'1.2-2')) : 'N/A' }}
+                    </span>
+                    @if (item.storico && item.storico.length > 1) {
+                      <span [class]="'badge variation-pill fw-bold ' + getVariationClass(item)">
+                        {{ calculateVariationText(item) }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- DYNAMIC SMART BARGAIN PULSE BANNER -->
+              @if (item.prezzoAttuale && item.prezzoAttuale > 0 && item.prezzoAttuale <= detectMtgType(item.nome).defaultThreshold) {
+                <div class="d-flex align-items-center gap-2 mt-2 bargain-banner">
+                  <span class="banner-icon">🎯</span>
+                  <span class="banner-text fw-bold">
+                    {{ getBargainBannerText(item) }}
+                  </span>
+                </div>
+              }
+
+              <!-- MOBILE DETAILS DRAWER -->
+              <div class="w-100 mobile-details-drawer" (click)="$event.stopPropagation();">
+                <!-- ROW 2: CONTROL DETAILS -->
+                <div class="d-flex align-items-center justify-content-between pt-2 mt-2 meta-dates-row">
+                  <span class="date-meta-item">
+                    {{ langService.t().INITIAL_PRICE }} <strong>€{{ item.storico && item.storico.length > 0 ? (item.storico[0].prezzo | number:'1.2-2') : 'N/D' }}</strong>
+                  </span>
+                  <span class="date-meta-item right">
+                    {{ langService.t().CHECKED }} <strong>{{ item.storico && item.storico.length > 0 ? item.storico[item.storico.length - 1].data : langService.t().NEVER }}</strong>
+                  </span>
+                </div>
+                <!-- ROW 3: SPARK CHART -->
+                <div class="spark-chart-container chart-container mt-2">
+                  @if (hasPriceVariation(item)) {
+                    <canvas [id]="'chart-acquisto-' + item.id"></canvas>
+                  } @else {
+                    <div class="stable-price-placeholder d-flex align-items-center justify-content-center p-2">
+                      <span class="d-flex align-items-center gap-2 fw-semibold">
+                        <span>⚖️</span> {{ langService.t().STABLE_PRICE }} (€{{ item.prezzoAttuale || (item.storico && item.storico.length > 0 ? item.storico[0].prezzo : 0) }})
+                      </span>
+                    </div>
+                  }
+                </div>
+                <!-- ROW 4: RECOMMENDATION DETAILS -->
+                <div class="pt-2 mt-2 recommendation-section">
+                  <app-market-advice-badge
+                    [suggestion]="getSuggestion(item)"
+                    [showExplanation]="true"
+                  ></app-market-advice-badge>
+                  <!-- CARDTRADER MARKET INSIGHTS -->
+                  @if (item.stock !== undefined || item.sellerCountry || item.avgTop5) {
+                    <div class="d-flex flex-column gap-2 pt-2 mt-2 market-metrics-list">
+                      @if (item.stock !== undefined) {
+                        <div class="d-flex align-items-center justify-content-between market-metric-pill">
+                          <span class="metric-label">{{ langService.t().MARKET_STOCK }}</span>
+                          <span class="metric-value fw-bold">📦 {{ item.stock || 0 }} {{ langService.t().UNITS }}</span>
+                        </div>
+                      }
+                      @if (item.sellerCountry) {
+                        <div class="d-flex align-items-center justify-content-between market-metric-pill">
+                          <span class="metric-label">{{ langService.t().SELLER_LOCATION }}</span>
+                          <span class="metric-value fw-bold text-uppercase">
+                            📍 {{ item.sellerCountry }} <span class="sub-info">({{ item.sellerType || langService.t().PRIVATE_SELLER }})</span>
+                          </span>
+                        </div>
+                      }
+                      @if (item.avgTop5) {
+                        <div class="d-flex align-items-center justify-content-between market-metric-pill">
+                          <span class="metric-label">{{ langService.t().AVG_TOP5 }}</span>
+                          <span class="metric-value success fw-bold">📊 €{{ item.avgTop5 | number:'1.2-2' }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+}
+
+<!-- TABLE VIEW -->
+@if (viewMode() === 'table') {
+  @if (products().length > 0) {
+    <div class="container-fluid px-2 px-md-3">
+      <div class="table-responsive glass-card mb-4 buying-table-card">
+        <table class="table table-dark table-hover align-middle mb-0 buying-table">
+          <thead>
+            <tr>
+              <th class="text-uppercase">Card</th>
+              <th class="text-uppercase">Details</th>
+              <th class="text-uppercase text-end">Initial Price</th>
+              <th class="text-uppercase text-end">Current Price</th>
+              <th class="text-uppercase text-end">Variation</th>
+              <th class="text-uppercase text-center">Market Advice</th>
+              <th class="text-uppercase text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of products(); track item.id) {
+              <tr class="table-row-hover">
+                <td>
+                  @if (item.immagine) {
+                    @if (detectMtgType(item.nome).key === 'single-card') {
                       <img
                         [src]="item.immagine"
                         referrerpolicy="no-referrer"
-                        class="product-img"
-                        style="max-width: 90%; max-height: 90%; object-fit: contain;"
+                        class="table-thumb-single"
+                        alt="{{ item.nome }}"
                       />
                     } @else {
-                      <ion-icon name="image" style="color: #475569; font-size: 28px;"></ion-icon>
-                    }
-                    <div class="thumbnail-overlay">
-                      <ion-icon name="open-outline" style="color: #38bdf8; font-size: 20px;"></ion-icon>
-                      <span>Apri ↗</span>
-                    </div>
-                  </a>
-
-                  <!-- INFO & HEADER -->
-                  <div class="info-container" style="display: flex; flex-direction: column; flex-grow: 1; min-width: 0; justify-content: space-between;">
-                    <div class="action-buttons-row" style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 6px;">
-                      <span style="font-size: 0.78rem; color: #a78bfa; font-weight: 700; letter-spacing: 0.5px; opacity: 0.9;">
-                        ID: {{ item.id }}
-                      </span>
-                      <!-- ACTION BUTTONS TOOLBAR -->
-                      <div style="display: flex; gap: 6px; align-items: center;" (click)="$event.stopPropagation();">
-                        <button class="action-btn-icon btn-funnel" (click)="editFilters(item)" title="Filtri Specifici">
-                          <ion-icon name="funnel-outline" style="font-size: 14px;"></ion-icon>
-                        </button>
-                        <a [href]="item.url || 'https://www.cardtrader.com/it/cards/' + item.id" target="_blank" class="action-btn-icon btn-open" title="Apri CardTrader">
-                          <ion-icon name="open-outline" style="font-size: 14px;"></ion-icon>
-                        </a>
-                        <button class="action-btn-icon btn-trash" (click)="remove(item.id)" title="Rimuovi">
-                          <ion-icon name="trash" style="font-size: 14px;"></ion-icon>
-                        </button>
+                      <div class="table-thumb-box d-flex align-items-center justify-content-center">
+                        <img [src]="item.immagine" referrerpolicy="no-referrer" alt="{{ item.nome }}" />
                       </div>
+                    }
+                  } @else {
+                    <div class="table-thumb-empty d-flex align-items-center justify-content-center">
+                      <ion-icon name="image"></ion-icon>
                     </div>
-
-                    <!-- BADGES ROW: SET & DYNAMIC CATEGORY -->
-                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 6px;">
-                      @if (item.expansion) {
-                        <span style="font-size: 0.78rem; color: #cbd5e1; font-weight: 700; background: rgba(255,255,255,0.08); padding: 3px 9px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.12); text-transform: uppercase; letter-spacing: 0.3px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                          {{ item.expansion }}
-                        </span>
+                  }
+                </td>
+                <td>
+                  <span class="table-product-name fw-bold">{{ item.nome }}</span>
+                  <span class="table-meta-text d-block mt-1">
+                    ID: {{ item.id }} @if (item.dataInserimento) {
+                      <span>• Added on {{ item.dataInserimento }}</span>
+                    }
+                    @if (item.expansion) {
+                      <span class="table-expansion-tag fw-bold text-uppercase">• {{ item.expansion }}</span>
+                    }
+                  </span>
+                  <!-- ACTIVE FILTERS BADGES -->
+                  @if (item.foil !== null || item.lingua || item.condizione) {
+                    <div class="d-flex align-items-center flex-wrap gap-1 mt-1 filter-tags-row">
+                      @if (item.foil === true) {
+                        <span class="badge-foil">Foil</span>
                       }
-                      @if (detectMtgType(item.nome).nameType !== 'Generico') {
-                        <span class="category-badge cat-{{ detectMtgType(item.nome).key }}">
-                          📦 {{ detectMtgType(item.nome).nameType }}
-                        </span>
+                      @if (item.foil === false) {
+                        <span class="badge-normal">Normal</span>
+                      }
+                      @if (item.lingua) {
+                        <span class="badge-lang">{{ item.lingua | uppercase }}</span>
+                      }
+                      @if (item.condizione) {
+                        <span class="badge-cond">{{ item.condizione }}</span>
                       }
                     </div>
-
-                    <!-- TITLE -->
-                    <h3 style="font-size: 1.15rem; font-weight: 700; color: #ffffff; margin: 4px 0 8px 0; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.3em;" [title]="item.nome">
-                      {{ item.nome }}
-                    </h3>
-
-                    <!-- ACTIVE FILTERS BADGES -->
-                    @if (item.foil !== null || item.lingua || item.condizione) {
-                      <div class="badges-row" style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
-                        @if (item.foil === true) {
-                          <span style="font-size: 0.72rem; font-weight: 800; color: #fff; background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">Foil</span>
-                        }
-                        @if (item.foil === false) {
-                          <span style="font-size: 0.72rem; font-weight: 700; color: #cbd5e1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">Normal</span>
-                        }
-                        @if (item.lingua) {
-                          <span style="font-size: 0.72rem; font-weight: 800; color: #3b82f6; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">{{ item.lingua | uppercase }}</span>
-                        }
-                        @if (item.condizione) {
-                          <span style="font-size: 0.72rem; font-weight: 800; color: #10b981; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 6px; text-transform: uppercase;">{{ item.condizione }}</span>
-                        }
-                      </div>
-                    }
-
-                    <!-- PRICE ROW -->
-                    <div class="price-row" style="display: flex; align-items: baseline; gap: 10px; margin-top: 2px;">
-                      <span style="font-size: 1.65rem; font-weight: 800; color: #10b981; letter-spacing: -0.5px;">
-                        {{ item.prezzoAttuale ? ('€' + (item.prezzoAttuale | number:'1.2-2')) : 'N/A' }}
-                      </span>
-                      @if (item.storico && item.storico.length > 1) {
-                        <span [style.color]="calculateVariationColor(item)" style="font-size: 0.85rem; font-weight: 800; background: rgba(255,255,255,0.08); padding: 3px 8px; border-radius: 6px;">
-                          {{ calculateVariationText(item) }}
-                        </span>
+                  }
+                  <!-- MARKET INSIGHTS -->
+                  @if (item.stock !== undefined || item.sellerCountry) {
+                    <div class="d-flex align-items-center flex-wrap gap-3 mt-1 text-muted small">
+                      @if (item.stock !== undefined) {
+                        <span class="text-light">📦 Stock: {{ item.stock }}</span>
+                      }
+                      @if (item.sellerCountry) {
+                        <span class="text-light text-uppercase">📍 Origin: {{ item.sellerCountry }} ({{ item.sellerType || 'private' }})</span>
+                      }
+                      @if (item.avgTop5) {
+                        <span class="text-success fw-bold">⚖️ Avg Top5: €{{ item.avgTop5 | number:'1.2-2' }}</span>
                       }
                     </div>
+                  }
+                </td>
+                <td class="text-end fw-semibold text-light">
+                  {{ item.storico && item.storico.length > 0 ? ('€' + (item.storico[0].prezzo | number:'1.2-2')) : 'N/A' }}
+                </td>
+                <td class="text-end text-success fw-bold fs-6">
+                  {{ item.prezzoAttuale ? ('€' + (item.prezzoAttuale | number:'1.2-2')) : 'N/A' }}
+                </td>
+                <td class="text-end">
+                  @if (item.storico && item.storico.length > 1) {
+                    <span [class]="'table-variation-val fw-bold ' + getVariationClass(item)">
+                      {{ calculateVariationText(item) }}
+                    </span>
+                  } @else {
+                    <span class="text-secondary small">0.0%</span>
+                  }
+                </td>
+                <td class="text-center">
+                  <app-market-advice-badge
+                    [suggestion]="getSuggestion(item)"
+                    [compact]="true"
+                  ></app-market-advice-badge>
+                </td>
+                <td class="text-end">
+                  <div class="d-flex align-items-center justify-content-end gap-2 action-btns-group">
+                    <!-- EDIT FILTERS -->
+                    <button class="action-btn-icon btn-funnel" (click)="editFilters(item)" title="Edit Filters">
+                      <ion-icon name="funnel-outline"></ion-icon>
+                    </button>
+                    <!-- OPEN LINK -->
+                    @if (item.url) {
+                      <a [href]="item.url" target="_blank" class="action-btn-icon btn-open" title="Open Link">
+                        <ion-icon name="open-outline"></ion-icon>
+                      </a>
+                    }
+                    <!-- REMOVE -->
+                    <button class="action-btn-icon btn-trash" (click)="remove(item.id)" title="Remove">
+                      <ion-icon name="trash"></ion-icon>
+                    </button>
                   </div>
-                </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+}
 
-                <!-- DYNAMIC SMART BARGAIN PULSE BANNER -->
-                @if (item.prezzoAttuale && item.prezzoAttuale > 0 && item.prezzoAttuale <= detectMtgType(item.nome).defaultThreshold) {
-                  <div class="bargain-banner" style="margin-top: 12px; padding: 8px 12px;">
-                    <span style="font-size: 1.05rem;">🎯</span>
-                    <span style="font-size: 0.85rem; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.3px;">
-                      Occasione {{ detectMtgType(item.nome).nameType }} (≤ {{ detectMtgType(item.nome).defaultThreshold }}€)!
-                    </span>
-                  </div>
-                }
-
-                <!-- MOBILE DETAILS DRAWER -->
-                <div class="mobile-details-drawer" (click)="$event.stopPropagation();" style="width: 100%;">
-                  <!-- ROW 2: CONTROL DETAILS -->
-                  <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 10px; margin-top: 12px;">
-                    <span style="font-size: 0.78rem; color: #94a3b8;">
-                      Iniziale: <strong style="color: #f8fafc;">€{{ item.storico && item.storico.length > 0 ? (item.storico[0].prezzo | number:'1.2-2') : 'N/D' }}</strong>
-                    </span>
-                    <span style="font-size: 0.78rem; color: #94a3b8; text-align: right;">
-                      Ultimo Controllo: <strong style="color: #f8fafc;">{{ item.storico && item.storico.length > 0 ? item.storico[item.storico.length - 1].data : 'Mai' }}</strong>
-                    </span>
-                  </div>
-                  <!-- ROW 3: SPARK CHART -->
-                  <div class="chart-container" style="position: relative; height: 100px; width: 100%; margin-top: 10px;">
-                    @if (hasPriceVariation(item)) {
-                      <canvas [id]="'chart-acquisto-' + item.id"></canvas>
-                    } @else {
-                      <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.4); border-radius: 10px; border: 1px dashed rgba(255,255,255,0.08); padding: 8px;">
-                        <span style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600; display: flex; align-items: center; gap: 6px;">
-                          <span style="color: #38bdf8;">⚖️</span> Prezzo Iniziale Stabile (€{{ item.prezzoAttuale || (item.storico && item.storico.length > 0 ? item.storico[0].prezzo : 0) }})
-                        </span>
-                      </div>
-                    }
-                  </div>
-                  <!-- ROW 4: RECOMMENDATION DETAILS -->
-                  <div style="margin-top: 12px; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 12px; width: 100%;">
-                    @if (getSuggestion(item); as sg) {
-                      <!-- BADGE -->
-                      <div
-                        [style.border-color]="sg.color"
-                        [style.color]="sg.color"
-                        [style.box-shadow]="sg.label.includes('✨') ? ('0 0 15px ' + sg.color + '40') : severityToGlow(sg.severity)"
-                        [style.background]="sg.label.includes('✨') ? 'rgba(15, 23, 42, 0.6)' : 'rgba(15, 23, 42, 0.25)'"
-                        style="display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; border: 1px solid; font-weight: 800; text-transform: uppercase; padding: 6px 12px; font-size: 0.85rem;"
-                        >
-                        <ion-icon [name]="sg.severity === InsightSeverity.STRONG_BUY ? 'star' : sg.icon" style="font-size: 15px;"></ion-icon>
-                        <span>{{ sg.label }}</span>
-                      </div>
-                      <!-- EXPLANATION -->
-                      <p
-                        [style.color]="sg.label.includes('✨') ? '#f1f5f9' : '#cbd5e1'"
-                        style="margin: 8px 0 0 0; line-height: 1.45; font-weight: 500; font-size: 0.85rem;"
-                        >
-                        {{ sg.explanation }}
-                      </p>
-                    }
-                    <!-- CARDTRADER MARKET INSIGHTS -->
-                    @if (item.stock !== undefined || item.sellerCountry || item.avgTop5) {
-                      <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 6px;">
-                        @if (item.stock !== undefined) {
-                          <div class="market-metric-pill">
-                            <span style="color: #cbd5e1; font-weight: 500;">{{ langService.t().MARKET_STOCK }}</span>
-                            <span style="font-weight: 700; color: #f8fafc;">📦 {{ item.stock || 0 }} {{ langService.t().UNITS }}</span>
-                          </div>
-                        }
-                        @if (item.sellerCountry) {
-                          <div class="market-metric-pill">
-                            <span style="color: #cbd5e1; font-weight: 500;">{{ langService.t().SELLER_LOCATION }}</span>
-                            <span style="font-weight: 700; color: #f8fafc; text-transform: uppercase;">
-                              📍 {{ item.sellerCountry }} <span style="font-size: 0.72rem; color: #94a3b8;">({{ item.sellerType || langService.t().PRIVATE_SELLER }})</span>
-                            </span>
-                          </div>
-                        }
-                        @if (item.avgTop5) {
-                          <div class="market-metric-pill">
-                            <span style="color: #cbd5e1; font-weight: 500;">{{ langService.t().AVG_TOP5 }}</span>
-                            <span style="font-weight: 700; color: #34d399;">📊 €{{ item.avgTop5 | number:'1.2-2' }}</span>
-                          </div>
-                        }
-                      </div>
-                    }
-                  </div>
-                </div>
-              </ion-card>
-            </ion-col>
-          }
-        </ion-row>
-      </ion-grid>
-        }
-      }
-
-      <!-- TABLE VIEW -->
-      @if (viewMode() === 'table') {
-        @if (products().length > 0) {
-          <div class="glass-card" style="margin: 12px 12px 24px 12px; overflow-x: auto;">
-            <table style="width: 100%; border-collapse: collapse; min-width: 600px; text-align: left;">
-              <thead>
-                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(15, 23, 42, 0.3);">
-                  <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Card</th>
-                  <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">Details</th>
-                  <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Initial Price</th>
-                  <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Current Price</th>
-                  <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Variation</th>
-                  <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: center;">Market Advice</th>
-                  <th style="padding: 16px; color: #a78bfa; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; text-align: right;">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of products(); track item.id) {
-                  <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04); transition: background 0.2s;" class="table-row-hover">
-                    <td style="padding: 12px 16px;">
-                      @if (item.immagine) {
-                        @if (detectMtgType(item.nome).nameType === 'Generico') {
-                          <img
-                            [src]="item.immagine"
-                            referrerpolicy="no-referrer"
-                            style="width: 36px; height: 50px; object-fit: contain; border-radius: 4px; box-shadow: 0 2px 6px rgba(0,0,0,0.5);"
-                            />
-                        } @else {
-                          <div class="product-thumbnail-container" style="width: 50px; height: 50px; padding: 2px; border-radius: 6px;">
-                            <img [src]="item.immagine" referrerpolicy="no-referrer" class="product-thumbnail-img" />
-                          </div>
-                        }
-                      } @else {
-                        <div style="width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.02); border-radius: 6px; border: 1px dashed rgba(255,255,255,0.08);">
-                          <ion-icon name="image" style="color: #475569; font-size: 16px;"></ion-icon>
-                        </div>
-                      }
-                    </td>
-                    <td style="padding: 12px 16px;">
-                      <span style="font-weight: 700; color: #f8fafc; font-size: 0.95rem; display: block;">{{ item.nome }}</span>
-                      <span style="font-size: 0.7rem; color: #64748b; font-weight: 600; display: block; margin-top: 2px;">
-                        ID: {{ item.id }} @if (item.dataInserimento) {
-                        <span>• Added on {{ item.dataInserimento }}</span>
-                      }
-                      @if (item.expansion) {
-                        <span style="color: #a78bfa; font-weight: 700; margin-left: 6px;">• {{ item.expansion | uppercase }}</span>
-                      }
-                    </span>
-                    <!-- ACTIVE FILTERS BADGES -->
-                    @if (item.foil !== null || item.lingua || item.condizione) {
-                      <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                        @if (item.foil === true) {
-                          <span style="font-size: 0.55rem; font-weight: 700; color: #fff; background: linear-gradient(135deg, #ec4899, #8b5cf6); padding: 1px 4px; border-radius: 3px; text-transform: uppercase;">Foil</span>
-                        }
-                        @if (item.foil === false) {
-                          <span style="font-size: 0.55rem; font-weight: 700; color: #94a3b8; background: rgba(255,255,255,0.06); padding: 1px 4px; border-radius: 3px; text-transform: uppercase;">Normal</span>
-                        }
-                        @if (item.lingua) {
-                          <span style="font-size: 0.55rem; font-weight: 700; color: #3b82f6; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); padding: 1px 4px; border-radius: 3px; text-transform: uppercase;">{{ item.lingua | uppercase }}</span>
-                        }
-                        @if (item.condizione) {
-                          <span style="font-size: 0.55rem; font-weight: 700; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 1px 4px; border-radius: 3px; text-transform: uppercase;">{{ item.condizione }}</span>
-                        }
-                      </div>
-                    }
-                    <!-- MARKET INSIGHTS -->
-                    @if (item.stock !== undefined || item.sellerCountry) {
-                      <div style="font-size: 0.65rem; color: #94a3b8; margin-top: 5px; display: flex; flex-wrap: wrap; gap: 8px; font-weight: 600;">
-                        @if (item.stock !== undefined) {
-                          <span style="color: #cbd5e1;">📦 Stock: {{ item.stock }}</span>
-                        }
-                        @if (item.sellerCountry) {
-                          <span style="color: #cbd5e1; text-transform: uppercase;">📍 Origin: {{ item.sellerCountry }} ({{ item.sellerType || 'private' }})</span>
-                        }
-                        @if (item.avgTop5) {
-                          <span style="color: #34d399;">⚖️ Avg Top5: €{{ item.avgTop5 | number:'1.2-2' }}</span>
-                        }
-                      </div>
-                    }
-                    </td>
-                    <td style="padding: 12px 16px; text-align: right; color: #e2e8f0; font-weight: 600;">
-                      {{ item.storico && item.storico.length > 0 ? ('€' + (item.storico[0].prezzo | number:'1.2-2')) : 'N/A' }}
-                    </td>
-                    <td style="padding: 12px 16px; text-align: right; color: var(--ion-color-success); font-weight: 700; font-size: 1.05rem;">
-                      {{ item.prezzoAttuale ? ('€' + (item.prezzoAttuale | number:'1.2-2')) : 'N/A' }}
-                    </td>
-                    <td style="padding: 12px 16px; text-align: right;">
-                      @if (item.storico && item.storico.length > 1) {
-                        <span
-                          [style.color]="calculateVariationColor(item)"
-                          style="font-weight: 700; font-size: 0.9rem;"
-                          >
-                          {{ calculateVariationText(item) }}
-                        </span>
-                      } @else {
-                        <span style="color: #64748b; font-size: 0.85rem;">0.0%</span>
-                      }
-                    </td>
-                    <td style="padding: 12px 16px; text-align: center;">
-                      @if (getSuggestion(item); as sg) {
-                        <div
-                          [style.border-color]="sg.color"
-                          [style.color]="sg.color"
-                          [style.box-shadow]="sg.label.includes('✨') ? ('0 0 15px ' + sg.color + '40') : severityToGlow(sg.severity)"
-                          [style.background]="sg.label.includes('✨') ? 'rgba(15, 23, 42, 0.6)' : 'rgba(15, 23, 42, 0.35)'"
-                          [style.padding]="sg.label.includes('✨') ? '6px 12px' : '4px 10px'"
-                          [style.font-size]="sg.label.includes('✨') ? '0.75rem' : '0.7rem'"
-                          [title]="sg.explanation"
-                          style="display: inline-flex; align-items: center; gap: 4px; border-radius: 6px; border: 1px solid; font-weight: 700; cursor: help; letter-spacing: 0.3px;"
-                          >
-                          <ion-icon
-                            [name]="sg.severity === InsightSeverity.STRONG_BUY ? 'star' : sg.icon"
-                            [style.font-size]="sg.label.includes('✨') ? '14px' : '12px'"
-                          ></ion-icon>
-                          <span>{{ sg.label }}</span>
-                        </div>
-                      }
-                    </td>
-                    <td style="padding: 12px 16px; text-align: right;">
-                      <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center;">
-                        <!-- EDIT FILTERS -->
-                        <ion-button
-                          fill="clear"
-                          color="secondary"
-                          size="small"
-                          (click)="editFilters(item)"
-                          style="margin: 0; --padding-start: 0; --padding-end: 0; height: 24px; width: 24px;"
-                          title="Edit Filters"
-                          >
-                          <ion-icon slot="icon-only" name="funnel-outline" style="font-size: 15px;"></ion-icon>
-                        </ion-button>
-                        <!-- OPEN LINK -->
-                        @if (item.url) {
-                          <ion-button
-                            fill="clear"
-                            color="primary"
-                            size="small"
-                            [href]="item.url"
-                            target="_blank"
-                            style="margin: 0; --padding-start: 0; --padding-end: 0; height: 24px; width: 24px;"
-                            >
-                            <ion-icon slot="icon-only" name="open-outline" style="font-size: 15px;"></ion-icon>
-                          </ion-button>
-                        }
-                        <!-- REMOVE -->
-                        <ion-button
-                          fill="clear"
-                          color="danger"
-                          size="small"
-                          (click)="remove(item.id)"
-                          style="margin: 0; --padding-start: 0; --padding-end: 0; height: 24px; width: 24px;"
-                          >
-                          <ion-icon slot="icon-only" name="trash" style="font-size: 15px;"></ion-icon>
-                        </ion-button>
-                      </div>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      }
+<!-- EMPTY STATE WHEN NO PRODUCTS MATCH -->
+@if (products().length === 0) {
+  <app-empty-state
+    icon="📦"
+    title="Nessun prodotto trovato"
+    description="Non ci sono prodotti sigillati da mostrare con le impostazioni o i filtri attuali. Prova a selezionare altre tipologie nella barra in alto."
+  ></app-empty-state>
+}
